@@ -1,10 +1,31 @@
+# api/urls.py
+
 from django.urls import path
-from .views import LoginView, CreateUserView, ListUsersView 
-from . import views  # ✅ This line is essential
+from .views import (
+    test_api,
+    LoginView,
+    CreateUserView,
+    ListUsersView,
+    GetUserByIdView,
+    GetCurrentUserView,
+    DeactivateUserView,
+    ReactivateUserView,
+)
 
 urlpatterns = [
-    path('test/', views.test_api, name='test-api'),
+    # Test endpoint
+    path('test/', test_api, name='test-api'),
+    
+    # Authentication
     path('login/', LoginView.as_view(), name='login'),
+    
+    # User management
     path('users/', ListUsersView.as_view(), name='list-users'),
     path('users/create/', CreateUserView.as_view(), name='create-user'),
+    path('users/me/', GetCurrentUserView.as_view(), name='current-user'),
+    path('users/<int:id>/', GetUserByIdView.as_view(), name='get-user'),
+    
+    # User activation/deactivation (Admin only)
+    path('users/<int:user_id>/deactivate/', DeactivateUserView.as_view(), name='deactivate-user'),
+    path('users/<int:user_id>/reactivate/', ReactivateUserView.as_view(), name='reactivate-user'),
 ]
