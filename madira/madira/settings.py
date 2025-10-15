@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.middleware.TokenBlacklistMiddleware',  # Custom middleware to check blacklisted tokens
 ]
 
 ROOT_URLCONF = 'madira.urls'
@@ -140,8 +141,8 @@ REST_FRAMEWORK = {
 
 # Simple JWT Settings - Token expires in 2 days
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),  # Token valid for 2 days
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),  # Not used but required
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),  # Token valid for 30 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # Optional: also 30 days
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': True,

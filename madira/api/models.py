@@ -62,6 +62,32 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.username} ({self.get_role_display()})"
 
 
+
+# models.py (ADD THIS TO YOUR EXISTING FILE)
+
+class BlacklistedToken(models.Model):
+    """
+    Stores invalidated JWT tokens to prevent reuse after logout
+    """
+    token = models.CharField(max_length=500, unique=True, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blacklisted_tokens')
+    blacklisted_at = models.DateTimeField(auto_now_add=True)
+    
+    # Optional: Track additional info
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        db_table = 'blacklisted_tokens'
+        ordering = ['-blacklisted_at']
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['blacklisted_at']),
+        ]
+
+    def __str__(self):
+        return f"Token for {self.user.username} (blacklisted {self.blacklisted_at})"
+    
 # ═══════════════════════════════════════════════════════════════════════════════
 #                                CLIENT MODEL
 # ═══════════════════════════════════════════════════════════════════════════════

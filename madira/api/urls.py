@@ -10,6 +10,7 @@ from .views import (
     GetCurrentUserView,
     DeactivateUserView,
     ReactivateUserView,
+    LogoutView, 
 )
 
 urlpatterns = [
@@ -18,7 +19,8 @@ urlpatterns = [
     
     # Authentication
     path('login/', LoginView.as_view(), name='login'),
-    
+    path('logout/', LogoutView.as_view(), name='logout'),  
+
     # User management
     path('users/', ListUsersView.as_view(), name='list-users'),
     path('users/create/', CreateUserView.as_view(), name='create-user'),
