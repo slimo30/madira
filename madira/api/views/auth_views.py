@@ -4,8 +4,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from .models import User
-from .serializers import UserSerializer, CreateUserSerializer
+from ..models import User
+from ..serializers import UserSerializer, CreateUserSerializer
 
 
 def test_api(request):
@@ -139,7 +139,7 @@ class ReactivateUserView(views.APIView):
 
 from rest_framework import views, permissions, status
 from rest_framework.response import Response
-from .models import BlacklistedToken
+from ..models import BlacklistedToken
 from datetime import timedelta
 from django.utils import timezone
 

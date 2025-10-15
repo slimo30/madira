@@ -21,3 +21,20 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    
+
+
+
+
+from .models import Client , Supplier
+
+
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = '__all__'
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = '__all__'

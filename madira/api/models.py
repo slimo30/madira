@@ -92,67 +92,77 @@ class BlacklistedToken(models.Model):
 #                                CLIENT MODEL
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# class Client(models.Model):
-#     """
-#     Client model
-#     Relations: INPUT (paiements), ORDER (commandes), OUTPUT (destination)
-#     """
-    
-#     class Status(models.TextChoices):
-#         ACTIVE = 'active', 'Active'
-#         BLOCKED = 'blocked', 'Blocked'
-    
-#     name = models.CharField(max_length=100, db_index=True)
-#     phone = models.CharField(max_length=20, blank=True)
-#     email = models.EmailField(max_length=100, blank=True)
-#     address = models.TextField(blank=True)
-#     credit_balance = models.DecimalField(
-#         max_digits=12,
-#         decimal_places=2,
-#         default=Decimal('0.00'),
-#         help_text="Solde crédit du client (avances - dettes)"
-#     )
-#     status = models.CharField(
-#         max_length=20,
-#         choices=Status.choices,
-#         default=Status.ACTIVE
-#     )
-#     notes = models.TextField(blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-    
-#     class Meta:
-#         db_table = 'clients'
-#         ordering = ['name']
-    
-#     def __str__(self):
-#         return self.name
+from decimal import Decimal
+from django.db import models
+
+
+class Client(models.Model):
+    """
+    Client model
+    Relations: INPUT (paiements), ORDER (commandes), OUTPUT (destination)
+    """
+
+    class Type(models.TextChoices):
+        NEW = 'new', 'New'
+        OLD = 'old', 'Old'
+
+    name = models.CharField(max_length=100, db_index=True)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    credit_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Solde crédit du client (avances - dettes)"
+    )
+    client_type = models.CharField(
+        max_length=10,
+        choices=Type.choices,
+        default=Type.NEW,
+        help_text="Indique si le client est nouveau ou ancien"
+    )
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True, help_text="Client actif ou désactivé")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'clients'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 
 
 # # ═══════════════════════════════════════════════════════════════════════════════
 # #                                SUPPLIER MODEL
 # # ═══════════════════════════════════════════════════════════════════════════════
 
-# class Supplier(models.Model):
-#     """
-#     Supplier model
-#     Relations: OUTPUT (paiements fournisseur)
-#     """
-    
-#     name = models.CharField(max_length=100, db_index=True)
-#     phone = models.CharField(max_length=20, blank=True)
-#     email = models.EmailField(max_length=100, blank=True)
-#     address = models.TextField(blank=True)
-#     notes = models.TextField(blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-    
-#     class Meta:
-#         db_table = 'suppliers'
-#         ordering = ['name']
-    
-#     def __str__(self):
-#         return self.name
+from django.db import models
+
+
+class Supplier(models.Model):
+    """
+    Supplier model (for workshop/fabrication)
+    Represents providers or manufacturers you buy from.
+    """
+
+    name = models.CharField(max_length=100, db_index=True)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True, help_text="Set to false instead of deleting the supplier")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'suppliers'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 # # ═══════════════════════════════════════════════════════════════════════════════
