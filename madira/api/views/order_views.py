@@ -70,3 +70,21 @@ class OrderRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
         return Response({"detail": message}, status=status.HTTP_200_OK)
 
 
+
+
+
+
+
+
+
+class ClientOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = OrderPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['order_number', 'description']
+    ordering_fields = ['order_date', 'total_amount', 'paid_amount', 'status']
+
+    def get_queryset(self):
+        client_id = self.kwargs.get("client_id")
+        return Order.objects.filter(client_id=client_id).order_by('-order_date')

@@ -32,6 +32,7 @@ from .views.supplier_views import (
 from .views.order_views import (
     OrderListCreateView,
     OrderRetrieveUpdateDeleteView,
+    ClientOrdersListView,
 )
 
 
@@ -39,6 +40,8 @@ from .views.order_views import (
 from .views.input_views import (
     InputListCreateView,
     InputRetrieveUpdateDeleteView,
+    ClientInputsListView,
+    OrderInputsListView
 )
 
 
@@ -95,6 +98,14 @@ urlpatterns = [
 
     path('products/', ProductListCreateView.as_view(), name='product-list-create'),
     path('products/<int:pk>/', ProductRetrieveUpdateDeactivateView.as_view(), name='product-detail'),
+
+
+
+
+
+     path('orders/<int:order_id>/inputs/', OrderInputsListView.as_view(), name='order-inputs'),
+    path('clients/<int:client_id>/orders/', ClientOrdersListView.as_view(), name='client-orders'),
+    path('clients/<int:client_id>/inputs/', ClientInputsListView.as_view(), name='client-inputs'),
 ]
 
 

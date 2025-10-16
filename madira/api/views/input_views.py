@@ -99,3 +99,35 @@ class InputRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
         order.paid_amount = total_paid
         order.save(update_fields=['paid_amount'])
+
+
+
+
+
+class ClientInputsListView(generics.ListAPIView):
+    serializer_class = InputSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = InputPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['date', 'amount', 'type']
+    ordering = ['-date']  # Default ordering
+
+    def get_queryset(self):
+        client_id = self.kwargs.get("client_id")
+        return Input.objects.filter(order__client_id=client_id).order_by('-date')
+    
+
+
+
+
+class OrderInputsListView(generics.ListAPIView):
+    serializer_class = InputSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = InputPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['date', 'amount', 'type']
+    ordering = ['-date']  # Default ordering
+
+    def get_queryset(self):
+        order_id = self.kwargs.get("order_id")
+        return Input.objects.filter(order_id=order_id).order_by('-date')
