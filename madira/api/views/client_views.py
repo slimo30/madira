@@ -38,3 +38,6 @@ class ClientRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
         client.is_active = False
         client.save()
         return Response({"detail": "Client has been deactivated."}, status=status.HTTP_200_OK)
+
+
+

@@ -26,6 +26,26 @@ from .views.client_views import (
 from .views.supplier_views import (
     SupplierListCreateView,
     SupplierRetrieveUpdateDeleteView, )
+
+
+
+from .views.order_views import (
+    OrderListCreateView,
+    OrderRetrieveUpdateDeleteView,
+)
+
+
+
+from .views.input_views import (
+    InputListCreateView,
+    InputRetrieveUpdateDeleteView,
+)
+
+
+from .views.product_views import (
+    ProductListCreateView,
+    ProductRetrieveUpdateDeactivateView,        
+)
 urlpatterns = [
     # Test endpoint
     path('test/', test_api, name='test-api'),
@@ -52,4 +72,31 @@ urlpatterns = [
     # Supplier management CRUD
     path('suppliers/', SupplierListCreateView.as_view(), name='supplier-list-create'),
     path('suppliers/<int:pk>/', SupplierRetrieveUpdateDeleteView.as_view(), name='supplier-detail'),
+
+
+
+    # List all orders / Create a new order
+    path('orders/', OrderListCreateView.as_view(), name='order-list-create'),
+
+    # Retrieve / Update / Cancel specific order
+    path('orders/<int:pk>/', OrderRetrieveUpdateDeleteView.as_view(), name='order-detail'),
+
+
+
+        # List all inputs or create a new one
+    path('inputs/', InputListCreateView.as_view(), name='input-list-create'),
+
+    # Retrieve, update, or delete a specific input by ID
+    path('inputs/<int:pk>/', InputRetrieveUpdateDeleteView.as_view(), name='input-detail'),
+    
+
+
+
+
+    path('products/', ProductListCreateView.as_view(), name='product-list-create'),
+    path('products/<int:pk>/', ProductRetrieveUpdateDeactivateView.as_view(), name='product-detail'),
 ]
+
+
+
+
