@@ -602,6 +602,16 @@ class Input(models.Model):
 from django.db import models
 from decimal import Decimal
 from django.core.validators import MinValueValidator
+from django.utils import timezone
+import re
+
+SLUG_RE = re.compile(r'[^a-z0-9]+')
+
+def slugify_short(value: str, max_len=6) -> str:
+    """Convert string to a short lowercase slug, max_len chars"""
+    v = value.lower().strip()
+    v = SLUG_RE.sub('', v)  # remove non-alphanumeric
+    return v[:max_len] or 'prd'
 
 class Product(models.Model):
     """
@@ -609,20 +619,27 @@ class Product(models.Model):
     (Top 6 most relevant units for kitchen furniture fabrication)
     """
     class Unit(models.TextChoices):
-        PIECE = 'piece', 'Piece'              # Handles, hinges, screws
-        METER = 'm', 'Meter'                  # Profiles, edges
-        SQUARE_METER = 'm²', 'Square Meter'   # Panels, MDF boards
-        LITER = 'L', 'Liter'                  # Glue, varnish, paint
-        KILOGRAM = 'kg', 'Kilogram'           # Powder, resin, bulk materials
-        GRAM = 'g', 'Gram'                    # Pigments, small amounts
-        NONE = 'none', 'Unitless'             # Services, transport, labor
+        PIECE = 'piece', 'Piece'
+        METER = 'm', 'Meter'
+        SQUARE_METER = 'm²', 'Square Meter'
+        LITER = 'L', 'Liter'
+        KILOGRAM = 'kg', 'Kilogram'
+        GRAM = 'g', 'Gram'
+        NONE = 'none', 'Unitless'
 
-    name = models.CharField(max_length=100, unique=True, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
     unit = models.CharField(
         max_length=20,
         choices=Unit.choices,
         default=Unit.PIECE,
         db_index=True
+    )
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        default=Decimal('0.00'),  # <-- set default here
+
     )
     current_quantity = models.DecimalField(
         max_digits=10,
@@ -631,6 +648,7 @@ class Product(models.Model):
         validators=[MinValueValidator(Decimal('0.00'))]
     )
     description = models.TextField(blank=True)
+    reference = models.CharField(max_length=10, unique=True, blank=True, db_index=True)
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -645,7 +663,19 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.name} ({self.current_quantity} {self.get_unit_display()})"
 
-
+    def save(self, *args, **kwargs):
+        """Auto-generate meaningful reference based on product name"""
+        if not self.reference:
+            # Take first 6 alphanumeric chars of name + 4-digit counter
+            base = slugify_short(self.name, max_len=6).upper()
+            counter = 1
+            while True:
+                ref = f"{base}{counter:04d}"  # e.g., TABLE0001
+                if not Product.objects.filter(reference=ref).exists():
+                    self.reference = ref
+                    break
+                counter += 1
+        super().save(*args, **kwargs)
 
 # # ═══════════════════════════════════════════════════════════════════════════════
 # #                            STOCK_MOVEMENT MODEL

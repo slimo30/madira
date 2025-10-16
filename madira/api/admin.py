@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, BlacklistedToken, Client, Supplier, Order, Input
+from .models import User, BlacklistedToken, Client, Supplier, Order, Input , Product
 
 # ---------------------------
 # USER ADMIN
@@ -101,3 +101,11 @@ class InputAdmin(admin.ModelAdmin):
     search_fields = ('reference', 'created_by__username', 'order__order_number')
     list_filter = ('type', 'date')
     ordering = ('-date',)
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):   
+    list_display = ('name', 'price', 'is_active', 'created_at')
+    search_fields = ('name','refrence')
+    list_filter = ('is_active', 'created_at')
+    ordering = ('name',)
