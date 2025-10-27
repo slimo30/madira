@@ -86,7 +86,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderOutput)
 class OrderOutputAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'ammount', 'created_at')
+    list_display = ('id', 'order', 'amount', 'type', 'created_at')  # fix typo here
     search_fields = ('order__order_number',)
     list_filter = ('created_at',)
     ordering = ('-created_at',)
@@ -97,7 +97,7 @@ class OrderOutputAdmin(admin.ModelAdmin):
 # ---------------------------
 @admin.register(Input)
 class InputAdmin(admin.ModelAdmin):
-    list_display = ('reference', 'created_by', 'order', 'type', 'amount', 'date')
+    list_display = ('reference', 'created_by', 'order', 'type', 'amount', 'date',)
     search_fields = ('reference', 'created_by__username', 'order__order_number')
     list_filter = ('type', 'date')
     ordering = ('-date',)
@@ -105,7 +105,61 @@ class InputAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):   
-    list_display = ('name', 'price', 'is_active', 'created_at')
+    list_display = ('name', 'is_active', 'created_at')
     search_fields = ('name','refrence')
     list_filter = ('is_active', 'created_at')
     ordering = ('name',)
+
+
+from django.contrib import admin
+from .models import Output
+
+@admin.register(Output)
+class OutputAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'reference',
+        'type',
+        'amount',
+        'order',
+        'supplier',
+        'product',
+        'created_by',
+        'date',
+        'description',
+    )
+    list_filter = ('type', 'created_by', 'date', 'supplier')
+    search_fields = ('reference', 'description', 'order__order_number', 'supplier__name')
+    readonly_fields = ('reference', 'created_at', 'updated_at')
+    ordering = ('-date',)
+
+
+
+
+
+from .models import StockMovement
+
+@admin.register(StockMovement)
+class StockMovementAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'product',
+        'movement_type',
+        'quantity',
+        'signed_quantity_display',
+        'price',
+        'order',
+        'created_by',
+        'created_by_output',
+        'date',
+    )
+    list_filter = ('movement_type', 'created_at', 'product', 'created_by')
+    search_fields = ('product__name', 'order__order_number', 'created_by__username')
+    readonly_fields = ('created_at',)
+    ordering = ('-date',)
+    
+    def signed_quantity_display(self, obj):
+        """Display quantity with +/- sign based on movement type"""
+        return f"{obj.signed_quantity:+.2f}"
+    signed_quantity_display.short_description = "Signed Qty"
+    signed_quantity_display.admin_order_field = 'quantity'

@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, filters, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from ..models import Supplier
-from ..serializers import SupplierSerializer
+from ..serializers.serializers import SupplierSerializer
 
 
 # ---------------------------

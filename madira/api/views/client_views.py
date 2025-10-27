@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, filters, status
 from rest_framework.response import Response
 from ..models import Client
-from ..serializers import ClientSerializer
+from ..serializers.serializers import ClientSerializer
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -21,7 +21,7 @@ class ClientListCreateView(generics.ListCreateAPIView):
     pagination_class = ClientPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'phone', 'address', 'client_type', 'notes']
-    ordering_fields = ['name', 'credit_balance', 'created_at']
+    ordering_fields = ['name', 'created_at']
 
 
 # ---------------------------

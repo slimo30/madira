@@ -46,3 +46,8 @@ coverage.xml
 # Environment variables / secrets
 *.env
 .env.*
+
+# Custom files to ignore
+client.py
+madira/add.py
+

@@ -1,2 +1,3 @@
-jangorestframework 
+djangorestframework 
 djangorestframework-simplejwt
+openpyxl

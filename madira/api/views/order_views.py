@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
 from ..models import Order
-from ..serializers import OrderSerializer
+from ..serializers.serializers import OrderSerializer
 from ..permissions import IsAdminOrResponsible
 
 
@@ -48,10 +48,34 @@ class OrderRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
     """
     Retrieve or update an order.
     DELETE = Cancel the order (set status to 'cancelled')
+    Status is COMPLETED only when fully paid, otherwise IN_PROGRESS.
     """
     queryset = Order.objects.select_related('client').all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def perform_update(self, serializer):
+        """
+        Update order and automatically adjust status based on payment:
+        - If fully paid -> COMPLETED
+        - If not fully paid -> IN_PROGRESS (even if it was COMPLETED before)
+        - Respects CANCELLED and PENDING status
+        """
+        with transaction.atomic():
+            instance = serializer.save()
+            
+            # Only auto-adjust status if order is not CANCELLED or PENDING
+            if instance.status not in [Order.Status.CANCELLED, Order.Status.PENDING]:
+                if instance.is_fully_paid:
+                    # Fully paid -> mark as COMPLETED
+                    if instance.status != Order.Status.COMPLETED:
+                        instance.status = Order.Status.COMPLETED
+                        instance.save(update_fields=['status'])
+                else:
+                    # Not fully paid -> mark as IN_PROGRESS
+                    if instance.status == Order.Status.COMPLETED:
+                        instance.status = Order.Status.IN_PROGRESS
+                        instance.save(update_fields=['status'])
 
     def delete(self, request, *args, **kwargs):
         order = self.get_object()

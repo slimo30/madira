@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from ..models import User
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,25 +26,27 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 
-from .models import Client , Supplier
+from ..models import Client , Supplier
 
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = '__all__'
+        exclude = ['updated_at']
+        read_only_fields = ['id', 'created_at']
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = '__all__'
+        exclude = ['updated_at']
+        read_only_fields = ['id', 'created_at']
 
 
 
 
 
 from rest_framework import serializers
-from .models import Input
+from ..models import Input
 
 class InputSerializer(serializers.ModelSerializer):
     created_by = serializers.ReadOnlyField(source='created_by.username')
@@ -72,18 +74,18 @@ class InputSerializer(serializers.ModelSerializer):
 
 
 
+# from rest_framework import serializers
+# from ..models import Order, Client
+
+
+# class ClientSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Client
+#         fields = ['id', 'name']
+
+
 from rest_framework import serializers
-from .models import Order, Client
-
-
-class ClientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Client
-        fields = ['id', 'name']
-
-
-from rest_framework import serializers
-from .models import Order
+from ..models import Order
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -136,7 +138,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import Input
+from ..models import Input
 
 class InputSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source='created_by.username', read_only=True)
@@ -155,7 +157,7 @@ class InputSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import Product
+from ..models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
     # Name is optional for updates
@@ -165,3 +167,17 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'reference']
+
+
+
+
+
+
+
+
+
+
+
+
+
+

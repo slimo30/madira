@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from ..models import User
-from ..serializers import UserSerializer, CreateUserSerializer
+from ..serializers.serializers import UserSerializer, CreateUserSerializer
 
 
 def test_api(request):

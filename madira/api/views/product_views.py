@@ -1,9 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from ..models import Product
-from ..serializers import ProductSerializer
+from django.db import transaction
+from ..models import Product, StockMovement
+from ..serializers.serializers import ProductSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
+from decimal import Decimal
 
 class OrderPagination(PageNumberPagination):
     page_size = 10
@@ -19,8 +21,27 @@ class ProductListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = OrderPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'refrence']
-    ordering_fields = ['name', 'price', 'created_at']   
+    search_fields = ['name', 'reference']
+    ordering_fields = ['name', 'created_at']
+
+    def perform_create(self, serializer):
+        """
+        Create product and automatically create StockMovement (IN) 
+        if initial quantity > 0
+        """
+        with transaction.atomic():
+            product = serializer.save()
+            
+            # If product has initial quantity > 0, create a stock movement
+            if product.current_quantity > Decimal('0.00'):
+                StockMovement.objects.create(
+                    product=product,
+                    movement_type=StockMovement.MovementType.IN,
+                    quantity=product.current_quantity,
+                    price=Decimal('0.00'),  # Initial stock, no price needed
+                    created_by=self.request.user,
+                    order=None  # No order for initial stock
+                )
 
 # ---------------------------
 # Retrieve, Update, Deactivate (instead of Delete)
