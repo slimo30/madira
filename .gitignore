@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+
+# Django stuff
+db.sqlite3
+/media/
+staticfiles/
+static/
+*.mo
+*.pot
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Migrations (optional — keep if you don’t want to track initial migrations)
+# */migrations/
+
+# Pytest / Coverage / Cache
+.coverage
+htmlcov/
+.tox/
+.cache/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Environment variables / secrets
+*.env
+.env.*
+
+# Custom files to ignore
+client.py
+madira/add.py
+
