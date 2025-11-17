@@ -3,10 +3,28 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django_filters.rest_framework import DjangoFilterBackend
+import django_filters
 from decimal import Decimal
 from ..models import Input, Order
 from ..serializers.serializers import InputSerializer
 from ..permissions import IsAdminOrResponsible
+
+
+class InputFilter(django_filters.FilterSet):
+    type = django_filters.ChoiceFilter(field_name='type', choices=Input.Type.choices)
+    order = django_filters.NumberFilter(field_name='order__id')
+    order_number = django_filters.CharFilter(field_name='order__order_number', lookup_expr='icontains')
+    client = django_filters.NumberFilter(field_name='order__client__id')
+    client_name = django_filters.CharFilter(field_name='order__client__name', lookup_expr='icontains')
+    amount_min = django_filters.NumberFilter(field_name='amount', lookup_expr='gte')
+    amount_max = django_filters.NumberFilter(field_name='amount', lookup_expr='lte')
+    date_from = django_filters.DateTimeFilter(field_name='date', lookup_expr='gte')
+    date_to = django_filters.DateTimeFilter(field_name='date', lookup_expr='lte')
+    
+    class Meta:
+        model = Input
+        fields = ['type', 'order', 'order_number', 'client', 'client_name', 'amount_min', 'amount_max', 'date_from', 'date_to']
 
 
 class InputPagination(PageNumberPagination):
@@ -18,16 +36,62 @@ class InputPagination(PageNumberPagination):
 class InputListCreateView(generics.ListCreateAPIView):
     """
     List all inputs or create a new one.
-    Only Admins or Responsibles can add a shop deposit (create).
+    All authenticated users can perform all operations.
     Prevents overpayment on CLIENT_PAYMENT type.
+    
+    Search functionality:
+    - Searching "shop" or "deposit" will return shop_deposit type inputs
+    - Searching "client" or "payment" will return client_payment type inputs
+    - Also searches in reference, description, order number, and client name
+    
+    Filtering options:
+    - type: client_payment, shop_deposit
+    - order: order ID number
+    - order_number: order number (partial match)
+    - client: client ID number
+    - client_name: client name (partial match)
+    - amount_min/amount_max: amount range
+    - date_from/date_to: date range
+    
+    Ordering options:
+    - date, -date
+    - amount, -amount
+    - type, -type
+    - created_at, -created_at
     """
     queryset = Input.objects.select_related('created_by', 'order__client').order_by('-date')
     serializer_class = InputSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrResponsible]
+    permission_classes = [permissions.IsAuthenticated]
     pagination_class = InputPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['reference', 'description', 'order__order_number', 'order__client__name']
-    ordering_fields = ['date', 'amount', 'type']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = InputFilter
+    search_fields = [
+        'reference', 'description', 'type',
+        'order__order_number', 'order__client__name',
+        'created_by__username'
+    ]
+    ordering_fields = ['date', 'amount', 'type', 'created_at']
+    ordering = ['-date']  # Default ordering
+
+    def get_queryset(self):
+        """
+        Override to enable smart search for input types.
+        When searching for 'shop' or 'deposit', it will return shop_deposit inputs.
+        When searching for 'client' or 'payment', it will return client_payment inputs.
+        """
+        queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search', '').lower()
+        
+        if search_query:
+            # Smart type-based searching
+            if 'shop' in search_query or 'deposit' in search_query:
+                # If search contains "shop" or "deposit", prioritize shop_deposit type
+                queryset = queryset.filter(type=Input.Type.SHOP_DEPOSIT)
+            elif 'client' in search_query or 'payment' in search_query:
+                # If search contains "client" or "payment", prioritize client_payment type
+                queryset = queryset.filter(type=Input.Type.CLIENT_PAYMENT)
+        
+        return queryset
 
     def create(self, request, *args, **kwargs):
         """Create with overpayment validation"""

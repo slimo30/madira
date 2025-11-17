@@ -1,874 +1,287 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:madira/providers/dashboard_provider.dart';
+import 'package:madira/providers/input_provider.dart';
+import 'package:madira/providers/login_provider.dart';
+import 'package:madira/providers/order_provider.dart';
+import 'package:madira/providers/output_proviider.dart';
+import 'package:madira/providers/product_provider.dart';
+import 'package:madira/providers/stock_movement_provider.dart';
+import 'package:madira/providers/supplier_provider.dart';
+import 'package:madira/providers/user_provider.dart';
+import 'package:madira/providers/client_provider.dart';
+import 'package:madira/providers/app_mode_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
+import 'dart:io' show Platform;
+import 'core/constants/colors.dart';
 
-void main() {
+import 'ui/screens/login_screen.dart';
+import 'ui/screens/home_screen.dart';
+import 'ui/screens/mode_selection_screen.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure window for desktop platforms (macOS, Windows, Linux)
+  if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1920, 1080), // Set a large default size
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.normal,
+      fullScreen: false, // Set to true if you want truly full screen
+    );
+
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+      await windowManager.maximize(); // Maximize the window
+      await windowManager.setResizable(false); // Prevent resizing
+      await windowManager.setMaximizable(false); // Disable maximize button
+      await windowManager.setMinimizable(true); // Allow minimize
+    });
+  }
+
   runApp(const MaderaKitchenApp());
 }
 
 // ============================================================================
-// COLORS - Logo-Based Palette
+// MAIN APP WITH LIFECYCLE MANAGEMENT
 // ============================================================================
-class AppColors {
-  static const Color primary = Color(0xFFD32F2F);
-  static const Color primaryLight = Color(0xFFE57373);
-  static const Color secondary = Color(0xFF37474F);
-  static const Color secondaryLight = Color(0xFF546E7A);
-  static const Color background = Color(0xFFF5F7FA);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFECEFF1);
-  static const Color textPrimary = Color(0xFF263238);
-  static const Color textSecondary = Color(0xFF78909C);
-  static const Color success = Color(0xFF43A047);
-  static const Color warning = Color(0xFFFF8F00);
-  static const Color info = Color(0xFF1976D2);
-}
-
-// ============================================================================
-// RESPONSIVE HELPER (Desktop Only)
-// ============================================================================
-class ResponsiveHelper {
-  // Compact desktop (small monitors, windowed mode)
-  static bool isCompactDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1024 &&
-      MediaQuery.of(context).size.width < 1440;
-
-  // Standard desktop (normal monitors)
-  static bool isStandardDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1440 &&
-      MediaQuery.of(context).size.width < 1920;
-
-  // Large desktop (wide monitors)
-  static bool isLargeDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1920;
-
-  static double getResponsivePadding(BuildContext context) {
-    if (isCompactDesktop(context)) return 24;
-    if (isStandardDesktop(context)) return 32;
-    return 40;
-  }
-
-  static int getGridColumns(BuildContext context) {
-    if (isCompactDesktop(context)) return 2;
-    if (isStandardDesktop(context)) return 4;
-    return 4;
-  }
-
-  static double getSidebarWidth(BuildContext context) {
-    if (isCompactDesktop(context)) return 220;
-    return 260;
-  }
-
-  static double getFontSize(BuildContext context, double baseSize) {
-    if (isCompactDesktop(context)) return baseSize * 0.95;
-    if (isLargeDesktop(context)) return baseSize * 1.05;
-    return baseSize;
-  }
-}
-
-// ============================================================================
-// MAIN APP
-// ============================================================================
-class MaderaKitchenApp extends StatelessWidget {
+class MaderaKitchenApp extends StatefulWidget {
   const MaderaKitchenApp({Key? key}) : super(key: key);
 
   @override
+  State<MaderaKitchenApp> createState() => _MaderaKitchenAppState();
+}
+
+class _MaderaKitchenAppState extends State<MaderaKitchenApp>
+    with WindowListener {
+  late AppModeProvider _appModeProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      windowManager.addListener(this);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      windowManager.removeListener(this);
+    }
+    super.dispose();
+  }
+
+  @override
+  void onWindowClose() async {
+    // Clean up resources when window is closing
+    print('🚪 Application closing - cleaning up resources...');
+
+    // Stop backend and network services if they are running
+    try {
+      _appModeProvider.dispose();
+    } catch (e) {
+      print('⚠️ Error during cleanup: $e');
+    }
+
+    await windowManager.destroy();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Madera Kitchen Fabrication',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        textTheme: GoogleFonts.interTextTheme(),
-        colorScheme: ColorScheme.light(
-          primary: AppColors.primary,
-          secondary: AppColors.secondary,
-          surface: AppColors.surface,
-          background: AppColors.background,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            _appModeProvider = AppModeProvider();
+            _appModeProvider.initialize();
+            return _appModeProvider;
+          },
         ),
-        scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.secondary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            letterSpacing: -0.5,
+        ChangeNotifierProvider(
+          create: (_) {
+            final loginProvider = LoginProvider();
+            // Check for stored user data when app starts
+            loginProvider.checkStoredUserData();
+            return loginProvider;
+          },
+        ),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ClientProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => SupplierProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => InputProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => StockMovementProvider()),
+        ChangeNotifierProvider(create: (_) => OutputProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Madera Kitchen Fabrication',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          textTheme: GoogleFonts.interTextTheme(),
+          colorScheme: ColorScheme.light(
+            primary: AppColors.primary,
+            secondary: AppColors.secondary,
+            surface: AppColors.surface,
+            background: AppColors.background,
           ),
-        ),
-        cardTheme: CardTheme(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          color: AppColors.surface,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+          scaffoldBackgroundColor: AppColors.background,
+          appBarTheme: AppBarTheme(
+            backgroundColor: AppColors.secondary,
             foregroundColor: Colors.white,
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            textStyle: GoogleFonts.inter(
+            centerTitle: false,
+            titleTextStyle: GoogleFonts.inter(
+              fontSize: 20,
               fontWeight: FontWeight.w600,
-              fontSize: 14,
+              color: Colors.white,
+              letterSpacing: -0.5,
             ),
           ),
-        ),
-        dividerTheme: const DividerThemeData(
-          color: AppColors.surfaceVariant,
-          thickness: 1,
-        ),
-      ),
-      home: const DashboardScreen(),
-    );
-  }
-}
-
-// ============================================================================
-// DASHBOARD SCREEN
-// ============================================================================
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: Row(
-        children: [
-          const _Sidebar(),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final padding = ResponsiveHelper.getResponsivePadding(context);
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(padding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _PageHeader(),
-                      const SizedBox(height: 32),
-                      const _StatsSection(),
-                      const SizedBox(height: 32),
-                      const _OrdersSection(),
-                    ],
-                  ),
-                );
-              },
+          cardTheme: CardTheme(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
+            color: AppColors.surface,
           ),
-        ],
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              'M',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Text('MADERA Kitchen Fabrication'),
-        ],
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          tooltip: 'Search',
-          onPressed: () {},
-        ),
-        Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              tooltip: 'Notifications',
-              onPressed: () {},
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Center(
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.primary,
-                  child: Icon(Icons.person, size: 18, color: Colors.white),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Admin',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ============================================================================
-// SIDEBAR
-// ============================================================================
-class _Sidebar extends StatelessWidget {
-  const _Sidebar({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final sidebarWidth = ResponsiveHelper.getSidebarWidth(context);
-
-    return Container(
-      width: sidebarWidth,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(right: BorderSide(color: AppColors.surfaceVariant)),
-      ),
-      child: const SingleChildScrollView(child: _SidebarContent()),
-    );
-  }
-}
-
-class _SidebarContent extends StatelessWidget {
-  const _SidebarContent({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        SizedBox(height: 8),
-        _SidebarItem(icon: Icons.dashboard, title: 'Dashboard', isActive: true),
-        _SidebarItem(icon: Icons.shopping_cart, title: 'Orders'),
-        _SidebarItem(icon: Icons.kitchen, title: 'Production'),
-        _SidebarItem(icon: Icons.inventory_2, title: 'Materials'),
-        _SidebarItem(icon: Icons.people, title: 'Clients'),
-        _SidebarItem(icon: Icons.precision_manufacturing, title: 'Machines'),
-        _SidebarItem(icon: Icons.analytics, title: 'Analytics'),
-        Divider(),
-        _SidebarItem(icon: Icons.settings, title: 'Settings'),
-        _SidebarItem(icon: Icons.help_outline, title: 'Help'),
-      ],
-    );
-  }
-}
-
-class _SidebarItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final bool isActive;
-
-  const _SidebarItem({
-    Key? key,
-    required this.icon,
-    required this.title,
-    this.isActive = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary.withOpacity(0.1) : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isActive ? AppColors.primary : AppColors.textSecondary,
-          size: 22,
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.inter(
-            color: isActive ? AppColors.primary : AppColors.textSecondary,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 14,
-          ),
-        ),
-        onTap: () {},
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// PAGE HEADER
-// ============================================================================
-class _PageHeader extends StatelessWidget {
-  const _PageHeader({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Production Dashboard',
-              style: GoogleFonts.inter(
-                fontSize: ResponsiveHelper.getFontSize(context, 28),
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Monitor fabrication orders and production status',
-              style: GoogleFonts.inter(
+              textStyle: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
                 fontSize: 14,
-                color: AppColors.textSecondary,
               ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.file_download, size: 18),
-              label: const Text('Export'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.secondary,
-                side: BorderSide(color: AppColors.surfaceVariant),
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('New Order'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ============================================================================
-// STATS SECTION
-// ============================================================================
-class _StatsSection extends StatelessWidget {
-  const _StatsSection({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = ResponsiveHelper.getGridColumns(context);
-        final spacing = 16.0;
-        final totalSpacing = spacing * (columns - 1);
-        final itemWidth = (constraints.maxWidth - totalSpacing) / columns;
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            _StatCard(
-              title: 'Active Orders',
-              value: '42',
-              icon: Icons.shopping_cart_outlined,
-              color: AppColors.primary,
-              width: itemWidth,
-            ),
-            _StatCard(
-              title: 'In Production',
-              value: '18',
-              icon: Icons.precision_manufacturing,
-              color: AppColors.warning,
-              width: itemWidth,
-            ),
-            _StatCard(
-              title: 'Completed',
-              value: '156',
-              icon: Icons.check_circle_outline,
-              color: AppColors.success,
-              width: itemWidth,
-            ),
-            _StatCard(
-              title: 'Monthly Revenue',
-              value: '2,450,000 DA',
-              icon: Icons.trending_up,
-              color: AppColors.secondary,
-              width: itemWidth,
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ============================================================================
-// STAT CARD
-// ============================================================================
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final double width;
-
-  const _StatCard({
-    Key? key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.width,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.surfaceVariant, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 28),
-              ),
-              Icon(Icons.more_vert, color: AppColors.textSecondary, size: 20),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: -1,
-            ),
+          dividerTheme: const DividerThemeData(
+            color: AppColors.surfaceVariant,
+            thickness: 1,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// ORDERS SECTION
-// ============================================================================
-class _OrdersSection extends StatelessWidget {
-  const _OrdersSection({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recent Fabrication Orders',
-              style: GoogleFonts.inter(
-                fontSize: ResponsiveHelper.getFontSize(context, 20),
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.filter_list, size: 18),
-                  label: const Text('Filter'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.secondary,
-                    side: BorderSide(color: AppColors.surfaceVariant),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.sort, size: 18),
-                  label: const Text('Sort'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.secondary,
-                    side: BorderSide(color: AppColors.surfaceVariant),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
-        const SizedBox(height: 16),
-        const _OrdersTable(),
-      ],
-    );
-  }
-}
+        home: Consumer2<AppModeProvider, LoginProvider>(
+          builder: (context, appModeProvider, loginProvider, child) {
+            print('🏠 MainApp Consumer: Building home widget...');
+            print('🏠 App Mode: ${appModeProvider.mode}');
+            print('🏠 Is Initialized: ${appModeProvider.isInitialized}');
+            print('🏠 Is Starting Backend: ${appModeProvider.isStartingBackend}');
+            print('🏠 Master IP: ${appModeProvider.masterIp}');
+            print('🏠 Status: ${appModeProvider.statusMessage}');
+            print('🏠 Login Provider User: ${loginProvider.user}');
 
-// ============================================================================
-// ORDERS TABLE
-// ============================================================================
-class _OrdersTable extends StatelessWidget {
-  const _OrdersTable({Key? key}) : super(key: key);
-
-  static const List<Map<String, String>> _orders = [
-    {
-      'id': 'FAB-001',
-      'client': 'Residence Benali',
-      'product': 'Custom Kitchen Cabinets',
-      'qty': '12 units',
-      'value': '450,000 DA',
-      'status': 'In Production',
-    },
-    {
-      'id': 'FAB-002',
-      'client': 'Hotel El Djazair',
-      'product': 'Commercial Kitchen Units',
-      'qty': '8 units',
-      'value': '680,000 DA',
-      'status': 'Design Review',
-    },
-    {
-      'id': 'FAB-003',
-      'client': 'Villa Khelifi',
-      'product': 'Wardrobe System',
-      'qty': '6 units',
-      'value': '320,000 DA',
-      'status': 'Completed',
-    },
-    {
-      'id': 'FAB-004',
-      'client': 'Restaurant Le Gourmet',
-      'product': 'Storage Cabinets',
-      'qty': '15 units',
-      'value': '280,000 DA',
-      'status': 'Material Prep',
-    },
-    {
-      'id': 'FAB-005',
-      'client': 'Office Tower B',
-      'product': 'Reception Desk',
-      'qty': '1 unit',
-      'value': '150,000 DA',
-      'status': 'Completed',
-    },
-    {
-      'id': 'FAB-006',
-      'client': 'Boutique Saidi',
-      'product': 'Display Units',
-      'qty': '10 units',
-      'value': '420,000 DA',
-      'status': 'In Production',
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.surfaceVariant),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowColor: MaterialStateProperty.all(AppColors.surfaceVariant),
-          headingRowHeight: 52,
-          dataRowHeight: 72,
-          columnSpacing: 32,
-          horizontalMargin: 24,
-          columns: [
-            DataColumn(
-              label: SizedBox(
-                width: 120,
-                child: Text(
-                  'Order ID',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 150,
-                child: Text(
-                  'Client',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 180,
-                child: Text(
-                  'Product',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 100,
-                child: Text(
-                  'Quantity',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 120,
-                child: Text(
-                  'Value',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 130,
-                child: Text(
-                  'Status',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: 140,
-                child: Text(
-                  'Actions',
-                  style: _headerStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ],
-          rows: _orders.map((order) {
-            return DataRow(
-              cells: [
-                DataCell(
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      order['id']!,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 150,
-                    child: Text(
-                      order['client']!,
-                      style: GoogleFonts.inter(fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 180,
-                    child: Text(
-                      order['product']!,
-                      style: GoogleFonts.inter(fontSize: 14),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 100,
-                    child: Text(
-                      order['qty']!,
-                      style: GoogleFonts.inter(fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      order['value']!,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 130,
-                    child: Center(
-                      child: _StatusBadge(status: order['status']!),
-                    ),
-                  ),
-                ),
-                DataCell(
-                  SizedBox(
-                    width: 140,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.visibility_outlined, size: 18),
-                          color: AppColors.primary,
-                          tooltip: 'View',
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          color: AppColors.primary,
-                          tooltip: 'Edit',
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 18),
-                          color: AppColors.primary,
-                          tooltip: 'Delete',
-                          onPressed: () {},
-                        ),
+            // Show loading screen while backend is starting
+            if (appModeProvider.isStartingBackend || !appModeProvider.isInitialized) {
+              print('🏠 Navigation: LOADING (Backend Starting)');
+              return Scaffold(
+                body: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.secondary.withOpacity(0.1),
                       ],
                     ),
                   ),
+                  child: Center(
+                    child: Card(
+                      elevation: 8,
+                      margin: const EdgeInsets.all(32),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 500),
+                        padding: const EdgeInsets.all(48),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.rocket_launch,
+                              size: 80,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(height: 32),
+                            Text(
+                              'Starting Madira Kitchen',
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              appModeProvider.statusMessage,
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 32),
+                            const CircularProgressIndicator(),
+                            if (appModeProvider.mode == AppMode.master) ...[
+                              const SizedBox(height: 24),
+                              Text(
+                                '🚀 Launching Django backend...',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'This may take a few seconds',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ],
+              );
+            }
+
+            // Check if app mode is configured
+            if (appModeProvider.mode == AppMode.notConfigured) {
+              print('🏠 Navigation: MODE_SELECTION');
+              return SelectionArea(child: ModeSelectionScreen());
+            }
+
+            // Then check if user is logged in
+            final isLoggedIn = loginProvider.user != null;
+            print('🏠 Navigation Decision: ${isLoggedIn ? 'HOME' : 'LOGIN'}');
+
+            // Wrap each screen with SelectionArea for text selection
+            return SelectionArea(
+              child: isLoggedIn ? const HomeScreen() : const LoginScreen(),
             );
-          }).toList(),
+          },
         ),
-      ),
-    );
-  }
-
-  TextStyle get _headerStyle => GoogleFonts.inter(
-    fontSize: 13,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-}
-
-// ============================================================================
-// STATUS BADGE
-// ============================================================================
-class _StatusBadge extends StatelessWidget {
-  final String status;
-
-  const _StatusBadge({Key? key, required this.status}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Color color;
-    switch (status) {
-      case 'Completed':
-        color = AppColors.success;
-        break;
-      case 'In Production':
-        color = AppColors.warning;
-        break;
-      case 'Design Review':
-        color = AppColors.info;
-        break;
-      case 'Material Prep':
-        color = AppColors.primaryLight;
-        break;
-      default:
-        color = AppColors.textSecondary;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        status,
-        style: GoogleFonts.inter(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
+        routes: {
+          '/home': (context) => const SelectionArea(child: HomeScreen()),
+          '/login': (context) => const SelectionArea(child: LoginScreen()),
+          '/mode-selection':
+              (context) => const SelectionArea(child: ModeSelectionScreen()),
+        },
       ),
     );
   }

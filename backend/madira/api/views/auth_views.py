@@ -49,11 +49,10 @@ class LoginView(views.APIView):
 
         return Response({
             "access": str(access_token),
+            "user_id": user.id,
             "username": user.username,
             "role": user.role
         }, status=status.HTTP_200_OK)
-
-
 
 
 # ---------------------------
@@ -63,6 +62,20 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = CreateUserSerializer
     permission_classes = [permissions.IsAdminUser]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "full_name": user.full_name,
+            "role": user.role,
+            "is_active": user.is_active,
+            "created_at": user.created_at
+        }, status=status.HTTP_201_CREATED)
 
 
 # ---------------------------
@@ -114,7 +127,6 @@ class DeactivateUserView(views.APIView):
             {"message": f"User {user.username} has been deactivated."},
             status=status.HTTP_200_OK
         )
-
 
 
 # ---------------------------

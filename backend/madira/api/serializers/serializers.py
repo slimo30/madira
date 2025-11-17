@@ -21,9 +21,6 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
-    
-
-
 
 
 from ..models import Client , Supplier
@@ -40,48 +37,6 @@ class SupplierSerializer(serializers.ModelSerializer):
         model = Supplier
         exclude = ['updated_at']
         read_only_fields = ['id', 'created_at']
-
-
-
-
-
-from rest_framework import serializers
-from ..models import Input
-
-class InputSerializer(serializers.ModelSerializer):
-    created_by = serializers.ReadOnlyField(source='created_by.username')
-    reference = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Input
-        fields = [
-            'id', 'type', 'client', 'amount', 'description', 'reference',
-            'date', 'created_by', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'reference', 'created_by', 'created_at', 'updated_at']
-
-    def validate(self, data):
-        typ = data.get('type') or getattr(self.instance, 'type', None)
-        client = data.get('client') if 'client' in data else getattr(self.instance, 'client', None)
-
-        if typ == Input.Type.CLIENT_PAYMENT and not client:
-            raise serializers.ValidationError({'client': 'Client is required for client_payment.'})
-        if typ == Input.Type.SHOP_DEPOSIT and client:
-            raise serializers.ValidationError({'client': 'Client must be empty for shop_deposit.'})
-        return data
-
-
-
-
-
-# from rest_framework import serializers
-# from ..models import Order, Client
-
-
-# class ClientSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Client
-#         fields = ['id', 'name']
 
 
 from rest_framework import serializers
@@ -133,27 +88,41 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
 
-
-
-
-
 from rest_framework import serializers
 from ..models import Input
+from django.db.models import Sum
 
 class InputSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source='created_by.username', read_only=True)
     order_number = serializers.CharField(source='order.order_number', read_only=True)
+    client_name = serializers.CharField(source='order.client.name', read_only=True)
+    remaining_amount = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Input
         fields = [
             'id', 'reference', 'type', 'amount', 'description',
-            'order', 'order_number',
+            'order', 'order_number', 'client_name',
             'created_by', 'created_by_name',
+            'remaining_amount',
             'date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['reference', 'created_at', 'updated_at', 'created_by']
 
+    def get_remaining_amount(self, obj):
+        """Calculate remaining amount = input amount - total outputs from this input"""
+        total_outputs = obj.outputs.aggregate(total=Sum('amount'))['total'] or 0
+        return obj.amount - total_outputs
+
+    def validate(self, data):
+        typ = data.get('type') or getattr(self.instance, 'type', None)
+        order = data.get('order') if 'order' in data else getattr(self.instance, 'order', None)
+
+        if typ == Input.Type.CLIENT_PAYMENT and not order:
+            raise serializers.ValidationError({'order': 'Order is required for client_payment.'})
+        if typ == Input.Type.SHOP_DEPOSIT and order:
+            raise serializers.ValidationError({'order': 'Order must be empty for shop_deposit.'})
+        return data
 
 
 from rest_framework import serializers
@@ -162,11 +131,38 @@ from ..models import Product
 class ProductSerializer(serializers.ModelSerializer):
     # Name is optional for updates
     name = serializers.CharField(required=False)
+    
+    # Add initial_price field for new products with stock
+    initial_price = serializers.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        required=False,
+        write_only=True,
+        help_text="Required when creating product with initial quantity > 0"
+    )
 
     class Meta:
         model = Product
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'reference']
+    
+    def validate(self, data):
+        """Validate that initial_price is provided when current_quantity > 0"""
+        current_quantity = data.get('current_quantity', 0)
+        initial_price = data.get('initial_price')
+        
+        # Only validate for creation (when instance doesn't exist)
+        if not self.instance and current_quantity and current_quantity > 0:
+            if initial_price is None:
+                raise serializers.ValidationError({
+                    'initial_price': 'Initial price is required when creating product with stock quantity.'
+                })
+            if initial_price < 0:
+                raise serializers.ValidationError({
+                    'initial_price': 'Initial price cannot be negative.'
+                })
+        
+        return data
 
 
 

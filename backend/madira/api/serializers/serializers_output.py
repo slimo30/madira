@@ -1,5 +1,3 @@
-
-
 from rest_framework import serializers
 from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
@@ -68,6 +66,8 @@ class OutputSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source='created_by.username', read_only=True)
     source_input_reference = serializers.CharField(source='source_input.reference', read_only=True)
     order_number = serializers.CharField(source='order.order_number', read_only=True)
+    client_id = serializers.IntegerField(source='order.client.id', read_only=True)
+    client_name = serializers.CharField(source='order.client.name', read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     type_display = serializers.CharField(source='get_type_display', read_only=True)
@@ -110,6 +110,7 @@ class OutputSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_username',
             'source_input', 'source_input_reference',
             'order', 'order_number',
+            'client_id', 'client_name',
             'supplier', 'supplier_name',
             'product', 'product_name',
             'quantity', 'price',

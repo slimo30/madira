@@ -1,3 +1,10 @@
 djangorestframework 
 djangorestframework-simplejwt
 openpyxl
+django-filter
+djangorestframework
+drf-spectacular
+djangorestframework-simplejwt
+django-filter
+openpyxl
+drf_spectacularç

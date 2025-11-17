@@ -158,13 +158,8 @@ class DataGenerator:
             total_amount = Decimal(random.randint(10000, 9999999))  # Max ~10M DA
             status = random.choice(statuses)
             
-            # CONSTRAINT: paid_amount <= total_amount
-            if status == Order.Status.COMPLETED:
-                paid_amount = total_amount
-            elif status == Order.Status.CANCELLED:
-                paid_amount = Decimal('0.00')
-            else:
-                paid_amount = total_amount * Decimal(random.randint(0, 80)) / Decimal('100')
+            # NOTE: paid_amount is now a @property calculated from Input objects
+            # We create the order first, then create Input objects to simulate payments
             
             order = Order.objects.create(
                 client=client,
@@ -172,7 +167,6 @@ class DataGenerator:
                 delivery_date=order_date + timedelta(days=random.randint(1, 30)) if random.random() > 0.3 else None,
                 status=status,
                 total_amount=total_amount,
-                paid_amount=paid_amount,
                 description=''
             )
             self.created_orders.append(order)

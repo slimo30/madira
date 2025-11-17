@@ -138,11 +138,11 @@ class StockMovementCreateSerializer(serializers.ModelSerializer):
             final_price = self.get_average_price(product)
             price_type = "avg"
             
+            # Allow zero price but warn about it
             if final_price == Decimal('0.00'):
-                raise serializers.ValidationError({
-                    'product': f'No stock purchase records found for {product.name}. '
-                               f'Please provide a manual price or create stock IN movements first.'
-                })
+                # Use zero price but mark as such
+                final_price = Decimal('0.00')
+                price_type = "zero (no cost basis)"
         
         # Calculate total amount
         total_amount = quantity * final_price
@@ -163,7 +163,7 @@ class StockMovementCreateSerializer(serializers.ModelSerializer):
             order=order,
             amount=total_amount,
             type=OrderOutput.OutputType.PRODUCT_CONSUMPTION,
-            description=f"Stock OUT: {quantity} units of {product.name} @ {final_price} DA/unit ({price_type} price)",
+            description=f"Stock OUT: {quantity} units of {product.name} @ {final_price} DA/unit ({price_type})",
             created_by_stock_movement=stock_movement
         )
         
@@ -224,7 +224,7 @@ class StockMovementUpdateSerializer(serializers.ModelSerializer):
         return Decimal('0.00')
     
     def validate(self, data):
-        """Validate update data."""
+        """Validate update data with stock availability check."""
         order = data.get('order', self.instance.order)
         if not order:
             raise serializers.ValidationError({'order': 'Order is required.'})
@@ -242,6 +242,35 @@ class StockMovementUpdateSerializer(serializers.ModelSerializer):
             if manual_price < Decimal('0.00'):
                 raise serializers.ValidationError({
                     'price': 'Price cannot be negative.'
+                })
+        
+        # CRITICAL: Validate stock availability for updates
+        old_product = self.instance.product
+        old_quantity = Decimal(str(self.instance.quantity))
+        
+        new_product = data.get('product', old_product)
+        new_quantity = Decimal(str(data.get('quantity', old_quantity)))
+        
+        # Calculate what the stock would be after the update
+        if new_product.id != old_product.id:
+            # Product changed - check new product has enough stock
+            available_stock = Decimal(str(new_product.current_quantity))
+            if available_stock < new_quantity:
+                raise serializers.ValidationError({
+                    'quantity': f'Insufficient stock in {new_product.name}. Available: {available_stock}, Requested: {new_quantity}'
+                })
+        else:
+            # Same product - check if change in quantity is acceptable
+            stock_difference = new_quantity - old_quantity
+            current_stock = Decimal(str(new_product.current_quantity))
+            
+            # Calculate what stock would be after update
+            projected_stock = current_stock - stock_difference
+            
+            if projected_stock < Decimal('0.00'):
+                available_for_increase = current_stock + old_quantity
+                raise serializers.ValidationError({
+                    'quantity': f'Insufficient stock. Current: {current_stock}, Available for this order: {available_for_increase}, Requested: {new_quantity}'
                 })
         
         return data

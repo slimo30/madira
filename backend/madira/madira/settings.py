@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-(q#it_(*r&dj2^7@2+o)-xp(agi7md0*m@xga_15o6^_z!_&o6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow connections from any IP on the network
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',  # Changed from rest_framework.authtoken
+    'django_filters',  # Added for filtering support
     'api',
 ]
 

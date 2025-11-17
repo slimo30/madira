@@ -1,10 +1,13 @@
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Sum, Count, Avg, Max, Min, Q, F, DecimalField, Prefetch, OuterRef, Subquery
-from django.db.models.functions import Coalesce, TruncMonth, TruncWeek, TruncDate, TruncYear, TruncDay
+from django.db.models import (
+    Sum, Count, Avg, Q, F, OuterRef, Subquery, Case, When, 
+    DecimalField, Value
+)
+from django.db.models.functions import Coalesce, TruncMonth, TruncYear, TruncDay
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 from ..models import (
     Client, Order, Input, Output, OrderOutput, 
@@ -14,270 +17,455 @@ from ..models import (
 
 class ComprehensiveDashboardView(APIView):
     """
-    🎯 OPTIMIZED COMPREHENSIVE DASHBOARD ANALYTICS - SINGLE API
+    🎯 ESSENTIAL DASHBOARD ANALYTICS API
     
-    Provides complete business intelligence with optimized queries:
-    - Minimal database hits using aggregations
-    - Batch processing where possible
-    - Efficient filtering and annotations
-    - Daily, Monthly, and Yearly breakdowns
+    Core Metrics Only:
+    - Financial Overview (Revenue, Expenses, Profit, Cash)
+    - Orders Summary (Status & Payment)
+    - Top Clients & Debtors
+    - Inventory Status
+    - Time Trends
+    - Critical Alerts
+    
+    ═══════════════════════════════════════════════════════════════════
+    📚 METRICS CALCULATION GUIDE
+    ═══════════════════════════════════════════════════════════════════
+    
+    1️⃣ FINANCIAL OVERVIEW:
+    ─────────────────────────────────────────────────────────────────
+    • total_revenue: Sum of all Order.total_amount in period
+      SQL: SELECT SUM(total_amount) FROM orders WHERE order_date >= start_date
+      
+    • total_collected: Sum of Input.amount where type = 'CLIENT_PAYMENT'
+      SQL: SELECT SUM(amount) FROM inputs WHERE type = 'CLIENT_PAYMENT' AND date >= start_date
+      Business Logic: Only client payments count as collected revenue
+      
+    • total_outstanding: total_revenue - total_collected
+      Formula: Outstanding Debt = Total Billed - Total Received
+      
+    • collection_rate: (total_collected / total_revenue) * 100
+      Formula: What % of billed revenue has been collected
+      
+    • total_expenses: Sum of all Output.amount in period
+      SQL: SELECT SUM(amount) FROM outputs WHERE date >= start_date
+      
+    • actual_profit (REAL CASH PROFIT): total_collected - total_expenses
+      Formula: Cash received minus cash spent = ACTUAL profit realized
+      Note: This is the REAL profit - only counts money actually in hand
+      Business Logic: Uses collected (not revenue) because uncollected revenue isn't cash yet
+      
+    • expected_profit (PROJECTED PROFIT): total_revenue - total_expenses
+      Formula: Total billed minus expenses = EXPECTED profit when all invoices are paid
+      Note: This is PROJECTED profit - assumes all outstanding debts will be collected
+      Business Logic: Shows what profit WOULD BE if all clients pay their invoices
+      
+    • actual_profit_margin: (actual_profit / total_collected) * 100
+      Formula: Real profit as % of money actually collected
+      
+    • expected_profit_margin: (expected_profit / total_revenue) * 100
+      Formula: Projected profit as % of total billed revenue
+      
+    • cash_in_hand: total_inputs - total_expenses
+      Formula: All money IN (payments + deposits) - All money OUT
+      SQL: (SELECT SUM(amount) FROM inputs) - (SELECT SUM(amount) FROM outputs)
+      
+    • expense_breakdown: Categories of Output by type
+      - withdrawals: Output.type = 'WITHDRAWAL'
+      - supplier_payments: Output.type = 'SUPPLIER_PAYMENT'
+      - consumables: Output.type = 'CONSUMABLE'
+      - stock_purchases: Output.type = 'GLOBAL_STOCK_PURCHASE'
+      - client_stock_usage: Output.type = 'CLIENT_STOCK_USAGE'
+      - other_expenses: Output.type = 'OTHER_EXPENSE'
+    
+    2️⃣ ORDERS ANALYTICS:
+    ─────────────────────────────────────────────────────────────────
+    • total_orders: Count of all orders
+      SQL: SELECT COUNT(*) FROM orders WHERE order_date >= start_date
+      
+    • completed/in_progress/pending/cancelled: Count by Order.status
+      SQL: SELECT COUNT(*) FROM orders WHERE status = 'COMPLETED' AND order_date >= start_date
+      
+    • fully_paid: Orders where total_paid >= total_amount
+      Logic: For each order, sum related inputs (payments), compare to order total
+      SQL: SELECT COUNT(*) FROM orders o 
+           WHERE (SELECT SUM(amount) FROM inputs WHERE order_id = o.id) >= o.total_amount
+      
+    • partially_paid: Orders where 0 < total_paid < total_amount
+      Logic: Some payment made, but not full amount
+      
+    • unpaid: Orders where total_paid = 0
+      Logic: No payments recorded yet
+      
+    • average_order_value: AVG(Order.total_amount)
+      SQL: SELECT AVG(total_amount) FROM orders WHERE order_date >= start_date
+    
+    3️⃣ CLIENT ANALYTICS:
+    ─────────────────────────────────────────────────────────────────
+    • total_clients: Count of active clients
+      SQL: SELECT COUNT(*) FROM clients WHERE is_active = TRUE
+      
+    • top_clients: Top 5 by revenue
+      Logic: For each client, sum all their order totals, rank by highest
+      SQL: SELECT client.name, SUM(orders.total_amount) as revenue
+           FROM clients 
+           JOIN orders ON orders.client_id = clients.id
+           WHERE clients.is_active = TRUE
+           GROUP BY client.id
+           ORDER BY revenue DESC
+           LIMIT 5
+      
+    • top_debtors: Top 10 by outstanding balance
+      Logic: For each client: (total billed - total paid)
+      SQL: SELECT client.name, 
+                  SUM(orders.total_amount) - COALESCE(SUM(inputs.amount), 0) as outstanding
+           FROM clients
+           LEFT JOIN orders ON orders.client_id = clients.id
+           LEFT JOIN inputs ON inputs.order_id = orders.id AND inputs.type = 'CLIENT_PAYMENT'
+           WHERE clients.is_active = TRUE
+           GROUP BY client.id
+           HAVING outstanding > 0
+           ORDER BY outstanding DESC
+           LIMIT 10
+    
+    4️⃣ INVENTORY ANALYTICS:
+    ─────────────────────────────────────────────────────────────────
+    • total_products: Count of active products
+      SQL: SELECT COUNT(*) FROM products WHERE is_active = TRUE
+      
+    • out_of_stock: Products with current_quantity = 0
+      SQL: SELECT COUNT(*) FROM products WHERE is_active = TRUE AND current_quantity = 0
+      
+    • low_stock: Products with 0 < current_quantity < 10
+      SQL: SELECT COUNT(*) FROM products WHERE is_active = TRUE 
+           AND current_quantity < 10 AND current_quantity > 0
+      
+    • low_stock_items: List of low stock products with details
+      Returns: name, current_quantity, unit
+      
+    • total_stock_value: Sum of (current_quantity × average_cost) for all products
+      Logic: 
+        1. For each product, calculate average cost from stock movements:
+           avg_cost = SUM(quantity × price) / SUM(quantity) [for IN movements only]
+        2. value = current_quantity × avg_cost
+        3. total = SUM(all product values)
+      SQL: SELECT SUM(current_quantity * avg_cost) as total_value
+           FROM (
+             SELECT p.current_quantity,
+                    SUM(sm.quantity * sm.price) / SUM(sm.quantity) as avg_cost
+             FROM products p
+             JOIN stock_movements sm ON sm.product_id = p.id
+             WHERE sm.movement_type = 'IN' AND p.is_active = TRUE
+             GROUP BY p.id
+           )
+    
+    5️⃣ TIME-BASED TRENDS:
+    ─────────────────────────────────────────────────────────────────
+    Depends on period parameter:
+    
+    • period='month': Daily breakdown (each day of current month)
+      - Groups by TruncDay(order_date/date)
+      - Returns revenue, collected, expenses, profit per day
+      
+    • period='year': Monthly breakdown (each month of current year)
+      - Groups by TruncMonth(order_date/date)
+      - Returns revenue, collected, expenses, profit per month
+      
+    • period='all_time': Yearly breakdown (all years)
+      - Groups by TruncYear(order_date/date)
+      - Returns revenue, collected, expenses, profit per year
+      
+    For each time period:
+    • revenue: SUM(orders.total_amount) for that period
+    • collected: SUM(inputs.amount) where type='CLIENT_PAYMENT' for that period
+    • expenses: SUM(outputs.amount) for that period
+    • profit: collected - expenses
+    • orders: COUNT(orders) for that period
+    
+    6️⃣ ALERTS & WARNINGS:
+    ─────────────────────────────────────────────────────────────────
+    • Low cash: Triggered if cash_in_hand < 10,000 DA
+    • High outstanding: Triggered if outstanding > 30% of total revenue
+    • Out of stock: Triggered if any products have quantity = 0
+    • Low stock: Triggered if any products have 0 < quantity < 10
+    • Unpaid orders: Triggered if unpaid orders > 20% of total orders
+    • Operating at loss: Triggered if net_profit < 0
+    
+    ═══════════════════════════════════════════════════════════════════
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # Get date range from query params for recent period (default: last 30 days)
-        days = int(request.query_params.get('days', 30))
-        recent_start = timezone.now() - timedelta(days=days)
-        today = timezone.now().date()
-        week_start = timezone.now() - timedelta(days=7)
-        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        year_start = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        # ============================================
+        # 🔧 PERIOD SETUP & VALIDATION
+        # ============================================
+        # Determines the time range for all metrics
+        # Valid options: 'today', 'month', 'year', 'all_time'
+        
+        period = request.query_params.get('period', 'all_time').lower()
+        
+        valid_periods = ['today', 'month', 'year', 'all_time']
+        if period not in valid_periods:
+            return Response(
+                {'error': f'Invalid period. Must be one of: {", ".join(valid_periods)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        now = timezone.now()
+        
+        if period == 'today':
+            # From 00:00:00 today to now
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            period_label = 'Today'
+        elif period == 'month':
+            # From 1st day of current month to now
+            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            period_label = 'This Month'
+        elif period == 'year':
+            # From Jan 1st of current year to now
+            start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            period_label = 'This Year'
+        else:  # all_time
+            # No date filter - include all historical data
+            start_date = None
+            period_label = 'All Time'
+        
+        # Build Q filter objects for efficient querying
+        if start_date:
+            orders_filter = Q(order_date__gte=start_date) & ~Q(status=Order.Status.CANCELLED)
+            inputs_filter = Q(date__gte=start_date)
+            outputs_filter = Q(date__gte=start_date)
+            stock_movements_filter = Q(date__gte=start_date)
+        else:
+            orders_filter = ~Q(status=Order.Status.CANCELLED)  # Exclude cancelled orders
+            inputs_filter = Q()
+            outputs_filter = Q()
+            stock_movements_filter = Q()
         
         # ============================================
-        # 📊 1. FINANCIAL OVERVIEW - ALL TIME (PRIMARY)
+        # 📊 1. ORDERS AGGREGATION
         # ============================================
+        # Calculates: revenue, order counts, status breakdown
+        # Formula: SUM(total_amount), COUNT(*), COUNT(*) per status
         
-        # ALL TIME AGGREGATES
-        orders_aggregate = Order.objects.aggregate(
-            # All-time totals
+        orders_aggregate = Order.objects.filter(orders_filter).aggregate(
+            # Total revenue = sum of all order amounts (billed, not necessarily collected)
             total_revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
+            
+            # Total number of orders
             total_orders=Count('id'),
+            
+            # Average order value = total revenue / number of orders
             avg_order=Coalesce(Avg('total_amount'), Decimal('0.00')),
+            
+            # Order status breakdown - counts per status
             completed=Count('id', filter=Q(status=Order.Status.COMPLETED)),
             in_progress=Count('id', filter=Q(status=Order.Status.IN_PROGRESS)),
             pending=Count('id', filter=Q(status=Order.Status.PENDING)),
             cancelled=Count('id', filter=Q(status=Order.Status.CANCELLED)),
-            # Recent period for comparison
-            today_orders=Count('id', filter=Q(order_date__date=today)),
-            today_revenue=Coalesce(Sum('total_amount', filter=Q(order_date__date=today)), Decimal('0.00')),
-            month_orders=Count('id', filter=Q(order_date__gte=month_start)),
-            month_revenue=Coalesce(Sum('total_amount', filter=Q(order_date__gte=month_start)), Decimal('0.00')),
-            year_orders=Count('id', filter=Q(order_date__gte=year_start)),
-            year_revenue=Coalesce(Sum('total_amount', filter=Q(order_date__gte=year_start)), Decimal('0.00')),
-            recent_orders=Count('id', filter=Q(order_date__gte=recent_start)),
-            recent_revenue=Coalesce(Sum('total_amount', filter=Q(order_date__gte=recent_start)), Decimal('0.00')),
         )
         
-        inputs_aggregate = Input.objects.aggregate(
-            # All-time totals
+        # ============================================
+        # 💰 2. INPUTS AGGREGATION
+        # ============================================
+        # Calculates: total money IN, by category
+        # Inputs represent money coming INTO the business
+        
+        inputs_aggregate = Input.objects.filter(inputs_filter).aggregate(
+            # Total money received from all sources
             total_inputs=Coalesce(Sum('amount'), Decimal('0.00')),
+            
+            # Money collected from clients for orders (actual revenue collection)
             client_payments=Coalesce(Sum('amount', filter=Q(type=Input.Type.CLIENT_PAYMENT)), Decimal('0.00')),
+            
+            # Money deposited to shop (cash injections, loans, etc.)
             shop_deposits=Coalesce(Sum('amount', filter=Q(type=Input.Type.SHOP_DEPOSIT)), Decimal('0.00')),
-            total_transactions=Count('id'),
-            # Recent period for comparison
-            today_inputs=Coalesce(Sum('amount', filter=Q(date__date=today)), Decimal('0.00')),
-            today_transactions=Count('id', filter=Q(date__date=today)),
-            week_inputs=Coalesce(Sum('amount', filter=Q(date__gte=week_start)), Decimal('0.00')),
-            week_transactions=Count('id', filter=Q(date__gte=week_start)),
-            month_inputs=Coalesce(Sum('amount', filter=Q(date__gte=month_start)), Decimal('0.00')),
-            month_transactions=Count('id', filter=Q(date__gte=month_start)),
-            year_inputs=Coalesce(Sum('amount', filter=Q(date__gte=year_start)), Decimal('0.00')),
-            year_transactions=Count('id', filter=Q(date__gte=year_start)),
-            recent_inputs=Coalesce(Sum('amount', filter=Q(date__gte=recent_start)), Decimal('0.00')),
-            recent_collected=Coalesce(Sum('amount', filter=Q(type=Input.Type.CLIENT_PAYMENT, date__gte=recent_start)), Decimal('0.00')),
         )
         
-        outputs_aggregate = Output.objects.aggregate(
-            # All-time totals
+        # ============================================
+        # 💸 3. OUTPUTS AGGREGATION
+        # ============================================
+        # Calculates: total money OUT, by category
+        # Outputs represent money going OUT of the business
+        
+        outputs_aggregate = Output.objects.filter(outputs_filter).aggregate(
+            # Total expenses - all money spent
             total_outputs=Coalesce(Sum('amount'), Decimal('0.00')),
+            
+            # Money withdrawn by owner/management
             withdrawals=Coalesce(Sum('amount', filter=Q(type=Output.Type.WITHDRAWAL)), Decimal('0.00')),
+            withdrawals_count=Count('id', filter=Q(type=Output.Type.WITHDRAWAL)),
+            
+            # Payments made to suppliers for goods/services
             supplier_payments=Coalesce(Sum('amount', filter=Q(type=Output.Type.SUPPLIER_PAYMENT)), Decimal('0.00')),
+            supplier_payments_count=Count('id', filter=Q(type=Output.Type.SUPPLIER_PAYMENT)),
+            
+            # Consumable supplies (paper, ink, etc.)
             consumables=Coalesce(Sum('amount', filter=Q(type=Output.Type.CONSUMABLE)), Decimal('0.00')),
+            consumables_count=Count('id', filter=Q(type=Output.Type.CONSUMABLE)),
+            
+            # Global stock purchases (inventory bought for general use)
             stock_purchases=Coalesce(Sum('amount', filter=Q(type=Output.Type.GLOBAL_STOCK_PURCHASE)), Decimal('0.00')),
-            total_transactions=Count('id'),
-            # Recent period for comparison
-            today_outputs=Coalesce(Sum('amount', filter=Q(date__date=today)), Decimal('0.00')),
-            today_transactions=Count('id', filter=Q(date__date=today)),
-            week_outputs=Coalesce(Sum('amount', filter=Q(date__gte=week_start)), Decimal('0.00')),
-            week_transactions=Count('id', filter=Q(date__gte=week_start)),
-            month_outputs=Coalesce(Sum('amount', filter=Q(date__gte=month_start)), Decimal('0.00')),
-            month_transactions=Count('id', filter=Q(date__gte=month_start)),
-            year_outputs=Coalesce(Sum('amount', filter=Q(date__gte=year_start)), Decimal('0.00')),
-            year_transactions=Count('id', filter=Q(date__gte=year_start)),
-            recent_outputs=Coalesce(Sum('amount', filter=Q(date__gte=recent_start)), Decimal('0.00')),
-        )
-        
-        order_outputs_aggregate = OrderOutput.objects.aggregate(
-            # All-time totals
-            total_expenses=Coalesce(Sum('amount'), Decimal('0.00')),
-            # Recent period for comparison
-            today_expenses=Coalesce(Sum('amount', filter=Q(created_at__date=today)), Decimal('0.00')),
-            month_expenses=Coalesce(Sum('amount', filter=Q(created_at__gte=month_start)), Decimal('0.00')),
-            year_expenses=Coalesce(Sum('amount', filter=Q(created_at__gte=year_start)), Decimal('0.00')),
-            recent_expenses=Coalesce(Sum('amount', filter=Q(created_at__gte=recent_start)), Decimal('0.00')),
+            stock_purchases_count=Count('id', filter=Q(type=Output.Type.GLOBAL_STOCK_PURCHASE)),
+            
+            # Stock used for specific client orders
+            client_stock_usage=Coalesce(Sum('amount', filter=Q(type=Output.Type.CLIENT_STOCK_USAGE)), Decimal('0.00')),
+            client_stock_usage_count=Count('id', filter=Q(type=Output.Type.CLIENT_STOCK_USAGE)),
+            
+            # Other miscellaneous expenses
+            other_expenses=Coalesce(Sum('amount', filter=Q(type=Output.Type.OTHER_EXPENSE)), Decimal('0.00')),
+            other_expenses_count=Count('id', filter=Q(type=Output.Type.OTHER_EXPENSE)),
         )
         
         # ============================================
-        # CALCULATE ALL-TIME FINANCIALS (PRIMARY)
+        # 🧮 4. FINANCIAL CALCULATIONS
         # ============================================
+        # Derives key financial metrics from raw data
         
-        # All-time values
+        # Total revenue billed (may not be collected yet)
         total_revenue = orders_aggregate['total_revenue']
+        
+        # Total revenue actually collected in cash
         total_collected = inputs_aggregate['client_payments']
+        
+        # Outstanding debt = billed but not collected
+        # Formula: Outstanding = Revenue - Collected
         total_outstanding = total_revenue - total_collected
         
-        # ✅ Total benefits = Total Inputs - Total Outputs
-        total_inputs = inputs_aggregate['total_inputs']
-        total_outputs_spent = outputs_aggregate['total_outputs']
-        total_benefits = total_inputs - total_outputs_spent
+        # Total business expenses
+        total_expenses = outputs_aggregate['total_outputs']
         
-        # Order-specific expenses
-        total_order_expenses = order_outputs_aggregate['total_expenses']
+        # Actual profit = money in minus money out
+        # Formula: Actual Profit = Collected - Expenses
+        # Note: Uses 'collected' not 'revenue' because uncollected revenue isn't cash yet
+        actual_profit = total_collected - total_expenses
         
-        # Profit margin
-        profit_margin = (total_benefits / total_inputs * Decimal('100')) if total_inputs > 0 else Decimal('0.00')
+        # Expected profit = total revenue minus expenses
+        # Formula: Expected Profit = Revenue - Expenses
+        # Note: Uses 'revenue' because it includes all billed amounts, even if not collected yet
+        expected_profit = total_revenue - total_expenses
         
-        # Cash in hand
-        cash_in_hand = total_benefits
+        # Actual profit margin = actual profit as % of collected revenue
+        # Formula: (Actual Profit / Collected) × 100
+        actual_profit_margin = (actual_profit / total_collected * Decimal('100')) if total_collected > 0 else Decimal('0.00')
+        
+        # Expected profit margin = expected profit as % of total revenue
+        # Formula: (Expected Profit / Revenue) × 100
+        expected_profit_margin = (expected_profit / total_revenue * Decimal('100')) if total_revenue > 0 else Decimal('0.00')
+        
+        # Cash in hand = all money in minus all money out
+        # Formula: Cash = Total Inputs - Total Outputs
+        # Includes both client payments AND shop deposits
+        cash_in_hand = inputs_aggregate['total_inputs'] - total_expenses
+        
+        # ============================================
+        # 📊 5. FINANCIAL OVERVIEW (ESSENTIAL ONLY)
+        # ============================================
         
         financial_overview = {
-            # ============ ALL-TIME DATA (PRIMARY) ============
-            'all_time': {
-                'total_revenue': total_revenue,
-                'total_collected': total_collected,
-                'total_outstanding': total_outstanding,
-                'collection_rate': round((total_collected / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,
-                'total_inputs': total_inputs,
-                'total_outputs': total_outputs_spent,
-                'total_benefits': total_benefits,
-                'total_order_expenses': total_order_expenses,
-                'profit_margin': round(profit_margin, 2),
-                'cash_in_hand': cash_in_hand,
-                'total_orders': orders_aggregate['total_orders'],
-                'total_input_transactions': inputs_aggregate['total_transactions'],
-                'total_output_transactions': outputs_aggregate['total_transactions'],
-            },
+            'period': period_label,
             
-            # ============ TODAY (FOR ADVANCEMENT) ============
-            'today': {
-                'revenue': orders_aggregate['today_revenue'],
-                'orders_count': orders_aggregate['today_orders'],
-                'inputs': inputs_aggregate['today_inputs'],
-                'input_transactions': inputs_aggregate['today_transactions'],
-                'outputs': outputs_aggregate['today_outputs'],
-                'output_transactions': outputs_aggregate['today_transactions'],
-                'expenses': order_outputs_aggregate['today_expenses'],
-                'net_profit': inputs_aggregate['today_inputs'] - outputs_aggregate['today_outputs'],
-            },
+            # Core Revenue Metrics
+            'total_revenue': total_revenue,  # Total billed
+            'total_collected': total_collected,  # Total cash received from clients
+            'total_outstanding': total_outstanding,  # Unpaid invoices
+            'collection_rate': round((total_collected / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,  # % collected
             
-            # ============ THIS MONTH (FOR ADVANCEMENT) ============
-            'this_month': {
-                'revenue': orders_aggregate['month_revenue'],
-                'orders_count': orders_aggregate['month_orders'],
-                'inputs': inputs_aggregate['month_inputs'],
-                'input_transactions': inputs_aggregate['month_transactions'],
-                'outputs': outputs_aggregate['month_outputs'],
-                'output_transactions': outputs_aggregate['month_transactions'],
-                'expenses': order_outputs_aggregate['month_expenses'],
-                'net_profit': inputs_aggregate['month_inputs'] - outputs_aggregate['month_outputs'],
-                'percentage_of_total_revenue': round((orders_aggregate['month_revenue'] / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,
-            },
+            # Core Expense & Profit
+            'total_expenses': total_expenses,  # All money spent
+            'actual_profit': actual_profit,  # Real cash profit
+            'expected_profit': expected_profit,  # Projected profit
+            'actual_profit_margin': round(actual_profit_margin, 2),  # Real profit as % of collected
+            'expected_profit_margin': round(expected_profit_margin, 2),  # Projected profit as % of billed
             
-            # ============ THIS YEAR (FOR ADVANCEMENT) ============
-            'this_year': {
-                'revenue': orders_aggregate['year_revenue'],
-                'orders_count': orders_aggregate['year_orders'],
-                'inputs': inputs_aggregate['year_inputs'],
-                'input_transactions': inputs_aggregate['year_transactions'],
-                'outputs': outputs_aggregate['year_outputs'],
-                'output_transactions': outputs_aggregate['year_transactions'],
-                'expenses': order_outputs_aggregate['year_expenses'],
-                'net_profit': inputs_aggregate['year_inputs'] - outputs_aggregate['year_outputs'],
-                'percentage_of_total_revenue': round((orders_aggregate['year_revenue'] / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,
-            },
+            # Cash Position
+            'cash_in_hand': cash_in_hand,  # Available liquidity
             
-            # ============ RECENT PERIOD (FOR ADVANCEMENT) ============
-            'recent_period': {
-                'days': days,
-                'revenue': orders_aggregate['recent_revenue'],
-                'orders_count': orders_aggregate['recent_orders'],
-                'collected': inputs_aggregate['recent_collected'],
-                'inputs': inputs_aggregate['recent_inputs'],
-                'outputs': outputs_aggregate['recent_outputs'],
-                'expenses': order_outputs_aggregate['recent_expenses'],
-                'profit': inputs_aggregate['recent_inputs'] - outputs_aggregate['recent_outputs'],
-                'percentage_of_total_revenue': round((orders_aggregate['recent_revenue'] / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,
-            },
-            
-            # ============ BREAKDOWN BY TYPE ============
-            'input_breakdown': {
-                'client_payments': inputs_aggregate['client_payments'],
-                'shop_deposits': inputs_aggregate['shop_deposits'],
-            },
-            'output_breakdown': {
-                'withdrawals': outputs_aggregate['withdrawals'],
-                'supplier_payments': outputs_aggregate['supplier_payments'],
-                'consumables': outputs_aggregate['consumables'],
-                'stock_purchases': outputs_aggregate['stock_purchases'],
+            # Expense Breakdown - where money is going (amount + count)
+            'expense_breakdown': {
+                'withdrawals': {
+                    'amount': outputs_aggregate['withdrawals'],
+                    'count': outputs_aggregate['withdrawals_count']
+                },
+                'supplier_payments': {
+                    'amount': outputs_aggregate['supplier_payments'],
+                    'count': outputs_aggregate['supplier_payments_count']
+                },
+                'consumables': {
+                    'amount': outputs_aggregate['consumables'],
+                    'count': outputs_aggregate['consumables_count']
+                },
+                'stock_purchases': {
+                    'amount': outputs_aggregate['stock_purchases'],
+                    'count': outputs_aggregate['stock_purchases_count']
+                },
+                'client_stock_usage': {
+                    'amount': outputs_aggregate['client_stock_usage'],
+                    'count': outputs_aggregate['client_stock_usage_count']
+                },
+                'other_expenses': {
+                    'amount': outputs_aggregate['other_expenses'],
+                    'count': outputs_aggregate['other_expenses_count']
+                },
             }
         }
 
         # ============================================
-        # 📈 2. ORDERS ANALYTICS - ALREADY AGGREGATED ABOVE
+        # 📈 6. ORDERS ANALYTICS (SIMPLIFIED)
         # ============================================
+        # Analyzes order payment status
+        # For each order, calculates total paid and compares to order total
         
-        # Calculate payment status by summing CLIENT_PAYMENT inputs per order
-        # Since paid_amount is a property, we need to count it differently
-        orders_with_payments = Order.objects.annotate(
+        orders_with_payments = Order.objects.filter(orders_filter).annotate(
+            # For each order, sum all client payments linked to it
             total_paid=Coalesce(
                 Sum('payments__amount', filter=Q(payments__type=Input.Type.CLIENT_PAYMENT)),
                 Decimal('0.00')
             )
         ).aggregate(
+            # Fully paid: total_paid >= order.total_amount
             fully_paid=Count('id', filter=Q(total_paid__gte=F('total_amount'))),
+            
+            # Partially paid: 0 < total_paid < order.total_amount
             partially_paid=Count('id', filter=Q(total_paid__gt=0, total_paid__lt=F('total_amount'))),
+            
+            # Unpaid: total_paid = 0
             unpaid=Count('id', filter=Q(total_paid=0)),
         )
         
-        # Top 5 Largest Orders - Optimized with select_related and prefetch
-        top_orders_qs = Order.objects.select_related('client').annotate(
-            expenses=Coalesce(Sum('order_outputs__amount'), Decimal('0.00'))
-        ).order_by('-total_amount')[:5]
-        
-        top_orders = [{
-            'order_number': order.order_number,
-            'client_name': order.client.name,
-            'amount': order.total_amount,
-            'benefit': order.total_amount - order.expenses,
-            'status': order.status,
-            'date': order.order_date,
-        } for order in top_orders_qs]
-        
         orders_analytics = {
             'total_orders': orders_aggregate['total_orders'],
-            'orders_by_status': {
-                'completed': orders_aggregate['completed'],
-                'in_progress': orders_aggregate['in_progress'],
-                'pending': orders_aggregate['pending'],
-                'cancelled': orders_aggregate['cancelled'],
-            },
-            'payment_status': {
-                'fully_paid': orders_with_payments['fully_paid'],
-                'partially_paid': orders_with_payments['partially_paid'],
-                'unpaid': orders_with_payments['unpaid'],
-            },
+            'completed': orders_aggregate['completed'],
+            'in_progress': orders_aggregate['in_progress'],
+            'pending': orders_aggregate['pending'],
+            'fully_paid': orders_with_payments['fully_paid'],
+            'partially_paid': orders_with_payments['partially_paid'],
+            'unpaid': orders_with_payments['unpaid'],
             'average_order_value': round(orders_aggregate['avg_order'], 2),
-            'recent_orders_7_days': orders_aggregate['recent_orders'],
-            'top_orders': top_orders,
         }
         
         # ============================================
-        # 👥 3. CLIENT ANALYTICS - OPTIMIZED
+        # 👥 7. CLIENT ANALYTICS (TOP 5 & DEBTORS)
         # ============================================
         
         clients_aggregate = Client.objects.filter(is_active=True).aggregate(
             total=Count('id'),
-            new=Count('id', filter=Q(client_type=Client.Type.NEW)),
-            old=Count('id', filter=Q(client_type=Client.Type.OLD)),
         )
         
-        # Top 5 Clients - Single query with annotations
+        # Top 5 clients by revenue
+        # Ranks clients by how much total revenue they generated
+        if start_date:
+            client_revenue_filter = Q(orders__order_date__gte=start_date)
+        else:
+            client_revenue_filter = Q()
+        
         top_clients_qs = Client.objects.filter(
             is_active=True
         ).annotate(
-            revenue=Coalesce(Sum('orders__total_amount'), Decimal('0.00')),
-            orders_count=Count('orders')
-        ).filter(revenue__gt=0).order_by('-revenue')[:5]
+            # Sum all order totals for this client
+            revenue=Coalesce(Sum('orders__total_amount', filter=client_revenue_filter), Decimal('0.00')),
+            # Count orders for this client
+            orders_count=Count('orders', filter=client_revenue_filter)
+        ).filter(revenue__gt=0).order_by('-revenue')[:5]  # Top 5 by revenue
         
         top_clients = [{
             'id': client.id,
@@ -286,15 +474,24 @@ class ComprehensiveDashboardView(APIView):
             'orders_count': client.orders_count,
         } for client in top_clients_qs]
         
-        # Top 10 Debtors - Optimized with annotations
+        # Top 10 debtors (clients who owe the most money)
+        # Calculation: (Total Billed to Client) - (Total Paid by Client)
         clients_with_debt_qs = Client.objects.filter(
             is_active=True
         ).annotate(
-            total_orders=Coalesce(Sum('orders__total_amount'), Decimal('0.00')),
-            total_paid=Coalesce(Sum('orders__payments__amount', filter=Q(orders__payments__type=Input.Type.CLIENT_PAYMENT)), Decimal('0.00'))
-        ).annotate(
-            outstanding=F('total_orders') - F('total_paid')
-        ).filter(outstanding__gt=0).order_by('-outstanding')[:10]
+            # Total amount billed to this client (all their orders)
+            total_owed=Coalesce(Sum('orders__total_amount'), Decimal('0.00')),
+            
+            # Total amount paid by this client (all their payments)
+            total_paid=Coalesce(
+                Sum('orders__payments__amount', 
+                    filter=Q(orders__payments__type=Input.Type.CLIENT_PAYMENT)), 
+                Decimal('0.00')
+            ),
+            
+            # Outstanding balance = owed - paid
+            outstanding=F('total_owed') - F('total_paid')
+        ).filter(outstanding__gt=0).order_by('-outstanding')[:10]  # Top 10 debtors
         
         clients_with_debt = [{
             'name': client.name,
@@ -303,280 +500,245 @@ class ComprehensiveDashboardView(APIView):
         
         client_analytics = {
             'total_clients': clients_aggregate['total'],
-            'new_clients': clients_aggregate['new'],
-            'old_clients': clients_aggregate['old'],
             'top_clients': top_clients,
-            'clients_with_outstanding': clients_with_debt,
+            'top_debtors': clients_with_debt,
         }
         
         # ============================================
-        # 💰 4. CASH FLOW ANALYTICS - ALREADY AGGREGATED
-        # ============================================
-        
-        cash_flow = {
-            'cash_in_hand': cash_in_hand,
-            'today': {
-                'inputs': inputs_aggregate['today_inputs'],
-                'outputs': outputs_aggregate['today_outputs'],
-                'net': inputs_aggregate['today_inputs'] - outputs_aggregate['today_outputs'],
-            },
-            'this_week': {
-                'inputs': inputs_aggregate['week_inputs'],
-                'outputs': outputs_aggregate['week_outputs'],
-                'net': inputs_aggregate['week_inputs'] - outputs_aggregate['week_outputs'],
-            },
-            'this_month': {
-                'inputs': inputs_aggregate['month_inputs'],
-                'outputs': outputs_aggregate['month_outputs'],
-                'net': inputs_aggregate['month_inputs'] - outputs_aggregate['month_outputs'],
-            },
-            'this_year': {
-                'inputs': inputs_aggregate['year_inputs'],
-                'outputs': outputs_aggregate['year_outputs'],
-                'net': inputs_aggregate['year_inputs'] - outputs_aggregate['year_outputs'],
-            },
-            'input_breakdown': {
-                'client_payments': inputs_aggregate['client_payments'],
-                'shop_deposits': inputs_aggregate['shop_deposits'],
-            },
-            'output_breakdown': {
-                'withdrawals': outputs_aggregate['withdrawals'],
-                'supplier_payments': outputs_aggregate['supplier_payments'],
-                'consumables': outputs_aggregate['consumables'],
-                'stock_purchases': outputs_aggregate['stock_purchases'],
-            }
-        }
-        
-        # ============================================
-        # 📦 5. INVENTORY & STOCK ANALYTICS - OPTIMIZED
+        # 📦 8. INVENTORY ANALYTICS (CRITICAL ONLY)
         # ============================================
         
         products_aggregate = Product.objects.filter(is_active=True).aggregate(
-            total=Count('id'),
-            out_of_stock=Count('id', filter=Q(current_quantity=0)),
+            total=Count('id'),  # Total active products
+            out_of_stock=Count('id', filter=Q(current_quantity=0)),  # No stock left
+            low_stock=Count('id', filter=Q(current_quantity__lt=10, current_quantity__gt=0)),  # Low stock warning
         )
         
-        # Low stock items - limit to 10 for performance
-        low_stock_qs = Product.objects.filter(
+        # Get list of products with low stock
+        low_stock_items = list(Product.objects.filter(
             is_active=True, 
             current_quantity__lt=10,
             current_quantity__gt=0
-        ).values('name', 'current_quantity', 'unit')[:10]
+        ).values('name', 'current_quantity', 'unit')[:10])
         
-        low_stock = [{
-            'name': item['name'],
-            'quantity': item['current_quantity'],
-            'unit': dict(Product.Unit.choices)[item['unit']],
-        } for item in low_stock_qs]
-        
-        # Total stock value - optimized with subquery
+        # Stock valuation - calculate total value of inventory
+        # Method: For each product, calculate average cost and multiply by current quantity
         stock_value_qs = Product.objects.filter(
             is_active=True
         ).annotate(
-            latest_price=Coalesce(
-                Subquery(
-                    StockMovement.objects.filter(
-                        product=OuterRef('pk')
-                    ).order_by('-date').values('price')[:1]
+            # Total cost of all stock purchases (IN movements only)
+            # Formula: SUM(quantity × price) for each stock IN
+            total_cost=Coalesce(
+                Sum(
+                    F('stock_movements__quantity') * F('stock_movements__price'),
+                    filter=Q(stock_movements__movement_type=StockMovement.MovementType.IN)
                 ),
                 Decimal('0.00')
-            )
-        ).annotate(
-            value=F('current_quantity') * F('latest_price')
+            ),
+            
+            # Total quantity purchased (IN movements only)
+            total_in_quantity=Coalesce(
+                Sum('stock_movements__quantity',
+                    filter=Q(stock_movements__movement_type=StockMovement.MovementType.IN)),
+                Decimal('0.00')
+            ),
+            
+            # Average cost per unit = total cost / total quantity
+            # This is the weighted average cost
+            avg_cost=Case(
+                When(total_in_quantity__gt=0, 
+                     then=F('total_cost') / F('total_in_quantity')),
+                default=Decimal('0.00'),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            ),
+            
+            # Current stock value = current quantity × average cost
+            value=F('current_quantity') * F('avg_cost')
         ).aggregate(
+            # Total value of all inventory
             total=Coalesce(Sum('value'), Decimal('0.00'))
         )
         
-        # Recent movements - select_related for efficiency
-        recent_movements_qs = StockMovement.objects.select_related(
-            'product', 'order'
-        ).order_by('-date')[:10]
-        
-        recent_stock_movements = [{
-            'product': m.product.name,
-            'type': m.movement_type,
-            'quantity': m.quantity,
-            'price': m.price,
-            'date': m.date,
-            'order_number': m.order.order_number if m.order else None,
-        } for m in recent_movements_qs]
-        
         inventory_analytics = {
             'total_products': products_aggregate['total'],
-            'low_stock_items': low_stock,
-            'out_of_stock_count': products_aggregate['out_of_stock'],
+            'out_of_stock': products_aggregate['out_of_stock'],
+            'low_stock': products_aggregate['low_stock'],
+            'low_stock_items': low_stock_items,
             'total_stock_value': round(stock_value_qs['total'], 2),
-            'recent_movements': recent_stock_movements,
         }
         
         # ============================================
-        # 🏭 6. SUPPLIER ANALYTICS - OPTIMIZED
+        # 📅 9. TIME-BASED TRENDS
         # ============================================
+        # Shows how metrics change over time
+        # Granularity depends on selected period
         
-        suppliers_aggregate = Supplier.objects.filter(is_active=True).aggregate(
-            total=Count('id')
-        )
+        trends = []
         
-        # Top suppliers - single query with annotation
-        top_suppliers_qs = Supplier.objects.filter(
-            is_active=True
-        ).annotate(
-            total_paid=Coalesce(Sum('outputs__amount', filter=Q(outputs__type=Output.Type.SUPPLIER_PAYMENT)), Decimal('0.00'))
-        ).filter(total_paid__gt=0).order_by('-total_paid')[:5]
+        if period == 'month':
+            # Daily trends for current month
+            # Groups data by each day, shows daily performance
+            
+            daily_orders = list(Order.objects.filter(orders_filter).annotate(
+                day=TruncDay('order_date')  # Truncate to day level
+            ).values('day').annotate(
+                revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
+                count=Count('id')
+            ).order_by('day'))
+            
+            daily_inputs = list(Input.objects.filter(inputs_filter).annotate(
+                day=TruncDay('date')
+            ).values('day').annotate(
+                collected=Coalesce(Sum('amount', filter=Q(type=Input.Type.CLIENT_PAYMENT)), Decimal('0.00')),
+                total_in=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('day'))
+            
+            daily_outputs = list(Output.objects.filter(outputs_filter).annotate(
+                day=TruncDay('date')
+            ).values('day').annotate(
+                total_out=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('day'))
+            
+            # Combine all dates from orders, inputs, and outputs
+            all_dates = set()
+            for item in daily_orders:
+                all_dates.add(item['day'])
+            for item in daily_inputs:
+                all_dates.add(item['day'])
+            for item in daily_outputs:
+                all_dates.add(item['day'])
+            
+            # Create lookup dictionaries for fast access
+            orders_dict = {item['day']: item for item in daily_orders}
+            inputs_dict = {item['day']: item for item in daily_inputs}
+            outputs_dict = {item['day']: item['total_out'] for item in daily_outputs}
+            
+            # Build trend data for each day
+            for day in sorted(all_dates):
+                order_data = orders_dict.get(day, {'revenue': Decimal('0.00'), 'count': 0})
+                input_data = inputs_dict.get(day, {'collected': Decimal('0.00'), 'total_in': Decimal('0.00')})
+                outputs = outputs_dict.get(day, Decimal('0.00'))
+                
+                trends.append({
+                    'period': day.strftime('%Y-%m-%d'),
+                    'revenue': order_data['revenue'],  # Billed
+                    'collected': input_data['collected'],  # Cash received
+                    'expenses': outputs,  # Cash spent
+                    'profit': input_data['collected'] - outputs,  # Daily profit
+                    'orders': order_data['count'],  # Number of orders
+                })
         
-        top_suppliers = [{
-            'name': supplier.name,
-            'total_paid': supplier.total_paid,
-            'phone': supplier.phone,
-        } for supplier in top_suppliers_qs]
+        elif period == 'year':
+            # Monthly trends for current year
+            # Groups data by each month, shows monthly performance
+            
+            monthly_orders = list(Order.objects.filter(orders_filter).annotate(
+                month=TruncMonth('order_date')  # Truncate to month level
+            ).values('month').annotate(
+                revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
+                count=Count('id')
+            ).order_by('month'))
+            
+            monthly_inputs = list(Input.objects.filter(inputs_filter).annotate(
+                month=TruncMonth('date')
+            ).values('month').annotate(
+                collected=Coalesce(Sum('amount', filter=Q(type=Input.Type.CLIENT_PAYMENT)), Decimal('0.00')),
+                total_in=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('month'))
+            
+            monthly_outputs = list(Output.objects.filter(outputs_filter).annotate(
+                month=TruncMonth('date')
+            ).values('month').annotate(
+                total_out=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('month'))
+            
+            # Combine all months
+            all_months = set()
+            for item in monthly_orders:
+                all_months.add(item['month'])
+            for item in monthly_inputs:
+                all_months.add(item['month'])
+            for item in monthly_outputs:
+                all_months.add(item['month'])
+            
+            orders_dict = {item['month']: item for item in monthly_orders}
+            inputs_dict = {item['month']: item for item in monthly_inputs}
+            outputs_dict = {item['month']: item['total_out'] for item in monthly_outputs}
+            
+            for month in sorted(all_months):
+                order_data = orders_dict.get(month, {'revenue': Decimal('0.00'), 'count': 0})
+                input_data = inputs_dict.get(month, {'collected': Decimal('0.00'), 'total_in': Decimal('0.00')})
+                outputs = outputs_dict.get(month, Decimal('0.00'))
+                
+                trends.append({
+                    'period': month.strftime('%B %Y'),
+                    'revenue': order_data['revenue'],
+                    'collected': input_data['collected'],
+                    'expenses': outputs,
+                    'profit': input_data['collected'] - outputs,
+                    'orders': order_data['count'],
+                })
         
-        supplier_analytics = {
-            'total_suppliers': suppliers_aggregate['total'],
-            'top_suppliers': top_suppliers,
-        }
+        elif period == 'all_time':
+            # Yearly trends for entire history
+            # Groups data by each year, shows yearly performance
+            
+            yearly_orders = list(Order.objects.annotate(
+                year=TruncYear('order_date')  # Truncate to year level
+            ).values('year').annotate(
+                revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
+                count=Count('id')
+            ).order_by('year'))
+            
+            yearly_inputs = list(Input.objects.annotate(
+                year=TruncYear('date')
+            ).values('year').annotate(
+                collected=Coalesce(Sum('amount', filter=Q(type=Input.Type.CLIENT_PAYMENT)), Decimal('0.00')),
+                total_in=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('year'))
+            
+            yearly_outputs = list(Output.objects.annotate(
+                year=TruncYear('date')
+            ).values('year').annotate(
+                total_out=Coalesce(Sum('amount'), Decimal('0.00'))
+            ).order_by('year'))
+            
+            # Combine all years
+            all_years = set()
+            for item in yearly_orders:
+                all_years.add(item['year'])
+            for item in yearly_inputs:
+                all_years.add(item['year'])
+            for item in yearly_outputs:
+                all_years.add(item['year'])
+            
+            orders_dict = {item['year']: item for item in yearly_orders}
+            inputs_dict = {item['year']: item for item in yearly_inputs}
+            outputs_dict = {item['year']: item['total_out'] for item in yearly_outputs}
+            
+            for year in sorted(all_years):
+                order_data = orders_dict.get(year, {'revenue': Decimal('0.00'), 'count': 0})
+                input_data = inputs_dict.get(year, {'collected': Decimal('0.00'), 'total_in': Decimal('0.00')})
+                outputs = outputs_dict.get(year, Decimal('0.00'))
+                
+                trends.append({
+                    'period': year.strftime('%Y'),
+                    'revenue': order_data['revenue'],
+                    'collected': input_data['collected'],
+                    'expenses': outputs,
+                    'profit': input_data['collected'] - outputs,
+                    'orders': order_data['count'],
+                })
         
         # ============================================
-        # 👤 7. USER ACTIVITY ANALYTICS - OPTIMIZED
+        # 🚨 10. ALERTS & WARNINGS
         # ============================================
-        
-        users_aggregate = User.objects.filter(is_active=True).aggregate(
-            total=Count('id'),
-            admin=Count('id', filter=Q(role=User.Role.ADMIN)),
-            responsible=Count('id', filter=Q(role=User.Role.RESPONSIBLE)),
-            simple_user=Count('id', filter=Q(role=User.Role.SIMPLE_USER)),
-        )
-        
-        # Most active users - single query with annotation
-        active_users_qs = User.objects.filter(is_active=True).annotate(
-            input_count=Count('inputs'),
-            output_count=Count('outputs'),
-            total_transactions=F('input_count') + F('output_count')
-        ).filter(total_transactions__gt=0).order_by('-total_transactions')[:5]
-        
-        active_users = [{
-            'username': user.username,
-            'full_name': user.full_name,
-            'role': user.get_role_display(),
-            'transactions': user.total_transactions,
-        } for user in active_users_qs]
-        
-        user_analytics = {
-            'total_users': users_aggregate['total'],
-            'users_by_role': {
-                'admin': users_aggregate['admin'],
-                'responsible': users_aggregate['responsible'],
-                'simple_user': users_aggregate['simple_user'],
-            },
-            'most_active_users': active_users,
-        }
-        
-        # ============================================
-        # 📅 8. TIME-BASED TRENDS - OPTIMIZED WITH SINGLE QUERY
-        # ============================================
-        
-        # Calculate 6 months of trends in one query using TruncMonth
-        six_months_ago = timezone.now() - timedelta(days=180)
-        
-        monthly_orders = Order.objects.filter(
-            order_date__gte=six_months_ago
-        ).annotate(
-            month=TruncMonth('order_date')
-        ).values('month').annotate(
-            revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
-            count=Count('id')
-        ).order_by('month')
-        
-        monthly_inputs = Input.objects.filter(
-            date__gte=six_months_ago
-        ).annotate(
-            month=TruncMonth('date')
-        ).values('month').annotate(
-            inputs=Coalesce(Sum('amount'), Decimal('0.00'))
-        ).order_by('month')
-        
-        monthly_outputs = Output.objects.filter(
-            date__gte=six_months_ago
-        ).annotate(
-            month=TruncMonth('date')
-        ).values('month').annotate(
-            outputs=Coalesce(Sum('amount'), Decimal('0.00'))
-        ).order_by('month')
-        
-        monthly_expenses = OrderOutput.objects.filter(
-            created_at__gte=six_months_ago
-        ).annotate(
-            month=TruncMonth('created_at')
-        ).values('month').annotate(
-            expenses=Coalesce(Sum('amount'), Decimal('0.00'))
-        ).order_by('month')
-        
-        # Merge the data
-        inputs_dict = {item['month']: item['inputs'] for item in monthly_inputs}
-        outputs_dict = {item['month']: item['outputs'] for item in monthly_outputs}
-        expenses_dict = {item['month']: item['expenses'] for item in monthly_expenses}
-        
-        monthly_trends = []
-        for item in monthly_orders:
-            month = item['month']
-            inputs = inputs_dict.get(month, Decimal('0.00'))
-            outputs = outputs_dict.get(month, Decimal('0.00'))
-            expenses = expenses_dict.get(month, Decimal('0.00'))
-            monthly_trends.append({
-                'month': month.strftime('%Y-%m'),
-                'revenue': item['revenue'],
-                'inputs': inputs,
-                'outputs': outputs,
-                'expenses': expenses,
-                'profit': inputs - outputs,  # True profit = inputs - outputs
-                'orders_count': item['count'],
-            })
-        
-        # Ensure we have last 6 months even if no data
-        if len(monthly_trends) < 6:
-            for i in range(6 - len(monthly_trends)):
-                month_date = (timezone.now() - timedelta(days=(5-i)*30)).replace(day=1)
-                if not any(t['month'] == month_date.strftime('%Y-%m') for t in monthly_trends):
-                    monthly_trends.insert(0, {
-                        'month': month_date.strftime('%Y-%m'),
-                        'revenue': Decimal('0.00'),
-                        'inputs': Decimal('0.00'),
-                        'outputs': Decimal('0.00'),
-                        'expenses': Decimal('0.00'),
-                        'profit': Decimal('0.00'),
-                        'orders_count': 0,
-                    })
-        
-        monthly_trends = monthly_trends[-6:]  # Keep only last 6
-        
-        # ============================================
-        # 🎯 9. KEY PERFORMANCE INDICATORS - OPTIMIZED
-        # ============================================
-        
-        # Customer retention - optimized query
-        repeat_clients = Client.objects.filter(
-            is_active=True
-        ).annotate(
-            order_count=Count('orders')
-        ).filter(order_count__gt=1).count()
-        
-        total_clients = clients_aggregate['total']
-        retention_rate = (Decimal(repeat_clients) / Decimal(total_clients) * Decimal('100')) if total_clients > 0 else Decimal('0')
-        
-        kpis = {
-            'profit_margin': round(profit_margin, 2),
-            'collection_rate': round((total_collected / total_revenue * Decimal('100')), 2) if total_revenue > 0 else 0,
-            'average_order_value': round(orders_aggregate['avg_order'], 2),
-            'customer_retention_rate': round(retention_rate, 2),
-            'orders_completion_rate': round((Decimal(orders_aggregate['completed']) / Decimal(orders_aggregate['total_orders']) * Decimal('100')), 2) if orders_aggregate['total_orders'] > 0 else 0,
-            'cash_flow_health': 'Positive' if cash_in_hand > 0 else 'Negative',
-        }
-        
-        # ============================================
-        # 🚨 10. ALERTS & WARNINGS - OPTIMIZED
-        # ============================================
+        # Business health indicators - flags potential issues
         
         alerts = []
         
+        # Alert 1: Low cash warning
+        # Trigger: Cash in hand < 10,000 DA
         if cash_in_hand < Decimal('10000'):
             alerts.append({
                 'type': 'warning',
@@ -584,13 +746,17 @@ class ComprehensiveDashboardView(APIView):
                 'message': f'Low cash in hand: {cash_in_hand} DA',
             })
         
-        if total_outstanding > total_revenue * Decimal('0.3'):
+        # Alert 2: High outstanding debt
+        # Trigger: Unpaid invoices > 30% of total revenue
+        if total_revenue > 0 and total_outstanding > total_revenue * Decimal('0.3'):
             alerts.append({
                 'type': 'warning',
                 'category': 'payments',
                 'message': f'High outstanding payments: {total_outstanding} DA ({round(total_outstanding/total_revenue*Decimal("100"), 2)}%)',
             })
         
+        # Alert 3: Out of stock products
+        # Trigger: Any products have 0 quantity
         if products_aggregate['out_of_stock'] > 0:
             alerts.append({
                 'type': 'critical',
@@ -598,13 +764,17 @@ class ComprehensiveDashboardView(APIView):
                 'message': f'{products_aggregate["out_of_stock"]} products are out of stock',
             })
         
-        if len(low_stock) > 0:
+        # Alert 4: Low stock products
+        # Trigger: Any products have quantity < 10
+        if products_aggregate['low_stock'] > 0:
             alerts.append({
                 'type': 'warning',
                 'category': 'inventory',
-                'message': f'{len(low_stock)} products have low stock',
+                'message': f'{products_aggregate["low_stock"]} products have low stock',
             })
         
+        # Alert 5: Too many unpaid orders
+        # Trigger: Unpaid orders > 20% of all orders
         if orders_aggregate['total_orders'] > 0 and orders_with_payments['unpaid'] > int(orders_aggregate['total_orders'] * 0.2):
             alerts.append({
                 'type': 'warning',
@@ -612,22 +782,28 @@ class ComprehensiveDashboardView(APIView):
                 'message': f'{orders_with_payments["unpaid"]} orders are completely unpaid',
             })
         
+        # Alert 6: Operating at a loss
+        # Trigger: Net profit is negative
+        if actual_profit < 0:
+            alerts.append({
+                'type': 'critical',
+                'category': 'financial',
+                'message': f'Business is operating at a loss: {actual_profit} DA',
+            })
+        
         # ============================================
-        # 📊 FINAL COMPREHENSIVE RESPONSE
+        # 📊 FINAL RESPONSE
         # ============================================
         
         dashboard_data = {
             'generated_at': timezone.now(),
-            'period_days': days,
+            'period': period,
+            'period_label': period_label,
             'financial_overview': financial_overview,
             'orders_analytics': orders_analytics,
             'client_analytics': client_analytics,
-            'cash_flow': cash_flow,
             'inventory_analytics': inventory_analytics,
-            'supplier_analytics': supplier_analytics,
-            'user_analytics': user_analytics,
-            'monthly_trends': monthly_trends,
-            'kpis': kpis,
+            'trends': trends,
             'alerts': alerts,
         }
         
