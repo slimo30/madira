@@ -7,6 +7,7 @@ import 'package:madira/ui/screens/order_screen.dart';
 import 'package:madira/ui/screens/outputs_list_screen.dart';
 import 'package:madira/ui/screens/products_screen.dart';
 import 'package:madira/ui/screens/workshop_screen.dart';
+import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../widgets/top_bar_widget.dart';
 import '../widgets/side_bar_widget.dart';
@@ -31,14 +32,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // List of screen titles
   final List<String> screenTitles = [
     'Dashboard',
-    'Projects',
     'Orders',
     'Clients',
     'Inputs',
     'Outputs',
     'Workshops',
     'Products',
-    'Inventory',
     'Reports',
     'Users',
   ];
@@ -52,14 +51,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initializeScreens() {
     screens = [
       const DashboardScreen(),
-      const ProjectsScreen(),
       const OrdersScreen(),
       const ClientsScreen(),
       const InputsScreen(),
       const OutputsListScreen(),
       const WorkshopsScreen(),
       const ProductsScreen(),
-      const InventoryScreen(),
       const ReportsScreen(),
       const users_management.UsersScreen(),
     ];
@@ -100,49 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Simple, clean placeholder screens
-class ProjectsScreen extends StatelessWidget {
-  const ProjectsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildSimplePlaceholder(
-      title: 'Projects',
-      subtitle: 'Manage your kitchen fabrication projects',
-      icon: Icons.construction,
-      description:
-          'This section will help you manage all your kitchen fabrication projects, track progress, and coordinate with your team.',
-      features: [
-        'Track project milestones and deadlines',
-        'Manage project budgets and expenses',
-        'Coordinate with team members',
-        'Monitor project progress in real-time',
-      ],
-    );
-  }
-}
-
-class InventoryScreen extends StatelessWidget {
-  const InventoryScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildSimplePlaceholder(
-      title: 'Inventory',
-      subtitle: 'Track materials and supplies',
-      icon: Icons.inventory,
-      description:
-          'Monitor your material stock levels, track usage, and manage supplier relationships.',
-      features: [
-        'Track stock levels in real-time',
-        'Set low stock alerts',
-        'Manage supplier information',
-        'Record material usage per project',
-      ],
     );
   }
 }

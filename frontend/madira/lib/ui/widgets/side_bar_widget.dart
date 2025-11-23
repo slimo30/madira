@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:madira/ui/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../providers/login_provider.dart';
@@ -64,12 +65,7 @@ class SideBarWidget extends StatelessWidget {
                     activeIcon: Icons.dashboard,
                     title: 'Dashboard',
                   ),
-                  _buildSidebarItem(
-                    index: 1,
-                    icon: Icons.construction_outlined,
-                    activeIcon: Icons.construction,
-                    title: 'Projects',
-                  ),
+
                   _buildSidebarItem(
                     index: 2,
                     icon: Icons.receipt_long_outlined,
@@ -82,12 +78,12 @@ class SideBarWidget extends StatelessWidget {
                     activeIcon: Icons.people,
                     title: 'Clients',
                   ),
-                  _buildSidebarItem(
-                    index: 4,
-                    icon: Icons.account_balance_wallet_outlined,
-                    activeIcon: Icons.account_balance_wallet,
-                    title: 'Inputs',
-                  ),
+                  // _buildSidebarItem(
+                  //   index: 4,
+                  //   icon: Icons.account_balance_wallet_outlined,
+                  //   activeIcon: Icons.account_balance_wallet,
+                  //   title: 'Inputs',
+                  // ),
                   _buildSidebarItem(
                     index: 5,
                     icon: Icons.output_outlined,
@@ -106,12 +102,7 @@ class SideBarWidget extends StatelessWidget {
                     activeIcon: Icons.inventory_2,
                     title: 'Products',
                   ),
-                  _buildSidebarItem(
-                    index: 8,
-                    icon: Icons.inventory_outlined,
-                    activeIcon: Icons.inventory,
-                    title: 'Inventory',
-                  ),
+
                   _buildSidebarItem(
                     index: 9,
                     icon: Icons.analytics_outlined,
@@ -172,6 +163,10 @@ class SideBarWidget extends StatelessWidget {
               child: InkWell(
                 onTap: () async {
                   await loginProvider.logout();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(

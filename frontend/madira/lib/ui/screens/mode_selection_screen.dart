@@ -1,8 +1,19 @@
+// ===================================================================
+// lib/ui/screens/mode_selection_screen.dart - WITH LOADING & BACKEND
+// ===================================================================
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-import '../../providers/app_mode_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/colors.dart';
+import '../../services/network_service.dart';
+import '../../services/backend_service.dart';
+import 'backend_setup_screen.dart';
+import 'master_waiting_screen.dart';
+import 'slave_waiting_screen.dart';
 
 class ModeSelectionScreen extends StatefulWidget {
   const ModeSelectionScreen({Key? key}) : super(key: key);
@@ -12,155 +23,126 @@ class ModeSelectionScreen extends StatefulWidget {
 }
 
 class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
-  bool _isLoading = false;
+  bool _isProcessing = false;
+  String _statusMessage = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary.withOpacity(0.1),
-              AppColors.secondary.withOpacity(0.1),
-            ],
-          ),
-        ),
-        child: Center(
-          child: Card(
-            elevation: 8,
-            margin: const EdgeInsets.all(32),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 600),
-              padding: const EdgeInsets.all(48),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Logo/Icon
-                  Icon(
-                    Icons.settings_input_component,
-                    size: 80,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Title
-                  Text(
-                    'Madira Kitchen - Configuration',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-
-                  Text(
-                    'Select how you want to run this application',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Master Mode Card
-                  _buildModeCard(
-                    context: context,
-                    icon: Icons.computer,
-                    title: 'Master Mode',
-                    description:
-                        'Run as the main server with backend. '
-                        'This device will host the database and serve other devices.',
-                    color: AppColors.primary,
-                    onTap: _isLoading ? null : () => _selectMasterMode(context),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Slave Mode Card
-                  _buildModeCard(
-                    context: context,
-                    icon: Icons.devices,
-                    title: 'Slave Mode',
-                    description:
-                        'Connect to an existing master server. '
-                        'Automatically discovers the master on your network.',
-                    color: AppColors.secondary,
-                    onTap: _isLoading ? null : () => _selectSlaveMode(context),
-                  ),
-
-                  if (_isLoading) ...[
-                    const SizedBox(height: 24),
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Configuring, please wait...',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModeCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String description,
-    required Color color,
-    required VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
-          borderRadius: BorderRadius.circular(12),
-          color: color.withOpacity(0.05),
-        ),
-        child: Row(
+      backgroundColor: AppColors.background,
+      body: ScreenWrapper(
+        title: 'Device Mode',
+        child: Stack(
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 40, color: color),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+            Center(
+              child: Card(
+                elevation: 2,
+                margin: const EdgeInsets.all(32),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  padding: const EdgeInsets.all(48),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.device_hub,
+                        size: 64,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Select Device Mode',
+                        style: GoogleFonts.inter(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Choose how this device will operate',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.computer,
+                              title: 'Master',
+                              description:
+                                  'Run backend server and manage slave devices',
+                              color: AppColors.primary,
+                              onTap:
+                                  _isProcessing
+                                      ? null
+                                      : () => _selectMasterMode(context),
+                              isEnabled: !_isProcessing,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.devices,
+                              title: 'Slave',
+                              description:
+                                  'Connect to master device on local network',
+                              color: Colors.blue[700]!,
+                              onTap:
+                                  _isProcessing
+                                      ? null
+                                      : () => _selectSlaveMode(context),
+                              isEnabled: !_isProcessing,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_isProcessing) ...[
+                        const SizedBox(height: 32),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _statusMessage,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
-                  ),
-                ],
+                ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: color),
+            // Full-screen loading overlay
+            if (_isProcessing)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const SizedBox.expand(),
+              ),
           ],
         ),
       ),
@@ -168,33 +150,110 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
   }
 
   Future<void> _selectMasterMode(BuildContext context) async {
-    // Show file picker to select backend directory
-    final result = await _showBackendPathDialog(context);
-
-    if (result == null) return;
-
-    setState(() => _isLoading = true);
+    setState(() {
+      _isProcessing = true;
+      _statusMessage = 'Setting up Master mode...';
+    });
 
     try {
-      final provider = Provider.of<AppModeProvider>(context, listen: false);
-      await provider.setMasterMode(result);
+      final networkService = Provider.of<NetworkService>(
+        context,
+        listen: false,
+      );
+      final backendService = Provider.of<BackendService>(
+        context,
+        listen: false,
+      );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Master mode configured successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // Navigation will happen automatically via main.dart
+      // Initialize network
+      await networkService.initialize();
+      print('✅ Network initialized');
+
+      // Set master mode
+      await networkService.setMasterMode();
+      print('✅ Master mode set');
+
+      // Check if backend path is configured
+      setState(() {
+        _statusMessage = 'Checking backend configuration...';
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final backendPath = prefs.getString('backend_path');
+
+      if (backendPath == null || !await Directory(backendPath).exists()) {
+        // Navigate to backend setup
+        print('⚠️ Backend not configured - showing setup screen');
+
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const BackendSetupScreen()),
+          );
+        }
+        return;
+      }
+
+      // Backend path exists - start backend
+      setState(() {
+        _statusMessage = 'Starting Django backend...';
+      });
+
+      print('🚀 Starting backend from path: $backendPath');
+      final started = await backendService.startBackend();
+
+      if (started) {
+        print('✅ Backend started successfully');
+
+        // Start broadcasting after backend is ready
+        setState(() {
+          _statusMessage = 'Starting network broadcasting...';
+        });
+
+        await networkService.startBroadcastingAfterBackend();
+        print('✅ Broadcasting started');
+
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+
+          // Navigate to master waiting screen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const MasterWaitingScreen()),
+          );
+        }
+      } else {
+        throw Exception('Failed to start backend');
       }
     } catch (e) {
+      print('❌ Master mode setup failed: $e');
+
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isProcessing = false;
+          _statusMessage = '';
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Failed to configure master mode: $e'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Failed to setup Master mode: $e',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[700],
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -202,86 +261,152 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
   }
 
   Future<void> _selectSlaveMode(BuildContext context) async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isProcessing = true;
+      _statusMessage = 'Setting up Slave mode...';
+    });
 
     try {
-      final provider = Provider.of<AppModeProvider>(context, listen: false);
-      await provider.setSlaveMode();
+      final networkService = Provider.of<NetworkService>(
+        context,
+        listen: false,
+      );
+
+      // Initialize network
+      await networkService.initialize();
+      print('✅ Network initialized');
+
+      // Set slave mode (this starts listening)
+      setState(() {
+        _statusMessage = 'Connecting to network...';
+      });
+
+      await networkService.setSlaveMode();
+      print('✅ Slave mode set - listening for master');
+
+      // Small delay for UX
+      await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Slave mode configured! Listening for master...'),
-            backgroundColor: Colors.green,
-          ),
+        setState(() {
+          _isProcessing = false;
+        });
+
+        // Navigate to slave waiting screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SlaveWaitingScreen()),
         );
-        // Navigation will happen automatically via main.dart
       }
     } catch (e) {
+      print('❌ Slave mode setup failed: $e');
+
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isProcessing = false;
+          _statusMessage = '';
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Failed to configure slave mode: $e'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Failed to setup Slave mode: $e',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[700],
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     }
   }
+}
 
-  Future<String?> _showBackendPathDialog(BuildContext context) async {
-    final controller = TextEditingController(
-      text: '/Users/macbookair/Desktop/Madira/backend/madira',
-    );
+class _ModeCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final VoidCallback? onTap;
+  final bool isEnabled;
 
-    return showDialog<String>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Select Backend Directory'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+  const _ModeCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.onTap,
+    this.isEnabled = true,
+  });
+
+  @override
+  State<_ModeCard> createState() => _ModeCardState();
+}
+
+class _ModeCardState extends State<_ModeCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter:
+          widget.isEnabled ? (_) => setState(() => _isHovered = true) : null,
+      onExit:
+          widget.isEnabled ? (_) => setState(() => _isHovered = false) : null,
+      child: GestureDetector(
+        onTap: widget.isEnabled ? widget.onTap : null,
+        child: Opacity(
+          opacity: widget.isEnabled ? 1.0 : 0.5,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color:
+                  _isHovered && widget.isEnabled
+                      ? widget.color.withOpacity(0.05)
+                      : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color:
+                    _isHovered && widget.isEnabled
+                        ? widget.color
+                        : Colors.grey[300]!,
+                width: 2,
+              ),
+            ),
+            child: Column(
               children: [
-                const Text(
-                  'Enter the path to your Django backend directory\n(the folder containing manage.py)',
-                ),
+                Icon(widget.icon, size: 64, color: widget.color),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: 'Backend Path',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.folder_open),
-                      onPressed: () async {
-                        final result =
-                            await FilePicker.platform.getDirectoryPath();
-                        if (result != null) {
-                          controller.text = result;
-                        }
-                      },
-                    ),
+                Text(
+                  widget.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.description,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (controller.text.isNotEmpty) {
-                    Navigator.pop(context, controller.text);
-                  }
-                },
-                child: const Text('Confirm'),
-              ),
-            ],
           ),
+        ),
+      ),
     );
   }
 }
