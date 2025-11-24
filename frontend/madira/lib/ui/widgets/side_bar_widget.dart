@@ -59,6 +59,7 @@ class SideBarWidget extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Main Navigation Items
+                  // Index 0: Dashboard
                   _buildSidebarItem(
                     index: 0,
                     icon: Icons.dashboard_outlined,
@@ -66,45 +67,58 @@ class SideBarWidget extends StatelessWidget {
                     title: 'Dashboard',
                   ),
 
+                  // Index 1: Orders (Was 2)
                   _buildSidebarItem(
-                    index: 2,
+                    index: 1,
                     icon: Icons.receipt_long_outlined,
                     activeIcon: Icons.receipt_long,
                     title: 'Orders',
                   ),
+
+                  // Index 2: Clients (Was 3)
                   _buildSidebarItem(
-                    index: 3,
+                    index: 2,
                     icon: Icons.people_outline,
                     activeIcon: Icons.people,
                     title: 'Clients',
                   ),
-                  // _buildSidebarItem(
-                  //   index: 4,
-                  //   icon: Icons.account_balance_wallet_outlined,
-                  //   activeIcon: Icons.account_balance_wallet,
-                  //   title: 'Inputs',
-                  // ),
+
+                  // Index 3: Inputs (Currently hidden in your code, but occupies index 3 in HomeScreen list)
+                  // If you want to show it, uncomment below:
                   _buildSidebarItem(
-                    index: 5,
+                    index: 3,
+                    icon: Icons.account_balance_wallet_outlined,
+                    activeIcon: Icons.account_balance_wallet,
+                    title: 'Inputs',
+                  ),
+
+                  // Index 4: Outputs (Was 5)
+                  _buildSidebarItem(
+                    index: 4,
                     icon: Icons.output_outlined,
                     activeIcon: Icons.output,
                     title: 'Outputs',
                   ),
+
+                  // Index 5: Workshops (Was 6)
                   _buildSidebarItem(
-                    index: 6,
+                    index: 5,
                     icon: Icons.factory_outlined,
                     activeIcon: Icons.factory,
                     title: 'Workshops',
                   ),
+
+                  // Index 6: Products (Was 7)
                   _buildSidebarItem(
-                    index: 7,
+                    index: 6,
                     icon: Icons.inventory_2_outlined,
                     activeIcon: Icons.inventory_2,
                     title: 'Products',
                   ),
 
+                  // Index 7: Reports (Was 9)
                   _buildSidebarItem(
-                    index: 9,
+                    index: 7,
                     icon: Icons.analytics_outlined,
                     activeIcon: Icons.analytics,
                     title: 'Reports',
@@ -137,8 +151,9 @@ class SideBarWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // Index 8: Users (Was 10 - THIS CAUSED THE ERROR)
                     _buildSidebarItem(
-                      index: 10,
+                      index: 8,
                       icon: Icons.admin_panel_settings_outlined,
                       activeIcon: Icons.admin_panel_settings,
                       title: 'Users',
