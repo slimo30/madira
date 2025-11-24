@@ -57,4 +57,8 @@ class ApiConstants {
   static const String outputsStatistics = "/outputs/statistics/";
   static const String outputsRelatedData =
       "/outputs"; // /outputs/{id}/related_data/
+
+
+  static const String reportEstimateEndpoint = "/reports/estimate/";
+  static const String reportDownloadEndpoint = "/reports/download/";
 }

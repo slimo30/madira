@@ -506,34 +506,998 @@ class ReportEstimateView(APIView):
         return suggestions
 
 
+# class ComprehensiveReportView(APIView):
+#     """
+#     Detailed backup-style Excel report with ALL business data and filtering.
+#     GET /api/reports/download/
+    
+#     Query Parameters:
+#         - type: 'daily', 'weekly', 'monthly', 'all' (default: 'monthly')
+#         - start_date: Custom start date (ISO format)
+#         - end_date: Custom end date (ISO format)
+#         - client_id: Filter by specific client
+#         - order_id: Filter by specific order
+#         - supplier_id: Filter by specific supplier
+#         - product_id: Filter by specific product
+#         - status: Filter orders by status
+#         - include_relations: 'true' to include all relationship data (default: 'true')
+    
+#     Returns: Excel file with detailed sheets containing complete database records with relationships
+#     """
+#     permission_classes = [IsAuthenticated]
+
+#     def get_date_range(self, report_type, custom_start=None, custom_end=None):
+#         """Calculate date range based on report type"""
+#         now = timezone.now()
+        
+#         if custom_start and custom_end:
+#             start_date = datetime.fromisoformat(custom_start.replace('Z', '+00:00'))
+#             end_date = datetime.fromisoformat(custom_end.replace('Z', '+00:00'))
+#         elif report_type == 'daily':
+#             start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+#             end_date = now
+#         elif report_type == 'weekly':
+#             start_date = now - timedelta(days=7)
+#             end_date = now
+#         elif report_type == 'monthly':
+#             start_date = now - timedelta(days=30)
+#             end_date = now
+#         elif report_type == 'all':
+#             start_date = datetime(2000, 1, 1, tzinfo=now.tzinfo)
+#             end_date = now
+#         else:
+#             start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+#             end_date = now
+        
+#         return start_date, end_date
+
+#     def apply_header_styling(self, ws, title, subtitle=""):
+#         """Apply professional header styling to worksheet"""
+#         title_fill = PatternFill(start_color="002060", end_color="002060", fill_type="solid")
+#         title_font = Font(bold=True, size=18, color="FFFFFF", name="Calibri")
+        
+#         ws.merge_cells(f'A1:{get_column_letter(ws.max_column)}1')
+#         title_cell = ws['A1']
+#         title_cell.value = title
+#         title_cell.font = title_font
+#         title_cell.fill = title_fill
+#         title_cell.alignment = Alignment(horizontal='center', vertical='center')
+#         ws.row_dimensions[1].height = 35
+        
+#         if subtitle:
+#             ws.merge_cells(f'A2:{get_column_letter(ws.max_column)}2')
+#             subtitle_cell = ws['A2']
+#             subtitle_cell.value = subtitle
+#             subtitle_cell.font = Font(italic=True, size=11, color="404040", name="Calibri")
+#             subtitle_cell.alignment = Alignment(horizontal='center', vertical='center')
+#             subtitle_cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+#             ws.row_dimensions[2].height = 22
+
+#     def apply_table_styling(self, ws, header_row=4, enable_filters=True):
+#         """Apply professional table styling with Excel filters"""
+#         header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+#         header_font = Font(bold=True, color="FFFFFF", size=11, name="Calibri")
+        
+#         alt_fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+#         white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        
+#         border = Border(
+#             left=Side(style='thin', color='A6A6A6'),
+#             right=Side(style='thin', color='A6A6A6'),
+#             top=Side(style='thin', color='A6A6A6'),
+#             bottom=Side(style='thin', color='A6A6A6')
+#         )
+        
+#         # Header row styling
+#         for cell in ws[header_row]:
+#             if cell.value:
+#                 cell.fill = header_fill
+#                 cell.font = header_font
+#                 cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+#                 cell.border = border
+        
+#         ws.row_dimensions[header_row].height = 30
+        
+#         # Enable Excel AutoFilter on header row
+#         if enable_filters and ws.max_row > header_row:
+#             # Get the range for filters (from first column to last column of header row)
+#             filter_range = f'A{header_row}:{get_column_letter(ws.max_column)}{ws.max_row}'
+#             ws.auto_filter.ref = filter_range
+        
+#         # Data rows with alternating colors
+#         for idx, row in enumerate(ws.iter_rows(min_row=header_row+1, max_row=ws.max_row), start=1):
+#             for cell in row:
+#                 cell.border = border
+#                 cell.alignment = Alignment(horizontal='left', vertical='center', wrap_text=False)
+#                 cell.font = Font(name="Calibri", size=10, color="000000")
+#                 if idx % 2 == 0:
+#                     cell.fill = alt_fill
+#                 else:
+#                     cell.fill = white_fill
+        
+#         # Auto-adjust column widths
+#         for column in ws.columns:
+#             max_length = 0
+#             column_letter = get_column_letter(column[0].column)
+#             for cell in column:
+#                 try:
+#                     if cell.value:
+#                         max_length = max(max_length, len(str(cell.value)))
+#                 except:
+#                     pass
+#             adjusted_width = min(max_length + 4, 80)
+#             ws.column_dimensions[column_letter].width = adjusted_width
+
+#     def get(self, request):
+#         # Start timing the entire process
+#         generation_start_time = time.time()
+        
+#         report_type = request.query_params.get('type', 'monthly')
+#         custom_start = request.query_params.get('start_date')
+#         custom_end = request.query_params.get('end_date')
+        
+#         # Get filters
+#         client_id = request.query_params.get('client_id')
+#         order_id = request.query_params.get('order_id')
+#         supplier_id = request.query_params.get('supplier_id')
+#         product_id = request.query_params.get('product_id')
+#         status = request.query_params.get('status')
+#         include_relations = request.query_params.get('include_relations', 'true').lower() == 'true'
+        
+#         filters = {
+#             'client_id': client_id,
+#             'order_id': order_id,
+#             'supplier_id': supplier_id,
+#             'product_id': product_id,
+#             'status': status,
+#             'include_relations': include_relations
+#         }
+        
+#         start_date, end_date = self.get_date_range(report_type, custom_start, custom_end)
+        
+#         # Print to console - Start
+#         print("="*80)
+#         print(f"📊 REPORT GENERATION STARTED")
+#         print(f"   Type: {report_type.upper()}")
+#         print(f"   Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+#         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+#         print("="*80)
+        
+#         # Generate the report
+#         response = self._export_detailed_excel(start_date, end_date, report_type, filters)
+        
+#         # Calculate total generation time
+#         total_generation_time = time.time() - generation_start_time
+        
+#         # Print to console - Complete
+#         print("="*80)
+#         print(f"✅ REPORT GENERATION COMPLETED")
+#         print(f"   Total Time: {total_generation_time:.2f} seconds ({self._format_time(total_generation_time)})")
+#         print(f"   File Ready for Download")
+#         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+#         print("="*80)
+        
+#         return response
+    
+#     def _format_time(self, seconds):
+#         """Format seconds into human-readable time"""
+#         if seconds < 60:
+#             return f"{int(seconds)} seconds"
+#         elif seconds < 3600:
+#             minutes = int(seconds / 60)
+#             secs = int(seconds % 60)
+#             return f"{minutes} min {secs} sec"
+#         else:
+#             hours = int(seconds / 3600)
+#             minutes = int((seconds % 3600) / 60)
+#             return f"{hours} hr {minutes} min"
+
+#     def _export_detailed_excel(self, start_date, end_date, report_type, filters):
+#         wb = Workbook()
+#         wb.remove(wb.active)
+        
+#         # Detailed sheets with ALL data
+#         self._add_orders_detailed_sheet(wb, start_date, end_date, report_type, filters)
+#         self._add_inputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
+#         self._add_outputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
+#         self._add_order_outputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
+#         self._add_stock_movements_detailed_sheet(wb, start_date, end_date, report_type, filters)
+        
+#         if filters['include_relations']:
+#             # Add relationship sheets
+#             if filters['client_id']:
+#                 self._add_client_history_sheet(wb, filters['client_id'], start_date, end_date)
+#             if filters['order_id']:
+#                 self._add_order_history_sheet(wb, filters['order_id'])
+#             if filters['supplier_id']:
+#                 self._add_supplier_history_sheet(wb, filters['supplier_id'], start_date, end_date)
+#             if filters['product_id']:
+#                 self._add_product_history_sheet(wb, filters['product_id'], start_date, end_date)
+        
+#         # Master data sheets
+#         self._add_clients_detailed_sheet(wb, filters)
+#         self._add_suppliers_detailed_sheet(wb, filters)
+#         self._add_products_detailed_sheet(wb, filters)
+#         self._add_users_detailed_sheet(wb)
+        
+#         # Prepare response
+#         response = HttpResponse(
+#             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+#         )
+        
+#         filter_desc = []
+#         if filters['client_id']:
+#             filter_desc.append(f"Client_{filters['client_id']}")
+#         if filters['order_id']:
+#             filter_desc.append(f"Order_{filters['order_id']}")
+#         if filters['status']:
+#             filter_desc.append(f"{filters['status']}")
+        
+#         filter_str = "_".join(filter_desc) if filter_desc else ""
+#         filename = f"Detailed_Report_{report_type.upper()}_{filter_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+#         response['Content-Disposition'] = f'attachment; filename="{filename}"'
+#         wb.save(response)
+#         return response
+    
+#     def _add_orders_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
+#         ws = wb.create_sheet("Orders - Detailed", 0)
+        
+#         orders = Order.objects.filter(
+#             order_date__range=[start_date, end_date]
+#         ).select_related('client')
+        
+#         # Apply filters
+#         if filters['client_id']:
+#             orders = orders.filter(client_id=filters['client_id'])
+#         if filters['order_id']:
+#             orders = orders.filter(id=filters['order_id'])
+#         if filters['status']:
+#             orders = orders.filter(status=filters['status'])
+        
+#         orders = orders.order_by('-order_date')
+        
+#         title = f"DETAILED ORDERS REPORT - {report_type.upper()}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {orders.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Order Number', 'Client Name', 'Client Phone', 
+#             'Order Date', 'Delivery Date', 'Status', 
+#             'Total Amount (DA)', 'Paid Amount (DA)', 'Remaining (DA)',
+#             'Total Expenses (DA)', 'Net Benefit (DA)', 'Benefit %',
+#             'Payment Status', 'Total Payments Received', 'Description'
+#         ]
+#         ws.append(headers)
+        
+#         for order in orders:
+#             benefit_pct = (float(order.total_benefit) / float(order.total_amount) * 100) if order.total_amount > 0 else 0
+#             payments_count = order.payments.count()
+            
+#             ws.append([
+#                 order.order_number,
+#                 order.client.name,
+#                 order.client.phone,
+#                 order.order_date.strftime('%Y-%m-%d %H:%M'),
+#                 order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else 'Not Set',
+#                 order.get_status_display(),
+#                 float(order.total_amount),
+#                 float(order.paid_amount),
+#                 float(order.remaining_amount),
+#                 float(order.total_expenses),
+#                 float(order.total_benefit),
+#                 f"{benefit_pct:.2f}%",
+#                 'Fully Paid' if order.is_fully_paid else 'Pending Payment',
+#                 payments_count,
+#                 order.description
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_inputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
+#         ws = wb.create_sheet("Inputs - Detailed")
+        
+#         inputs = Input.objects.filter(
+#             date__range=[start_date, end_date]
+#         ).select_related('created_by', 'order', 'order__client')
+        
+#         inputs = inputs.order_by('-date')
+        
+#         title = f"DETAILED INPUTS (INCOME) REPORT - {report_type.upper()}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {inputs.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Reference Number', 'Type', 'Amount (DA)', 'Date & Time',
+#             'Client Name', 'Client Phone', 'Order Number', 
+#             'Total Spent (DA)', 'Remaining Balance (DA)',
+#             'Created By', 'Description'
+#         ]
+#         ws.append(headers)
+        
+#         for inp in inputs:
+#             # Calculate total spent from this input (sum of all related outputs)
+#             total_spent = inp.outputs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+#             remaining = inp.amount - total_spent
+            
+#             ws.append([
+#                 inp.reference,
+#                 inp.get_type_display(),
+#                 float(inp.amount),
+#                 inp.date.strftime('%Y-%m-%d %H:%M'),
+#                 inp.order.client.name if inp.order else '',
+#                 inp.order.client.phone if inp.order else '',
+#                 inp.order.order_number if inp.order else '',
+#                 float(total_spent),
+#                 float(remaining),
+#                 inp.created_by.full_name or inp.created_by.username,
+#                 inp.description
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_outputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
+#         ws = wb.create_sheet("Outputs - Detailed")
+        
+#         outputs = Output.objects.filter(
+#             date__range=[start_date, end_date]
+#         ).select_related('created_by', 'source_input', 'order', 'supplier', 'product')
+        
+#         # Apply filters
+#         if filters['order_id']:
+#             outputs = outputs.filter(order_id=filters['order_id'])
+#         if filters['supplier_id']:
+#             outputs = outputs.filter(supplier_id=filters['supplier_id'])
+#         if filters['product_id']:
+#             outputs = outputs.filter(product_id=filters['product_id'])
+        
+#         outputs = outputs.order_by('-date')
+        
+#         title = f"DETAILED OUTPUTS (EXPENSES) REPORT - {report_type.upper()}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {outputs.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Reference Number', 'Type', 'Amount (DA)', 'Date & Time',
+#             'Source Input Reference', 'Source Amount (DA)',
+#             'Order Number', 'Order Client',
+#             'Supplier Name', 'Product Name', 
+#             'Created By', 'Description'
+#         ]
+#         ws.append(headers)
+        
+#         for out in outputs:
+#             ws.append([
+#                 out.reference,
+#                 out.get_type_display(),
+#                 float(out.amount),
+#                 out.date.strftime('%Y-%m-%d %H:%M'),
+#                 out.source_input.reference,
+#                 float(out.source_input.amount),
+#                 out.order.order_number if out.order else '',
+#                 out.order.client.name if out.order else '',
+#                 out.supplier.name if out.supplier else '',
+#                 out.product.name if out.product else '',
+#                 out.created_by.full_name or out.created_by.username,
+#                 out.description
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_order_outputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
+#         ws = wb.create_sheet("Order Expenses - Detailed")
+        
+#         order_outputs = OrderOutput.objects.filter(
+#             created_at__range=[start_date, end_date]
+#         ).select_related('order', 'order__client', 'created_by_output', 'created_by_stock_movement')
+        
+#         # Apply filters
+#         if filters['order_id']:
+#             order_outputs = order_outputs.filter(order_id=filters['order_id'])
+#         if filters['client_id']:
+#             order_outputs = order_outputs.filter(order__client_id=filters['client_id'])
+        
+#         order_outputs = order_outputs.order_by('-created_at')
+        
+#         title = f"DETAILED ORDER EXPENSES REPORT - {report_type.upper()}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {order_outputs.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Order Number', 'Client Name', 'Expense Type', 'Amount (DA)', 
+#             'Expense Reference', 'Product/Item', 
+#             'Date', 'Description'
+#         ]
+#         ws.append(headers)
+        
+#         for oo in order_outputs:
+#             ws.append([
+#                 oo.order.order_number,
+#                 oo.order.client.name,
+#                 oo.get_type_display(),
+#                 float(oo.amount),
+#                 oo.created_by_output.reference if oo.created_by_output else '',
+#                 oo.created_by_stock_movement.product.name if oo.created_by_stock_movement else '',
+#                 oo.created_at.strftime('%Y-%m-%d %H:%M'),
+#                 oo.description
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_stock_movements_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
+#         ws = wb.create_sheet("Stock Movements - Detailed")
+        
+#         movements = StockMovement.objects.filter(
+#             date__range=[start_date, end_date]
+#         ).select_related('product', 'order', 'order__client', 'created_by', 'created_by_output')
+        
+#         # Apply filters
+#         if filters['order_id']:
+#             movements = movements.filter(order_id=filters['order_id'])
+#         if filters['product_id']:
+#             movements = movements.filter(product_id=filters['product_id'])
+#         if filters['client_id']:
+#             movements = movements.filter(order__client_id=filters['client_id'])
+        
+#         movements = movements.order_by('-date')
+        
+#         title = f"DETAILED STOCK MOVEMENTS REPORT - {report_type.upper()}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {movements.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Product Reference', 'Product Name', 'Movement Type',
+#             'Quantity', 'Unit', 'Price per Unit (DA)', 'Total Value (DA)',
+#             'Order Number', 'Client Name', 
+#             'Date & Time', 'Created By'
+#         ]
+#         ws.append(headers)
+        
+#         for mov in movements:
+#             total_value = float(mov.quantity) * float(mov.price)
+#             ws.append([
+#                 mov.product.reference,
+#                 mov.product.name,
+#                 mov.get_movement_type_display(),
+#                 float(mov.quantity),
+#                 mov.product.get_unit_display(),
+#                 float(mov.price),
+#                 total_value,
+#                 mov.order.order_number if mov.order else '',
+#                 mov.order.client.name if mov.order else '',
+#                 mov.date.strftime('%Y-%m-%d %H:%M'),
+#                 mov.created_by.full_name or mov.created_by.username if mov.created_by else ''
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_client_history_sheet(self, wb, client_id, start_date, end_date):
+#         """Complete history for a specific client"""
+#         ws = wb.create_sheet(f"Client {client_id} - History")
+        
+#         try:
+#             client = Client.objects.get(id=client_id)
+#         except Client.DoesNotExist:
+#             return
+        
+#         title = f"CLIENT COMPLETE HISTORY: {client.name}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         # Client Info
+#         ws.append(['CLIENT INFORMATION'])
+#         ws.append(['Field', 'Value'])
+#         ws.append(['Client ID', client.id])
+#         ws.append(['Name', client.name])
+#         ws.append(['Phone', client.phone])
+#         ws.append(['Address', client.address])
+#         ws.append(['Type', client.get_client_type_display()])
+#         ws.append(['Credit Balance', float(client.credit_balance)])
+#         ws.append(['Status', 'Active' if client.is_active else 'Inactive'])
+#         ws.append([])
+        
+#         # Orders Summary
+#         orders = client.orders.filter(order_date__range=[start_date, end_date])
+#         total_orders_value = orders.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+        
+#         # Calculate total paid by summing all CLIENT_PAYMENT inputs for these orders
+#         total_paid = Input.objects.filter(
+#             order__in=orders,
+#             type=Input.Type.CLIENT_PAYMENT
+#         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+#         ws.append(['ORDERS SUMMARY'])
+#         ws.append(['Metric', 'Value'])
+#         ws.append(['Total Orders', orders.count()])
+#         ws.append(['Total Orders Value (DA)', float(total_orders_value)])
+#         ws.append(['Total Paid (DA)', float(total_paid)])
+#         ws.append(['Outstanding (DA)', float(total_orders_value - total_paid)])
+#         ws.append([])
+        
+#         # All Orders
+#         ws.append(['ALL ORDERS'])
+#         ws.append(['Order Number', 'Order Date', 'Status', 'Total Amount (DA)', 'Paid (DA)', 'Remaining (DA)', 'Expenses (DA)', 'Benefit (DA)'])
+        
+#         for order in orders:
+#             ws.append([
+#                 order.order_number,
+#                 order.order_date.strftime('%Y-%m-%d'),
+#                 order.get_status_display(),
+#                 float(order.total_amount),
+#                 float(order.paid_amount),
+#                 float(order.remaining_amount),
+#                 float(order.total_expenses),
+#                 float(order.total_benefit)
+#             ])
+#         ws.append([])
+        
+#         # All Payments (Inputs)
+#         inputs = Input.objects.filter(
+#             order__client=client,
+#             date__range=[start_date, end_date]
+#         ).order_by('-date')
+        
+#         ws.append(['ALL PAYMENTS'])
+#         ws.append(['Reference', 'Date', 'Amount (DA)', 'Order Number', 'Type', 'Description'])
+        
+#         for inp in inputs:
+#             ws.append([
+#                 inp.reference,
+#                 inp.date.strftime('%Y-%m-%d %H:%M'),
+#                 float(inp.amount),
+#                 inp.order.order_number if inp.order else '',
+#                 inp.get_type_display(),
+#                 inp.description[:100] if inp.description else ''
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+    
+#     def _add_order_history_sheet(self, wb, order_id):
+#         """Complete history for a specific order"""
+#         ws = wb.create_sheet(f"Order {order_id} - History")
+        
+#         try:
+#             order = Order.objects.select_related('client').get(id=order_id)
+#         except Order.DoesNotExist:
+#             return
+        
+#         title = f"ORDER COMPLETE HISTORY: {order.order_number}"
+#         subtitle = f"Client: {order.client.name} | Status: {order.get_status_display()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         # Order Info
+#         ws.append(['ORDER INFORMATION'])
+#         ws.append(['Field', 'Value'])
+#         ws.append(['Order ID', order.id])
+#         ws.append(['Order Number', order.order_number])
+#         ws.append(['Client', order.client.name])
+#         ws.append(['Order Date', order.order_date.strftime('%Y-%m-%d %H:%M')])
+#         ws.append(['Delivery Date', order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else 'Not Set'])
+#         ws.append(['Status', order.get_status_display()])
+#         ws.append(['Total Amount (DA)', float(order.total_amount)])
+#         ws.append(['Paid Amount (DA)', float(order.paid_amount)])
+#         ws.append(['Remaining (DA)', float(order.remaining_amount)])
+#         ws.append(['Total Expenses (DA)', float(order.total_expenses)])
+#         ws.append(['Net Benefit (DA)', float(order.total_benefit)])
+#         ws.append(['Description', order.description])
+#         ws.append([])
+        
+#         # Payments for this order
+#         payments = order.payments.all().order_by('-date')
+#         ws.append(['PAYMENTS RECEIVED'])
+#         ws.append(['Reference', 'Date', 'Amount (DA)', 'Type', 'Created By', 'Description'])
+        
+#         for payment in payments:
+#             ws.append([
+#                 payment.reference,
+#                 payment.date.strftime('%Y-%m-%d %H:%M'),
+#                 float(payment.amount),
+#                 payment.get_type_display(),
+#                 payment.created_by.username,
+#                 payment.description[:100] if payment.description else ''
+#             ])
+#         ws.append([])
+        
+#         # Order Outputs (Expenses)
+#         order_outputs = order.order_outputs.all().order_by('-created_at')
+#         ws.append(['ORDER EXPENSES'])
+#         ws.append(['Type', 'Amount (DA)', 'Date', 'Output Reference', 'Product', 'Description'])
+        
+#         for oo in order_outputs:
+#             ws.append([
+#                 oo.get_type_display(),
+#                 float(oo.amount),
+#                 oo.created_at.strftime('%Y-%m-%d %H:%M'),
+#                 oo.created_by_output.reference if oo.created_by_output else '',
+#                 oo.created_by_stock_movement.product.name if oo.created_by_stock_movement else '',
+#                 oo.description[:100] if oo.description else ''
+#             ])
+#         ws.append([])
+        
+#         # Stock Movements for this order
+#         movements = order.stock_movements.all().order_by('-date')
+#         ws.append(['STOCK MOVEMENTS'])
+#         ws.append(['Product', 'Type', 'Quantity', 'Unit', 'Price (DA)', 'Total (DA)', 'Date'])
+        
+#         for mov in movements:
+#             ws.append([
+#                 mov.product.name,
+#                 mov.get_movement_type_display(),
+#                 float(mov.quantity),
+#                 mov.product.get_unit_display(),
+#                 float(mov.price),
+#                 float(mov.quantity) * float(mov.price),
+#                 mov.date.strftime('%Y-%m-%d %H:%M')
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+    
+#     def _add_supplier_history_sheet(self, wb, supplier_id, start_date, end_date):
+#         """Complete history for a specific supplier"""
+#         ws = wb.create_sheet(f"Supplier {supplier_id} - History")
+        
+#         try:
+#             supplier = Supplier.objects.get(id=supplier_id)
+#         except Supplier.DoesNotExist:
+#             return
+        
+#         title = f"SUPPLIER COMPLETE HISTORY: {supplier.name}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         # Supplier Info
+#         ws.append(['SUPPLIER INFORMATION'])
+#         ws.append(['Field', 'Value'])
+#         ws.append(['Supplier ID', supplier.id])
+#         ws.append(['Name', supplier.name])
+#         ws.append(['Phone', supplier.phone])
+#         ws.append(['Address', supplier.address])
+#         ws.append(['Status', 'Active' if supplier.is_active else 'Inactive'])
+#         ws.append([])
+        
+#         # All Outputs for this supplier
+#         outputs = Output.objects.filter(
+#             supplier=supplier,
+#             date__range=[start_date, end_date]
+#         ).order_by('-date')
+        
+#         total_expenses = outputs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+#         ws.append(['EXPENSES SUMMARY'])
+#         ws.append(['Total Transactions', outputs.count()])
+#         ws.append(['Total Amount (DA)', float(total_expenses)])
+#         ws.append([])
+        
+#         ws.append(['ALL TRANSACTIONS'])
+#         ws.append(['Reference', 'Date', 'Type', 'Amount (DA)', 'Order', 'Product', 'Description'])
+        
+#         for output in outputs:
+#             ws.append([
+#                 output.reference,
+#                 output.date.strftime('%Y-%m-%d %H:%M'),
+#                 output.get_type_display(),
+#                 float(output.amount),
+#                 output.order.order_number if output.order else '',
+#                 output.product.name if output.product else '',
+#                 output.description[:100] if output.description else ''
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+    
+#     def _add_product_history_sheet(self, wb, product_id, start_date, end_date):
+#         """Complete history for a specific product"""
+#         ws = wb.create_sheet(f"Product {product_id} - History")
+        
+#         try:
+#             product = Product.objects.get(id=product_id)
+#         except Product.DoesNotExist:
+#             return
+        
+#         title = f"PRODUCT COMPLETE HISTORY: {product.name}"
+#         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         # Product Info
+#         ws.append(['PRODUCT INFORMATION'])
+#         ws.append(['Field', 'Value'])
+#         ws.append(['Product ID', product.id])
+#         ws.append(['Reference', product.reference])
+#         ws.append(['Name', product.name])
+#         ws.append(['Unit', product.get_unit_display()])
+#         ws.append(['Current Quantity', float(product.current_quantity)])
+#         ws.append(['Status', 'Active' if product.is_active else 'Inactive'])
+#         ws.append([])
+        
+#         # Stock Movements
+#         movements = StockMovement.objects.filter(
+#             product=product,
+#             date__range=[start_date, end_date]
+#         ).order_by('-date')
+        
+#         total_in = movements.filter(movement_type=StockMovement.MovementType.IN).aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
+#         total_out = movements.filter(movement_type=StockMovement.MovementType.OUT).aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
+        
+#         ws.append(['STOCK SUMMARY'])
+#         ws.append(['Total IN', float(total_in)])
+#         ws.append(['Total OUT', float(total_out)])
+#         ws.append(['Net Movement', float(total_in - total_out)])
+#         ws.append([])
+        
+#         ws.append(['ALL MOVEMENTS'])
+#         ws.append(['Date', 'Type', 'Quantity', 'Price (DA)', 'Total Value (DA)', 'Order', 'Created By'])
+        
+#         for mov in movements:
+#             ws.append([
+#                 mov.date.strftime('%Y-%m-%d %H:%M'),
+#                 mov.get_movement_type_display(),
+#                 float(mov.quantity),
+#                 float(mov.price),
+#                 float(mov.quantity) * float(mov.price),
+#                 mov.order.order_number if mov.order else '',
+#                 mov.created_by.username if mov.created_by else ''
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+    
+#     def _add_clients_detailed_sheet(self, wb, filters):
+#         ws = wb.create_sheet("Clients - Detailed")
+        
+#         clients = Client.objects.all().prefetch_related('orders')
+        
+#         # Apply filter
+#         if filters['client_id']:
+#             clients = clients.filter(id=filters['client_id'])
+        
+#         title = "DETAILED CLIENTS REPORT"
+#         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {clients.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Name', 'Phone', 'Address', 'Client Type', 'Credit Balance (DA)',
+#             'Status', 'Total Orders', 'Total Orders Value (DA)', 'Total Paid (DA)',
+#             'Outstanding Balance (DA)', 'Last Order Date', 'Last Order Number', 'Notes'
+#         ]
+#         ws.append(headers)
+        
+#         for client in clients:
+#             orders = client.orders.all()
+#             total_orders = orders.count()
+#             total_value = orders.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+            
+#             # Calculate total paid by summing CLIENT_PAYMENT inputs for this client's orders
+#             total_paid = Input.objects.filter(
+#                 order__client=client,
+#                 type=Input.Type.CLIENT_PAYMENT
+#             ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+            
+#             outstanding = total_value - total_paid
+#             last_order = orders.order_by('-order_date').first()
+            
+#             ws.append([
+#                 client.name,
+#                 client.phone,
+#                 client.address,
+#                 client.get_client_type_display(),
+#                 float(client.credit_balance),
+#                 'Active' if client.is_active else 'Inactive',
+#                 total_orders,
+#                 float(total_value),
+#                 float(total_paid),
+#                 float(outstanding),
+#                 last_order.order_date.strftime('%Y-%m-%d') if last_order else 'No Orders Yet',
+#                 last_order.order_number if last_order else '',
+#                 client.notes
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_suppliers_detailed_sheet(self, wb, filters):
+#         ws = wb.create_sheet("Suppliers - Detailed")
+        
+#         suppliers = Supplier.objects.all()
+        
+#         # Apply filter
+#         if filters['supplier_id']:
+#             suppliers = suppliers.filter(id=filters['supplier_id'])
+        
+#         title = "DETAILED SUPPLIERS REPORT"
+#         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {suppliers.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Name', 'Phone', 'Address', 'Status',
+#             'Total Expenses (DA)', 'Total Transactions', 'Last Transaction Date', 'Notes'
+#         ]
+#         ws.append(headers)
+        
+#         for supplier in suppliers:
+#             outputs = Output.objects.filter(supplier=supplier)
+#             total_expenses = outputs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+#             transaction_count = outputs.count()
+#             last_output = outputs.order_by('-date').first()
+            
+#             ws.append([
+#                 supplier.name,
+#                 supplier.phone or 'N/A',
+#                 supplier.address or 'N/A',
+#                 'Active' if supplier.is_active else 'Inactive',
+#                 float(total_expenses),
+#                 transaction_count,
+#                 last_output.date.strftime('%Y-%m-%d') if last_output else 'No Transactions',
+#                 supplier.notes
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_products_detailed_sheet(self, wb, filters):
+#         ws = wb.create_sheet("Products - Detailed")
+        
+#         products = Product.objects.all()
+        
+#         # Apply filter
+#         if filters['product_id']:
+#             products = products.filter(id=filters['product_id'])
+        
+#         title = "DETAILED PRODUCTS REPORT"
+#         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {products.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Product Reference', 'Name', 'Unit', 'Current Quantity',
+#             'Total Stock IN', 'Total Stock OUT', 'Last Movement Date',
+#             'Last Movement Type', 'Status', 'Description'
+#         ]
+#         ws.append(headers)
+        
+#         for product in products:
+#             in_movements = StockMovement.objects.filter(
+#                 product=product, 
+#                 movement_type=StockMovement.MovementType.IN
+#             )
+#             out_movements = StockMovement.objects.filter(
+#                 product=product, 
+#                 movement_type=StockMovement.MovementType.OUT
+#             )
+            
+#             total_in = in_movements.aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
+#             total_out = out_movements.aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
+#             last_movement = StockMovement.objects.filter(product=product).order_by('-date').first()
+            
+#             ws.append([
+#                 product.reference,
+#                 product.name,
+#                 product.get_unit_display(),
+#                 float(product.current_quantity),
+#                 float(total_in),
+#                 float(total_out),
+#                 last_movement.date.strftime('%Y-%m-%d') if last_movement else 'No Movements',
+#                 last_movement.get_movement_type_display() if last_movement else '',
+#                 'Active' if product.is_active else 'Inactive',
+#                 product.description
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+    
+#     def _add_users_detailed_sheet(self, wb):
+#         ws = wb.create_sheet("Users - Detailed")
+        
+#         users = User.objects.all()
+        
+#         title = "DETAILED USERS REPORT"
+#         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {users.count()}"
+        
+#         ws.append([title])
+#         ws.append([subtitle])
+#         ws.append([])
+        
+#         headers = [
+#             'Username', 'Full Name', 'Role', 'Status',
+#             'Inputs Created', 'Outputs Created', 'Stock Movements Created', 'Last Login'
+#         ]
+#         ws.append(headers)
+        
+#         for user in users:
+#             inputs_count = Input.objects.filter(created_by=user).count()
+#             outputs_count = Output.objects.filter(created_by=user).count()
+#             movements_count = StockMovement.objects.filter(created_by=user).count()
+            
+#             ws.append([
+#                 user.username,
+#                 user.full_name,
+#                 user.get_role_display(),
+#                 'Active' if user.is_active else 'Inactive',
+#                 inputs_count,
+#                 outputs_count,
+#                 movements_count,
+#                 user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never'
+#             ])
+        
+#         self.apply_header_styling(ws, title, subtitle)
+#         self.apply_table_styling(ws, header_row=4)
+
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
+from django.utils import timezone
+from django.db.models import Sum
+from datetime import datetime, timedelta
+from decimal import Decimal
+import time
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
+from ..models import (
+    Order, Input, Output, OrderOutput, StockMovement, 
+    Client, Supplier, Product, User
+)
+
+
 class ComprehensiveReportView(APIView):
     """
-    Detailed backup-style Excel report with ALL business data and filtering.
+    Detailed Excel report with client and time period filtering.
     GET /api/reports/download/
     
     Query Parameters:
-        - type: 'daily', 'weekly', 'monthly', 'all' (default: 'monthly')
-        - start_date: Custom start date (ISO format)
-        - end_date: Custom end date (ISO format)
-        - client_id: Filter by specific client
-        - order_id: Filter by specific order
-        - supplier_id: Filter by specific supplier
-        - product_id: Filter by specific product
-        - status: Filter orders by status
-        - include_relations: 'true' to include all relationship data (default: 'true')
+        - type: 'daily', 'weekly', 'monthly', 'all' (default: 'all')
+        - client_id: Filter ALL data by specific client (optional)
     
-    Returns: Excel file with detailed sheets containing complete database records with relationships
+    Returns: Excel file with detailed sheets styled to match the app interface
+    
+    Note: When client_id is provided, Suppliers and Products sheets are excluded
     """
     permission_classes = [IsAuthenticated]
 
-    def get_date_range(self, report_type, custom_start=None, custom_end=None):
+    def get_date_range(self, report_type):
         """Calculate date range based on report type"""
         now = timezone.now()
         
-        if custom_start and custom_end:
-            start_date = datetime.fromisoformat(custom_start.replace('Z', '+00:00'))
-            end_date = datetime.fromisoformat(custom_end.replace('Z', '+00:00'))
-        elif report_type == 'daily':
+        if report_type == 'daily':
             start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_date = now
         elif report_type == 'weekly':
@@ -546,15 +1510,16 @@ class ComprehensiveReportView(APIView):
             start_date = datetime(2000, 1, 1, tzinfo=now.tzinfo)
             end_date = now
         else:
-            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            start_date = datetime(2000, 1, 1, tzinfo=now.tzinfo)
             end_date = now
         
         return start_date, end_date
 
     def apply_header_styling(self, ws, title, subtitle=""):
-        """Apply professional header styling to worksheet"""
-        title_fill = PatternFill(start_color="002060", end_color="002060", fill_type="solid")
-        title_font = Font(bold=True, size=18, color="FFFFFF", name="Calibri")
+        """Apply app-themed header styling (Red primary color)"""
+        # Title row - Red background like app primary color (#D32F2F)
+        title_fill = PatternFill(start_color="D32F2F", end_color="D32F2F", fill_type="solid")
+        title_font = Font(bold=True, size=18, color="FFFFFF", name="Inter")
         
         ws.merge_cells(f'A1:{get_column_letter(ws.max_column)}1')
         title_cell = ws['A1']
@@ -562,30 +1527,34 @@ class ComprehensiveReportView(APIView):
         title_cell.font = title_font
         title_cell.fill = title_fill
         title_cell.alignment = Alignment(horizontal='center', vertical='center')
-        ws.row_dimensions[1].height = 35
+        ws.row_dimensions[1].height = 40
         
+        # Subtitle row - Light gray background (#F5F7FA)
         if subtitle:
             ws.merge_cells(f'A2:{get_column_letter(ws.max_column)}2')
             subtitle_cell = ws['A2']
             subtitle_cell.value = subtitle
-            subtitle_cell.font = Font(italic=True, size=11, color="404040", name="Calibri")
+            subtitle_cell.font = Font(italic=True, size=11, color="78909C", name="Inter")
             subtitle_cell.alignment = Alignment(horizontal='center', vertical='center')
-            subtitle_cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-            ws.row_dimensions[2].height = 22
+            subtitle_cell.fill = PatternFill(start_color="F5F7FA", end_color="F5F7FA", fill_type="solid")
+            ws.row_dimensions[2].height = 25
 
     def apply_table_styling(self, ws, header_row=4, enable_filters=True):
-        """Apply professional table styling with Excel filters"""
-        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-        header_font = Font(bold=True, color="FFFFFF", size=11, name="Calibri")
+        """Apply app-themed table styling"""
+        # Header - Red primary color (#D32F2F)
+        header_fill = PatternFill(start_color="D32F2F", end_color="D32F2F", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF", size=11, name="Inter")
         
-        alt_fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+        # Alternating rows - White and light gray (#ECEFF1)
+        alt_fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
         white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
         
+        # Borders - Light gray
         border = Border(
-            left=Side(style='thin', color='A6A6A6'),
-            right=Side(style='thin', color='A6A6A6'),
-            top=Side(style='thin', color='A6A6A6'),
-            bottom=Side(style='thin', color='A6A6A6')
+            left=Side(style='thin', color='CFD8DC'),
+            right=Side(style='thin', color='CFD8DC'),
+            top=Side(style='thin', color='CFD8DC'),
+            bottom=Side(style='thin', color='CFD8DC')
         )
         
         # Header row styling
@@ -596,20 +1565,21 @@ class ComprehensiveReportView(APIView):
                 cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
                 cell.border = border
         
-        ws.row_dimensions[header_row].height = 30
+        ws.row_dimensions[header_row].height = 32
         
-        # Enable Excel AutoFilter on header row
+        # Enable Excel AutoFilter
         if enable_filters and ws.max_row > header_row:
-            # Get the range for filters (from first column to last column of header row)
             filter_range = f'A{header_row}:{get_column_letter(ws.max_column)}{ws.max_row}'
             ws.auto_filter.ref = filter_range
         
         # Data rows with alternating colors
+        text_font = Font(name="Inter", size=10, color="263238")  # Text primary color
+        
         for idx, row in enumerate(ws.iter_rows(min_row=header_row+1, max_row=ws.max_row), start=1):
             for cell in row:
                 cell.border = border
                 cell.alignment = Alignment(horizontal='left', vertical='center', wrap_text=False)
-                cell.font = Font(name="Calibri", size=10, color="000000")
+                cell.font = text_font
                 if idx % 2 == 0:
                     cell.fill = alt_fill
                 else:
@@ -629,134 +1599,103 @@ class ComprehensiveReportView(APIView):
             ws.column_dimensions[column_letter].width = adjusted_width
 
     def get(self, request):
-        # Start timing the entire process
         generation_start_time = time.time()
         
-        report_type = request.query_params.get('type', 'monthly')
-        custom_start = request.query_params.get('start_date')
-        custom_end = request.query_params.get('end_date')
-        
-        # Get filters
+        # Only get client_id and type filters
+        report_type = request.query_params.get('type', 'all')
         client_id = request.query_params.get('client_id')
-        order_id = request.query_params.get('order_id')
-        supplier_id = request.query_params.get('supplier_id')
-        product_id = request.query_params.get('product_id')
-        status = request.query_params.get('status')
-        include_relations = request.query_params.get('include_relations', 'true').lower() == 'true'
         
-        filters = {
-            'client_id': client_id,
-            'order_id': order_id,
-            'supplier_id': supplier_id,
-            'product_id': product_id,
-            'status': status,
-            'include_relations': include_relations
-        }
+        start_date, end_date = self.get_date_range(report_type)
         
-        start_date, end_date = self.get_date_range(report_type, custom_start, custom_end)
-        
-        # Print to console - Start
         print("="*80)
         print(f"📊 REPORT GENERATION STARTED")
         print(f"   Type: {report_type.upper()}")
         print(f"   Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                print(f"   Filter: Client = {client.name} (ID: {client_id})")
+                print(f"   Scope: CLIENT-SPECIFIC REPORT (Suppliers & Products excluded)")
+            except:
+                print(f"   Filter: Client ID = {client_id}")
+        else:
+            print(f"   Filter: ALL CLIENTS (Complete Report)")
+            print(f"   Scope: FULL REPORT (All sheets included)")
         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*80)
         
-        # Generate the report
-        response = self._export_detailed_excel(start_date, end_date, report_type, filters)
+        response = self._export_detailed_excel(start_date, end_date, report_type, client_id)
         
-        # Calculate total generation time
         total_generation_time = time.time() - generation_start_time
         
-        # Print to console - Complete
         print("="*80)
         print(f"✅ REPORT GENERATION COMPLETED")
-        print(f"   Total Time: {total_generation_time:.2f} seconds ({self._format_time(total_generation_time)})")
+        print(f"   Total Time: {total_generation_time:.2f} seconds")
         print(f"   File Ready for Download")
         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*80)
         
         return response
-    
-    def _format_time(self, seconds):
-        """Format seconds into human-readable time"""
-        if seconds < 60:
-            return f"{int(seconds)} seconds"
-        elif seconds < 3600:
-            minutes = int(seconds / 60)
-            secs = int(seconds % 60)
-            return f"{minutes} min {secs} sec"
-        else:
-            hours = int(seconds / 3600)
-            minutes = int((seconds % 3600) / 60)
-            return f"{hours} hr {minutes} min"
 
-    def _export_detailed_excel(self, start_date, end_date, report_type, filters):
+    def _export_detailed_excel(self, start_date, end_date, report_type, client_id):
         wb = Workbook()
         wb.remove(wb.active)
         
-        # Detailed sheets with ALL data
-        self._add_orders_detailed_sheet(wb, start_date, end_date, report_type, filters)
-        self._add_inputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
-        self._add_outputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
-        self._add_order_outputs_detailed_sheet(wb, start_date, end_date, report_type, filters)
-        self._add_stock_movements_detailed_sheet(wb, start_date, end_date, report_type, filters)
+        # Add client-related sheets (always included)
+        self._add_orders_sheet(wb, start_date, end_date, report_type, client_id)
+        self._add_inputs_sheet(wb, start_date, end_date, report_type, client_id)
+        self._add_outputs_sheet(wb, start_date, end_date, report_type, client_id)
+        self._add_order_outputs_sheet(wb, start_date, end_date, report_type, client_id)
+        self._add_stock_movements_sheet(wb, start_date, end_date, report_type, client_id)
+        self._add_clients_sheet(wb, client_id)
         
-        if filters['include_relations']:
-            # Add relationship sheets
-            if filters['client_id']:
-                self._add_client_history_sheet(wb, filters['client_id'], start_date, end_date)
-            if filters['order_id']:
-                self._add_order_history_sheet(wb, filters['order_id'])
-            if filters['supplier_id']:
-                self._add_supplier_history_sheet(wb, filters['supplier_id'], start_date, end_date)
-            if filters['product_id']:
-                self._add_product_history_sheet(wb, filters['product_id'], start_date, end_date)
-        
-        # Master data sheets
-        self._add_clients_detailed_sheet(wb, filters)
-        self._add_suppliers_detailed_sheet(wb, filters)
-        self._add_products_detailed_sheet(wb, filters)
-        self._add_users_detailed_sheet(wb)
+        # Only add Suppliers and Products sheets if NO client filter
+        if not client_id:
+            self._add_suppliers_sheet(wb)
+            self._add_products_sheet(wb)
         
         # Prepare response
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         
-        filter_desc = []
-        if filters['client_id']:
-            filter_desc.append(f"Client_{filters['client_id']}")
-        if filters['order_id']:
-            filter_desc.append(f"Order_{filters['order_id']}")
-        if filters['status']:
-            filter_desc.append(f"{filters['status']}")
+        # Build filename
+        filter_str = "All_Data"
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                filter_str = f"Client_{client.name.replace(' ', '_')}"
+            except:
+                filter_str = f"Client_{client_id}"
         
-        filter_str = "_".join(filter_desc) if filter_desc else ""
-        filename = f"Detailed_Report_{report_type.upper()}_{filter_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"Report_{report_type.upper()}_{filter_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         wb.save(response)
         return response
-    
-    def _add_orders_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
-        ws = wb.create_sheet("Orders - Detailed", 0)
+
+    def _add_orders_sheet(self, wb, start_date, end_date, report_type, client_id):
+        ws = wb.create_sheet("Orders", 0)
         
         orders = Order.objects.filter(
             order_date__range=[start_date, end_date]
         ).select_related('client')
         
-        # Apply filters
-        if filters['client_id']:
-            orders = orders.filter(client_id=filters['client_id'])
-        if filters['order_id']:
-            orders = orders.filter(id=filters['order_id'])
-        if filters['status']:
-            orders = orders.filter(status=filters['status'])
+        # Apply client filter
+        if client_id:
+            orders = orders.filter(client_id=client_id)
         
         orders = orders.order_by('-order_date')
         
-        title = f"DETAILED ORDERS REPORT - {report_type.upper()}"
+        # Get client name for subtitle
+        client_name = ""
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                client_name = f" - Client: {client.name}"
+            except:
+                pass
+        
+        title = f"ORDERS REPORT - {report_type.upper()}{client_name}"
         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {orders.count()}"
         
         ws.append([title])
@@ -764,17 +1703,16 @@ class ComprehensiveReportView(APIView):
         ws.append([])
         
         headers = [
-            'Order Number', 'Client Name', 'Client Phone', 
-            'Order Date', 'Delivery Date', 'Status', 
+            'Order Number', 'Client Name', 'Client Phone',
+            'Order Date', 'Delivery Date', 'Status',
             'Total Amount (DA)', 'Paid Amount (DA)', 'Remaining (DA)',
             'Total Expenses (DA)', 'Net Benefit (DA)', 'Benefit %',
-            'Payment Status', 'Total Payments Received', 'Description'
+            'Payment Status', 'Description'
         ]
         ws.append(headers)
         
         for order in orders:
             benefit_pct = (float(order.total_benefit) / float(order.total_amount) * 100) if order.total_amount > 0 else 0
-            payments_count = order.payments.count()
             
             ws.append([
                 order.order_number,
@@ -790,23 +1728,34 @@ class ComprehensiveReportView(APIView):
                 float(order.total_benefit),
                 f"{benefit_pct:.2f}%",
                 'Fully Paid' if order.is_fully_paid else 'Pending Payment',
-                payments_count,
                 order.description
             ])
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_inputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
-        ws = wb.create_sheet("Inputs - Detailed")
+
+    def _add_inputs_sheet(self, wb, start_date, end_date, report_type, client_id):
+        ws = wb.create_sheet("Inputs (Payments)")
         
         inputs = Input.objects.filter(
             date__range=[start_date, end_date]
         ).select_related('created_by', 'order', 'order__client')
         
+        # Apply client filter
+        if client_id:
+            inputs = inputs.filter(order__client_id=client_id)
+        
         inputs = inputs.order_by('-date')
         
-        title = f"DETAILED INPUTS (INCOME) REPORT - {report_type.upper()}"
+        client_name = ""
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                client_name = f" - Client: {client.name}"
+            except:
+                pass
+        
+        title = f"INPUTS (PAYMENTS) REPORT - {report_type.upper()}{client_name}"
         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {inputs.count()}"
         
         ws.append([title])
@@ -815,14 +1764,13 @@ class ComprehensiveReportView(APIView):
         
         headers = [
             'Reference Number', 'Type', 'Amount (DA)', 'Date & Time',
-            'Client Name', 'Client Phone', 'Order Number', 
+            'Client Name', 'Client Phone', 'Order Number',
             'Total Spent (DA)', 'Remaining Balance (DA)',
             'Created By', 'Description'
         ]
         ws.append(headers)
         
         for inp in inputs:
-            # Calculate total spent from this input (sum of all related outputs)
             total_spent = inp.outputs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
             remaining = inp.amount - total_spent
             
@@ -842,25 +1790,29 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_outputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
-        ws = wb.create_sheet("Outputs - Detailed")
+
+    def _add_outputs_sheet(self, wb, start_date, end_date, report_type, client_id):
+        ws = wb.create_sheet("Outputs (Expenses)")
         
         outputs = Output.objects.filter(
             date__range=[start_date, end_date]
-        ).select_related('created_by', 'source_input', 'order', 'supplier', 'product')
+        ).select_related('created_by', 'source_input', 'order', 'order__client', 'supplier', 'product')
         
-        # Apply filters
-        if filters['order_id']:
-            outputs = outputs.filter(order_id=filters['order_id'])
-        if filters['supplier_id']:
-            outputs = outputs.filter(supplier_id=filters['supplier_id'])
-        if filters['product_id']:
-            outputs = outputs.filter(product_id=filters['product_id'])
+        # Apply client filter
+        if client_id:
+            outputs = outputs.filter(order__client_id=client_id)
         
         outputs = outputs.order_by('-date')
         
-        title = f"DETAILED OUTPUTS (EXPENSES) REPORT - {report_type.upper()}"
+        client_name = ""
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                client_name = f" - Client: {client.name}"
+            except:
+                pass
+        
+        title = f"OUTPUTS (EXPENSES) REPORT - {report_type.upper()}{client_name}"
         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {outputs.count()}"
         
         ws.append([title])
@@ -871,7 +1823,7 @@ class ComprehensiveReportView(APIView):
             'Reference Number', 'Type', 'Amount (DA)', 'Date & Time',
             'Source Input Reference', 'Source Amount (DA)',
             'Order Number', 'Order Client',
-            'Supplier Name', 'Product Name', 
+            'Supplier Name', 'Product Name',
             'Created By', 'Description'
         ]
         ws.append(headers)
@@ -894,23 +1846,29 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_order_outputs_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
-        ws = wb.create_sheet("Order Expenses - Detailed")
+
+    def _add_order_outputs_sheet(self, wb, start_date, end_date, report_type, client_id):
+        ws = wb.create_sheet("Order Expenses")
         
         order_outputs = OrderOutput.objects.filter(
             created_at__range=[start_date, end_date]
         ).select_related('order', 'order__client', 'created_by_output', 'created_by_stock_movement')
         
-        # Apply filters
-        if filters['order_id']:
-            order_outputs = order_outputs.filter(order_id=filters['order_id'])
-        if filters['client_id']:
-            order_outputs = order_outputs.filter(order__client_id=filters['client_id'])
+        # Apply client filter
+        if client_id:
+            order_outputs = order_outputs.filter(order__client_id=client_id)
         
         order_outputs = order_outputs.order_by('-created_at')
         
-        title = f"DETAILED ORDER EXPENSES REPORT - {report_type.upper()}"
+        client_name = ""
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                client_name = f" - Client: {client.name}"
+            except:
+                pass
+        
+        title = f"ORDER EXPENSES REPORT - {report_type.upper()}{client_name}"
         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {order_outputs.count()}"
         
         ws.append([title])
@@ -918,8 +1876,8 @@ class ComprehensiveReportView(APIView):
         ws.append([])
         
         headers = [
-            'Order Number', 'Client Name', 'Expense Type', 'Amount (DA)', 
-            'Expense Reference', 'Product/Item', 
+            'Order Number', 'Client Name', 'Expense Type', 'Amount (DA)',
+            'Expense Reference', 'Product/Item',
             'Date', 'Description'
         ]
         ws.append(headers)
@@ -938,25 +1896,29 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_stock_movements_detailed_sheet(self, wb, start_date, end_date, report_type, filters):
-        ws = wb.create_sheet("Stock Movements - Detailed")
+
+    def _add_stock_movements_sheet(self, wb, start_date, end_date, report_type, client_id):
+        ws = wb.create_sheet("Stock Movements")
         
         movements = StockMovement.objects.filter(
             date__range=[start_date, end_date]
         ).select_related('product', 'order', 'order__client', 'created_by', 'created_by_output')
         
-        # Apply filters
-        if filters['order_id']:
-            movements = movements.filter(order_id=filters['order_id'])
-        if filters['product_id']:
-            movements = movements.filter(product_id=filters['product_id'])
-        if filters['client_id']:
-            movements = movements.filter(order__client_id=filters['client_id'])
+        # Apply client filter
+        if client_id:
+            movements = movements.filter(order__client_id=client_id)
         
         movements = movements.order_by('-date')
         
-        title = f"DETAILED STOCK MOVEMENTS REPORT - {report_type.upper()}"
+        client_name = ""
+        if client_id:
+            try:
+                client = Client.objects.get(id=client_id)
+                client_name = f" - Client: {client.name}"
+            except:
+                pass
+        
+        title = f"STOCK MOVEMENTS REPORT - {report_type.upper()}{client_name}"
         subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')} | Total Records: {movements.count()}"
         
         ws.append([title])
@@ -966,7 +1928,7 @@ class ComprehensiveReportView(APIView):
         headers = [
             'Product Reference', 'Product Name', 'Movement Type',
             'Quantity', 'Unit', 'Price per Unit (DA)', 'Total Value (DA)',
-            'Order Number', 'Client Name', 
+            'Order Number', 'Client Name',
             'Date & Time', 'Created By'
         ]
         ws.append(headers)
@@ -989,297 +1951,17 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_client_history_sheet(self, wb, client_id, start_date, end_date):
-        """Complete history for a specific client"""
-        ws = wb.create_sheet(f"Client {client_id} - History")
-        
-        try:
-            client = Client.objects.get(id=client_id)
-        except Client.DoesNotExist:
-            return
-        
-        title = f"CLIENT COMPLETE HISTORY: {client.name}"
-        subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
-        
-        ws.append([title])
-        ws.append([subtitle])
-        ws.append([])
-        
-        # Client Info
-        ws.append(['CLIENT INFORMATION'])
-        ws.append(['Field', 'Value'])
-        ws.append(['Client ID', client.id])
-        ws.append(['Name', client.name])
-        ws.append(['Phone', client.phone])
-        ws.append(['Address', client.address])
-        ws.append(['Type', client.get_client_type_display()])
-        ws.append(['Credit Balance', float(client.credit_balance)])
-        ws.append(['Status', 'Active' if client.is_active else 'Inactive'])
-        ws.append([])
-        
-        # Orders Summary
-        orders = client.orders.filter(order_date__range=[start_date, end_date])
-        total_orders_value = orders.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-        
-        # Calculate total paid by summing all CLIENT_PAYMENT inputs for these orders
-        total_paid = Input.objects.filter(
-            order__in=orders,
-            type=Input.Type.CLIENT_PAYMENT
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
-        ws.append(['ORDERS SUMMARY'])
-        ws.append(['Metric', 'Value'])
-        ws.append(['Total Orders', orders.count()])
-        ws.append(['Total Orders Value (DA)', float(total_orders_value)])
-        ws.append(['Total Paid (DA)', float(total_paid)])
-        ws.append(['Outstanding (DA)', float(total_orders_value - total_paid)])
-        ws.append([])
-        
-        # All Orders
-        ws.append(['ALL ORDERS'])
-        ws.append(['Order Number', 'Order Date', 'Status', 'Total Amount (DA)', 'Paid (DA)', 'Remaining (DA)', 'Expenses (DA)', 'Benefit (DA)'])
-        
-        for order in orders:
-            ws.append([
-                order.order_number,
-                order.order_date.strftime('%Y-%m-%d'),
-                order.get_status_display(),
-                float(order.total_amount),
-                float(order.paid_amount),
-                float(order.remaining_amount),
-                float(order.total_expenses),
-                float(order.total_benefit)
-            ])
-        ws.append([])
-        
-        # All Payments (Inputs)
-        inputs = Input.objects.filter(
-            order__client=client,
-            date__range=[start_date, end_date]
-        ).order_by('-date')
-        
-        ws.append(['ALL PAYMENTS'])
-        ws.append(['Reference', 'Date', 'Amount (DA)', 'Order Number', 'Type', 'Description'])
-        
-        for inp in inputs:
-            ws.append([
-                inp.reference,
-                inp.date.strftime('%Y-%m-%d %H:%M'),
-                float(inp.amount),
-                inp.order.order_number if inp.order else '',
-                inp.get_type_display(),
-                inp.description[:100] if inp.description else ''
-            ])
-        
-        self.apply_header_styling(ws, title, subtitle)
-    
-    def _add_order_history_sheet(self, wb, order_id):
-        """Complete history for a specific order"""
-        ws = wb.create_sheet(f"Order {order_id} - History")
-        
-        try:
-            order = Order.objects.select_related('client').get(id=order_id)
-        except Order.DoesNotExist:
-            return
-        
-        title = f"ORDER COMPLETE HISTORY: {order.order_number}"
-        subtitle = f"Client: {order.client.name} | Status: {order.get_status_display()}"
-        
-        ws.append([title])
-        ws.append([subtitle])
-        ws.append([])
-        
-        # Order Info
-        ws.append(['ORDER INFORMATION'])
-        ws.append(['Field', 'Value'])
-        ws.append(['Order ID', order.id])
-        ws.append(['Order Number', order.order_number])
-        ws.append(['Client', order.client.name])
-        ws.append(['Order Date', order.order_date.strftime('%Y-%m-%d %H:%M')])
-        ws.append(['Delivery Date', order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else 'Not Set'])
-        ws.append(['Status', order.get_status_display()])
-        ws.append(['Total Amount (DA)', float(order.total_amount)])
-        ws.append(['Paid Amount (DA)', float(order.paid_amount)])
-        ws.append(['Remaining (DA)', float(order.remaining_amount)])
-        ws.append(['Total Expenses (DA)', float(order.total_expenses)])
-        ws.append(['Net Benefit (DA)', float(order.total_benefit)])
-        ws.append(['Description', order.description])
-        ws.append([])
-        
-        # Payments for this order
-        payments = order.payments.all().order_by('-date')
-        ws.append(['PAYMENTS RECEIVED'])
-        ws.append(['Reference', 'Date', 'Amount (DA)', 'Type', 'Created By', 'Description'])
-        
-        for payment in payments:
-            ws.append([
-                payment.reference,
-                payment.date.strftime('%Y-%m-%d %H:%M'),
-                float(payment.amount),
-                payment.get_type_display(),
-                payment.created_by.username,
-                payment.description[:100] if payment.description else ''
-            ])
-        ws.append([])
-        
-        # Order Outputs (Expenses)
-        order_outputs = order.order_outputs.all().order_by('-created_at')
-        ws.append(['ORDER EXPENSES'])
-        ws.append(['Type', 'Amount (DA)', 'Date', 'Output Reference', 'Product', 'Description'])
-        
-        for oo in order_outputs:
-            ws.append([
-                oo.get_type_display(),
-                float(oo.amount),
-                oo.created_at.strftime('%Y-%m-%d %H:%M'),
-                oo.created_by_output.reference if oo.created_by_output else '',
-                oo.created_by_stock_movement.product.name if oo.created_by_stock_movement else '',
-                oo.description[:100] if oo.description else ''
-            ])
-        ws.append([])
-        
-        # Stock Movements for this order
-        movements = order.stock_movements.all().order_by('-date')
-        ws.append(['STOCK MOVEMENTS'])
-        ws.append(['Product', 'Type', 'Quantity', 'Unit', 'Price (DA)', 'Total (DA)', 'Date'])
-        
-        for mov in movements:
-            ws.append([
-                mov.product.name,
-                mov.get_movement_type_display(),
-                float(mov.quantity),
-                mov.product.get_unit_display(),
-                float(mov.price),
-                float(mov.quantity) * float(mov.price),
-                mov.date.strftime('%Y-%m-%d %H:%M')
-            ])
-        
-        self.apply_header_styling(ws, title, subtitle)
-    
-    def _add_supplier_history_sheet(self, wb, supplier_id, start_date, end_date):
-        """Complete history for a specific supplier"""
-        ws = wb.create_sheet(f"Supplier {supplier_id} - History")
-        
-        try:
-            supplier = Supplier.objects.get(id=supplier_id)
-        except Supplier.DoesNotExist:
-            return
-        
-        title = f"SUPPLIER COMPLETE HISTORY: {supplier.name}"
-        subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
-        
-        ws.append([title])
-        ws.append([subtitle])
-        ws.append([])
-        
-        # Supplier Info
-        ws.append(['SUPPLIER INFORMATION'])
-        ws.append(['Field', 'Value'])
-        ws.append(['Supplier ID', supplier.id])
-        ws.append(['Name', supplier.name])
-        ws.append(['Phone', supplier.phone])
-        ws.append(['Address', supplier.address])
-        ws.append(['Status', 'Active' if supplier.is_active else 'Inactive'])
-        ws.append([])
-        
-        # All Outputs for this supplier
-        outputs = Output.objects.filter(
-            supplier=supplier,
-            date__range=[start_date, end_date]
-        ).order_by('-date')
-        
-        total_expenses = outputs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
-        ws.append(['EXPENSES SUMMARY'])
-        ws.append(['Total Transactions', outputs.count()])
-        ws.append(['Total Amount (DA)', float(total_expenses)])
-        ws.append([])
-        
-        ws.append(['ALL TRANSACTIONS'])
-        ws.append(['Reference', 'Date', 'Type', 'Amount (DA)', 'Order', 'Product', 'Description'])
-        
-        for output in outputs:
-            ws.append([
-                output.reference,
-                output.date.strftime('%Y-%m-%d %H:%M'),
-                output.get_type_display(),
-                float(output.amount),
-                output.order.order_number if output.order else '',
-                output.product.name if output.product else '',
-                output.description[:100] if output.description else ''
-            ])
-        
-        self.apply_header_styling(ws, title, subtitle)
-    
-    def _add_product_history_sheet(self, wb, product_id, start_date, end_date):
-        """Complete history for a specific product"""
-        ws = wb.create_sheet(f"Product {product_id} - History")
-        
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return
-        
-        title = f"PRODUCT COMPLETE HISTORY: {product.name}"
-        subtitle = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
-        
-        ws.append([title])
-        ws.append([subtitle])
-        ws.append([])
-        
-        # Product Info
-        ws.append(['PRODUCT INFORMATION'])
-        ws.append(['Field', 'Value'])
-        ws.append(['Product ID', product.id])
-        ws.append(['Reference', product.reference])
-        ws.append(['Name', product.name])
-        ws.append(['Unit', product.get_unit_display()])
-        ws.append(['Current Quantity', float(product.current_quantity)])
-        ws.append(['Status', 'Active' if product.is_active else 'Inactive'])
-        ws.append([])
-        
-        # Stock Movements
-        movements = StockMovement.objects.filter(
-            product=product,
-            date__range=[start_date, end_date]
-        ).order_by('-date')
-        
-        total_in = movements.filter(movement_type=StockMovement.MovementType.IN).aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
-        total_out = movements.filter(movement_type=StockMovement.MovementType.OUT).aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
-        
-        ws.append(['STOCK SUMMARY'])
-        ws.append(['Total IN', float(total_in)])
-        ws.append(['Total OUT', float(total_out)])
-        ws.append(['Net Movement', float(total_in - total_out)])
-        ws.append([])
-        
-        ws.append(['ALL MOVEMENTS'])
-        ws.append(['Date', 'Type', 'Quantity', 'Price (DA)', 'Total Value (DA)', 'Order', 'Created By'])
-        
-        for mov in movements:
-            ws.append([
-                mov.date.strftime('%Y-%m-%d %H:%M'),
-                mov.get_movement_type_display(),
-                float(mov.quantity),
-                float(mov.price),
-                float(mov.quantity) * float(mov.price),
-                mov.order.order_number if mov.order else '',
-                mov.created_by.username if mov.created_by else ''
-            ])
-        
-        self.apply_header_styling(ws, title, subtitle)
-    
-    def _add_clients_detailed_sheet(self, wb, filters):
-        ws = wb.create_sheet("Clients - Detailed")
+
+    def _add_clients_sheet(self, wb, client_id):
+        ws = wb.create_sheet("Clients")
         
         clients = Client.objects.all().prefetch_related('orders')
         
         # Apply filter
-        if filters['client_id']:
-            clients = clients.filter(id=filters['client_id'])
+        if client_id:
+            clients = clients.filter(id=client_id)
         
-        title = "DETAILED CLIENTS REPORT"
+        title = "CLIENTS REPORT"
         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {clients.count()}"
         
         ws.append([title])
@@ -1297,8 +1979,6 @@ class ComprehensiveReportView(APIView):
             orders = client.orders.all()
             total_orders = orders.count()
             total_value = orders.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-            
-            # Calculate total paid by summing CLIENT_PAYMENT inputs for this client's orders
             total_paid = Input.objects.filter(
                 order__client=client,
                 type=Input.Type.CLIENT_PAYMENT
@@ -1325,17 +2005,14 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_suppliers_detailed_sheet(self, wb, filters):
-        ws = wb.create_sheet("Suppliers - Detailed")
+
+    def _add_suppliers_sheet(self, wb):
+        """Only added when NO client filter is applied"""
+        ws = wb.create_sheet("Suppliers")
         
         suppliers = Supplier.objects.all()
         
-        # Apply filter
-        if filters['supplier_id']:
-            suppliers = suppliers.filter(id=filters['supplier_id'])
-        
-        title = "DETAILED SUPPLIERS REPORT"
+        title = "SUPPLIERS REPORT"
         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {suppliers.count()}"
         
         ws.append([title])
@@ -1367,17 +2044,14 @@ class ComprehensiveReportView(APIView):
         
         self.apply_header_styling(ws, title, subtitle)
         self.apply_table_styling(ws, header_row=4)
-    
-    def _add_products_detailed_sheet(self, wb, filters):
-        ws = wb.create_sheet("Products - Detailed")
+
+    def _add_products_sheet(self, wb):
+        """Only added when NO client filter is applied"""
+        ws = wb.create_sheet("Products")
         
         products = Product.objects.all()
         
-        # Apply filter
-        if filters['product_id']:
-            products = products.filter(id=filters['product_id'])
-        
-        title = "DETAILED PRODUCTS REPORT"
+        title = "PRODUCTS REPORT"
         subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {products.count()}"
         
         ws.append([title])
@@ -1393,11 +2067,11 @@ class ComprehensiveReportView(APIView):
         
         for product in products:
             in_movements = StockMovement.objects.filter(
-                product=product, 
+                product=product,
                 movement_type=StockMovement.MovementType.IN
             )
             out_movements = StockMovement.objects.filter(
-                product=product, 
+                product=product,
                 movement_type=StockMovement.MovementType.OUT
             )
             
@@ -1416,43 +2090,6 @@ class ComprehensiveReportView(APIView):
                 last_movement.get_movement_type_display() if last_movement else '',
                 'Active' if product.is_active else 'Inactive',
                 product.description
-            ])
-        
-        self.apply_header_styling(ws, title, subtitle)
-        self.apply_table_styling(ws, header_row=4)
-    
-    def _add_users_detailed_sheet(self, wb):
-        ws = wb.create_sheet("Users - Detailed")
-        
-        users = User.objects.all()
-        
-        title = "DETAILED USERS REPORT"
-        subtitle = f"Generated: {datetime.now().strftime('%B %d, %Y at %H:%M')} | Total Records: {users.count()}"
-        
-        ws.append([title])
-        ws.append([subtitle])
-        ws.append([])
-        
-        headers = [
-            'Username', 'Full Name', 'Role', 'Status',
-            'Inputs Created', 'Outputs Created', 'Stock Movements Created', 'Last Login'
-        ]
-        ws.append(headers)
-        
-        for user in users:
-            inputs_count = Input.objects.filter(created_by=user).count()
-            outputs_count = Output.objects.filter(created_by=user).count()
-            movements_count = StockMovement.objects.filter(created_by=user).count()
-            
-            ws.append([
-                user.username,
-                user.full_name,
-                user.get_role_display(),
-                'Active' if user.is_active else 'Inactive',
-                inputs_count,
-                outputs_count,
-                movements_count,
-                user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never'
             ])
         
         self.apply_header_styling(ws, title, subtitle)

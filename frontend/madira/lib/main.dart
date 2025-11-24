@@ -7,6 +7,7 @@ import 'package:madira/providers/login_provider.dart';
 import 'package:madira/providers/order_provider.dart';
 import 'package:madira/providers/output_proviider.dart';
 import 'package:madira/providers/product_provider.dart';
+import 'package:madira/providers/report_provider.dart';
 import 'package:madira/providers/stock_movement_provider.dart';
 import 'package:madira/providers/supplier_provider.dart';
 import 'package:madira/providers/user_provider.dart';
@@ -121,6 +122,7 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => StockMovementProvider()),
         ChangeNotifierProvider(create: (_) => OutputProvider()),
+        ChangeNotifierProvider(create: (_) => ReportProvider()),
       ],
       child: MaterialApp(
         title: 'Madera Kitchen Fabrication',
