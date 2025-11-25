@@ -53,7 +53,7 @@ from .views.dashbord_views import ComprehensiveDashboardView
 from .views.report_views import ComprehensiveReportView, ReportEstimateView
 
 # ===== Import Backup Views =====
-from .views.backup_views import DatabaseBackupView, DatabaseRestoreView, BackupInfoView
+from .views.backup_views import DatabaseBackupView
 
 # ======================================================
 # 🧭 1. Add DRF router for OutputViewSet and StockMovementViewSet
@@ -130,13 +130,13 @@ urlpatterns = [
     # 💾 DATABASE BACKUP & RESTORE - SQL Files
     # ======================================================
     # Get backup/restore information
-    path('backup/info/', BackupInfoView.as_view(), name='backup-info'),
+    # path('backup/info/', BackupInfoView.as_view(), name='backup-info'),
     
     # Download SQL backup
     path('backup/download/', DatabaseBackupView.as_view(), name='backup-download'),
     
     # Restore from SQL backup
-    path('backup/restore/', DatabaseRestoreView.as_view(), name='backup-restore'),
+    # path('backup/restore/', DatabaseRestoreView.as_view(), name='backup-restore'),
 
     # ======================================================
     # 🧭 3. Include router-generated URLs (Outputs)

@@ -123,11 +123,60 @@ class OrderListCreateView(generics.ListCreateAPIView):
 # ---------------------------
 # Retrieve + Update + Cancel (No Delete)
 # ---------------------------
+# class OrderRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
+#     """
+#     Retrieve or update an order.
+#     DELETE = Cancel the order (set status to 'cancelled')
+#     Status is COMPLETED only when fully paid, otherwise IN_PROGRESS.
+#     """
+#     queryset = Order.objects.select_related('client').all()
+#     serializer_class = OrderSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def perform_update(self, serializer):
+#         """
+#         Update order and automatically adjust status based on payment:
+#         - If fully paid -> COMPLETED
+#         - If not fully paid -> IN_PROGRESS (even if it was COMPLETED before)
+#         - Respects CANCELLED and PENDING status
+#         """
+#         with transaction.atomic():
+#             instance = serializer.save()
+            
+#             # Only auto-adjust status if order is not CANCELLED or PENDING
+#             if instance.status not in [Order.Status.CANCELLED, Order.Status.PENDING]:
+#                 if instance.is_fully_paid:
+#                     # Fully paid -> mark as COMPLETED
+#                     if instance.status != Order.Status.COMPLETED:
+#                         instance.status = Order.Status.COMPLETED
+#                         instance.save(update_fields=['status'])
+#                 else:
+#                     # Not fully paid -> mark as IN_PROGRESS
+#                     if instance.status == Order.Status.COMPLETED:
+#                         instance.status = Order.Status.IN_PROGRESS
+#                         instance.save(update_fields=['status'])
+
+#     def delete(self, request, *args, **kwargs):
+#         order = self.get_object()
+#         print(f"[DELETE] Attempting to cancel order: {order.order_number} (Current status: {order.status})")
+
+#         # Only cancel if it's not already cancelled
+#         if order.status != 'cancelled':
+#             Order.objects.filter(pk=order.pk).update(status='cancelled')
+#             order.refresh_from_db()
+#             print(f"[DELETE] Order {order.order_number} status updated to: {order.status}")
+#             message = f"Order {order.order_number} has been cancelled."
+#         else:
+#             print(f"[DELETE] Order {order.order_number} is already cancelled.")
+#             message = f"Order {order.order_number} was already cancelled."
+
+#         return Response({"detail": message}, status=status.HTTP_200_OK)
+
 class OrderRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
     """
     Retrieve or update an order.
-    DELETE = Cancel the order (set status to 'cancelled')
-    Status is COMPLETED only when fully paid, otherwise IN_PROGRESS.
+    - PUT/PATCH: fully manual status updates (including 'cancelled')
+    - DELETE: also cancels the order (sets status='cancelled')
     """
     queryset = Order.objects.select_related('client').all()
     serializer_class = OrderSerializer
@@ -135,43 +184,28 @@ class OrderRetrieveUpdateDeleteView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         """
-        Update order and automatically adjust status based on payment:
-        - If fully paid -> COMPLETED
-        - If not fully paid -> IN_PROGRESS (even if it was COMPLETED before)
-        - Respects CANCELLED and PENDING status
+        Save the order exactly as sent by the user, including status.
+        No automatic rules. No full-payment checks.
         """
         with transaction.atomic():
             instance = serializer.save()
-            
-            # Only auto-adjust status if order is not CANCELLED or PENDING
-            if instance.status not in [Order.Status.CANCELLED, Order.Status.PENDING]:
-                if instance.is_fully_paid:
-                    # Fully paid -> mark as COMPLETED
-                    if instance.status != Order.Status.COMPLETED:
-                        instance.status = Order.Status.COMPLETED
-                        instance.save(update_fields=['status'])
-                else:
-                    # Not fully paid -> mark as IN_PROGRESS
-                    if instance.status == Order.Status.COMPLETED:
-                        instance.status = Order.Status.IN_PROGRESS
-                        instance.save(update_fields=['status'])
+            # No auto status logic
+            return instance
 
     def delete(self, request, *args, **kwargs):
+        """
+        DELETE = Another way to cancel the order.
+        """
         order = self.get_object()
-        print(f"[DELETE] Attempting to cancel order: {order.order_number} (Current status: {order.status})")
 
-        # Only cancel if it's not already cancelled
-        if order.status != 'cancelled':
-            Order.objects.filter(pk=order.pk).update(status='cancelled')
-            order.refresh_from_db()
-            print(f"[DELETE] Order {order.order_number} status updated to: {order.status}")
+        if order.status != Order.Status.CANCELLED:
+            order.status = Order.Status.CANCELLED
+            order.save(update_fields=['status'])
             message = f"Order {order.order_number} has been cancelled."
         else:
-            print(f"[DELETE] Order {order.order_number} is already cancelled.")
             message = f"Order {order.order_number} was already cancelled."
 
         return Response({"detail": message}, status=status.HTTP_200_OK)
-
 
 class ClientOrdersListView(generics.ListAPIView):
     serializer_class = OrderSerializer
