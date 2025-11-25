@@ -1,10 +1,5 @@
-djangorestframework 
-djangorestframework-simplejwt
-openpyxl
-django-filter
-djangorestframework
-drf-spectacular
-djangorestframework-simplejwt
-django-filter
-openpyxl
-drf_spectacular
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+openpyxl==3.1.5
+django-filter==25.2
+drf-spectacular==0.29.0
