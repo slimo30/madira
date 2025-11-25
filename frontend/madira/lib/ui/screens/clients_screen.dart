@@ -1016,12 +1016,12 @@ class ClientDetailsDialog extends StatefulWidget {
   final bool initialOwnerView;
 
   const ClientDetailsDialog({
-    Key? key,
+    super.key,
     required this.clientData,
     required this.financial,
     required this.orders,
     this.initialOwnerView = false,
-  }) : super(key: key);
+  });
 
   @override
   State<ClientDetailsDialog> createState() => _ClientDetailsDialogState();
@@ -1309,7 +1309,7 @@ class _ClientDetailsDialogState extends State<ClientDetailsDialog>
         const SizedBox(width: 10),
         Expanded(
           child: _buildMetricCard(
-            '${isOwnerView ? "Collected" : "Paid"}',
+            isOwnerView ? "Collected" : "Paid",
             '${widget.financial['total_paid']} DA',
             AppColors.success,
           ),
@@ -2074,7 +2074,7 @@ class _ClientDetailsDialogState extends State<ClientDetailsDialog>
                 ),
               ],
             );
-          }).toList(),
+          }),
           // Total Row
           Container(
             decoration: BoxDecoration(
@@ -2153,14 +2153,14 @@ class _ClientDetailsDialogState extends State<ClientDetailsDialog>
     }
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-    } catch (e) {
-      return dateStr;
-    }
-  }
+  // String _formatDate(String dateStr) {
+  //   try {
+  //     final date = DateTime.parse(dateStr);
+  //     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  //   } catch (e) {
+  //     return dateStr;
+  //   }
+  // }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {

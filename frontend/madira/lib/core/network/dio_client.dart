@@ -27,7 +27,7 @@
 //           return handler.next(options);
 //         },
 //         onError: (error, handler) {
-//           print("❌ API Error: ${error.response?.statusCode} ${error.message}");
+//           debugPrint("❌ API Error: ${error.response?.statusCode} ${error.message}");
 //           return handler.next(error);
 //         },
 //       ),
@@ -36,7 +36,7 @@
 
 //   /// Update the base URL dynamically (used when master IP changes)
 //   void updateBaseUrl(String newBaseUrl) {
-//     print('🔄 Updating Dio base URL to: $newBaseUrl');
+//     debugPrint('🔄 Updating Dio base URL to: $newBaseUrl');
 //     dio.options.baseUrl = '$newBaseUrl/api';
 //   }
 // }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/ui/screens/clients_screen.dart';
 import 'package:madira/ui/screens/dashbord_screen.dart';
 import 'package:madira/ui/screens/input_screen.dart';
@@ -8,7 +7,6 @@ import 'package:madira/ui/screens/outputs_list_screen.dart';
 import 'package:madira/ui/screens/products_screen.dart';
 import 'package:madira/ui/screens/reports_screen.dart';
 import 'package:madira/ui/screens/workshop_screen.dart';
-import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../widgets/top_bar_widget.dart';
 import '../widgets/side_bar_widget.dart';

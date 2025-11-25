@@ -17,7 +17,7 @@ class OrderService {
     int? clientId,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /orders/');
       print('📍 Full URL: ${ApiConstants.baseUrl}/orders/');
       print('📊 Pagination: page=$page, pageSize=$pageSize');
@@ -41,7 +41,7 @@ class OrderService {
 
       final response = await _dio.get('/orders/', queryParameters: queryParams);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -76,7 +76,7 @@ class OrderService {
         'Failed to fetch orders - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('📍 Endpoint: /orders/');
       print('⚠️ Message: ${e.message}');
@@ -84,7 +84,7 @@ class OrderService {
       print('=' * 60 + '\n');
       throw Exception('Error fetching orders: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -96,14 +96,14 @@ class OrderService {
   Future<OrderModel> getOrder(int orderId) async {
     try {
       final endpoint = '/orders/$orderId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -117,14 +117,14 @@ class OrderService {
       }
       throw Exception('Failed to fetch order - Status: ${response.statusCode}');
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -147,7 +147,7 @@ class OrderService {
         'delivery_date': deliveryDate,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /orders/');
       print('📍 Full URL: ${ApiConstants.baseUrl}/orders/');
       print('📦 Request Data:');
@@ -159,7 +159,7 @@ class OrderService {
 
       final response = await _dio.post('/orders/', data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -175,7 +175,7 @@ class OrderService {
         'Failed to create order - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -190,7 +190,7 @@ class OrderService {
       }
       throw Exception('Error creating order: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -217,7 +217,7 @@ class OrderService {
         'status': status,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data:');
@@ -230,7 +230,7 @@ class OrderService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -246,14 +246,14 @@ class OrderService {
         'Failed to update order - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating order: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -265,14 +265,14 @@ class OrderService {
   Future<void> deleteOrder(int orderId) async {
     try {
       final endpoint = '/orders/$orderId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: DELETE $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('   ✓ Order $orderId cancelled successfully');
@@ -284,14 +284,14 @@ class OrderService {
         );
       }
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting order: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -307,7 +307,7 @@ class OrderService {
   }) async {
     try {
       final endpoint = '/clients/$clientId/orders/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
@@ -317,7 +317,7 @@ class OrderService {
         queryParameters: {'page': page, 'page_size': pageSize},
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -345,13 +345,13 @@ class OrderService {
         'Failed to fetch client orders - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching client orders: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');

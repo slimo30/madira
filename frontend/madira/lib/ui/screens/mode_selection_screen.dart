@@ -16,7 +16,7 @@ import 'master_waiting_screen.dart';
 import 'slave_waiting_screen.dart';
 
 class ModeSelectionScreen extends StatefulWidget {
-  const ModeSelectionScreen({Key? key}) : super(key: key);
+  const ModeSelectionScreen({super.key});
 
   @override
   State<ModeSelectionScreen> createState() => _ModeSelectionScreenState();

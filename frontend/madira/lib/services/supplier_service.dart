@@ -14,7 +14,7 @@ class SupplierService {
     String ordering = 'name',
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /suppliers/');
       print('📍 Full URL: ${ApiConstants.baseUrl}suppliers/');
       print('📊 Pagination: page=$page, pageSize=$pageSize');
@@ -32,7 +32,7 @@ class SupplierService {
         },
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📦 Response Data Type: ${response.data.runtimeType}');
@@ -69,7 +69,7 @@ class SupplierService {
         'Failed to fetch suppliers - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('📍 Endpoint: /suppliers/');
       print('⚠️ Message: ${e.message}');
@@ -78,7 +78,7 @@ class SupplierService {
       print('=' * 60 + '\n');
       throw Exception('Error fetching suppliers: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -90,14 +90,14 @@ class SupplierService {
   Future<SupplierModel> getSupplier(int supplierId) async {
     try {
       final endpoint = '/suppliers/$supplierId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -113,14 +113,14 @@ class SupplierService {
         'Failed to fetch supplier - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching supplier: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -143,7 +143,7 @@ class SupplierService {
         'notes': notes,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /suppliers/');
       print('📍 Full URL: ${ApiConstants.baseUrl}/suppliers/');
       print('📦 Request Data:');
@@ -155,7 +155,7 @@ class SupplierService {
 
       final response = await _dio.post('/suppliers/', data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -171,7 +171,7 @@ class SupplierService {
         'Failed to create supplier - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -186,7 +186,7 @@ class SupplierService {
       }
       throw Exception('Error creating supplier: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -213,7 +213,7 @@ class SupplierService {
         'is_active': isActive,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data:');
@@ -226,7 +226,7 @@ class SupplierService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -242,14 +242,14 @@ class SupplierService {
         'Failed to update supplier - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating supplier: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -261,14 +261,14 @@ class SupplierService {
   Future<void> deleteSupplier(int supplierId) async {
     try {
       final endpoint = '/suppliers/$supplierId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: DELETE $endpoint');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('   ✓ Supplier $supplierId deactivated successfully');
@@ -280,14 +280,14 @@ class SupplierService {
         );
       }
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting supplier: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');

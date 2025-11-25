@@ -319,7 +319,7 @@ class NetworkService extends ChangeNotifier {
   String? _masterIp;
   bool _isListening = false;
   bool _isBroadcasting = false;
-  List<String> _connectedSlaves = [];
+  final List<String> _connectedSlaves = [];
 
   RawDatagramSocket? _broadcastSocket;
   RawDatagramSocket? _listenSocket;
@@ -609,7 +609,7 @@ class NetworkService extends ChangeNotifier {
     if (_masterIp == null || _localIp == null) {
       print('❌ Cannot connect: No master IP or Local IP');
       // Try to refresh local IP if missing
-      if (_localIp == null) _localIp = await _getLocalIp();
+      _localIp ??= await _getLocalIp();
       return;
     }
     try {

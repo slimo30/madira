@@ -9,7 +9,7 @@ class UserService {
   // Get all users
   Future<List<UserModel>> getAllUsers() async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /users/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.usersEndpoint}',
@@ -18,7 +18,7 @@ class UserService {
 
       final response = await _dio.get(ApiConstants.usersEndpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📦 Response Data Type: ${response.data.runtimeType}');
@@ -39,7 +39,7 @@ class UserService {
       }
       throw Exception('Failed to fetch users - Status: ${response.statusCode}');
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('📍 Endpoint: ${ApiConstants.usersEndpoint}');
       print('⚠️ Message: ${e.message}');
@@ -48,7 +48,7 @@ class UserService {
       print('=' * 60 + '\n');
       throw Exception('Error fetching users: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -60,7 +60,7 @@ class UserService {
   Future<UserModel> getUserById(int userId) async {
     try {
       final endpoint = '${ApiConstants.usersDetailEndpoint}/$userId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /users/$userId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
@@ -95,7 +95,7 @@ class UserService {
         'role': role,
         'full_name': fullName,
       };
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /users/create/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.usersCreateEndpoint}',
@@ -112,7 +112,7 @@ class UserService {
         data: data,
       );
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📝 Raw Response Data: ${response.data}');
@@ -144,7 +144,7 @@ class UserService {
       }
       throw Exception('Failed to create user - Status: ${response.statusCode}');
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -159,7 +159,7 @@ class UserService {
       }
       throw Exception('Error creating user: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: $e');
       print('=' * 60 + '\n');
       throw Exception('Error creating user: $e');
@@ -171,7 +171,7 @@ class UserService {
     try {
       final endpoint =
           '${ApiConstants.usersDeactivateEndpoint}/$userId/deactivate/';
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: POST /users/$userId/deactivate/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
@@ -201,7 +201,7 @@ class UserService {
     try {
       final endpoint =
           '${ApiConstants.usersReactivateEndpoint}/$userId/reactivate/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /users/$userId/reactivate/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);

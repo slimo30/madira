@@ -64,7 +64,7 @@ class _ReportsContentState extends State<_ReportsContent> {
   Widget build(BuildContext context) {
     final reportProvider = Provider.of<ReportProvider>(context);
 
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

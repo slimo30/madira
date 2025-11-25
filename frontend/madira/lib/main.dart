@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/providers/dashboard_provider.dart';
@@ -23,8 +22,6 @@ import 'services/backend_service.dart';
 import 'services/network_service.dart';
 import 'ui/screens/mode_selection_screen.dart';
 import 'ui/screens/backend_setup_screen.dart';
-import 'ui/screens/master_waiting_screen.dart';
-import 'ui/screens/slave_waiting_screen.dart';
 import 'services/backup_service.dart';
 import 'services/backup_preferences.dart';
 import 'widgets/backup_dialog.dart';
@@ -58,7 +55,7 @@ void main() async {
 }
 
 class MaderaKitchenApp extends StatefulWidget {
-  const MaderaKitchenApp({Key? key}) : super(key: key);
+  const MaderaKitchenApp({super.key});
 
   @override
   State<MaderaKitchenApp> createState() => _MaderaKitchenAppState();
@@ -90,14 +87,14 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
 
   @override
   void onWindowClose() async {
-    print('🚪 Application closing - cleaning up resources...');
+    debugPrint('🚪 Application closing - cleaning up resources...');
 
     try {
       await _networkService.stop();
       await _backendService.stopBackend();
-      print('✅ Cleanup completed');
+      debugPrint('✅ Cleanup completed');
     } catch (e) {
-      print('⚠️ Error during cleanup: $e');
+      debugPrint('⚠️ Error during cleanup: $e');
     }
 
     await windowManager.destroy();
@@ -144,7 +141,6 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
-        background: AppColors.background,
       ),
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: AppBarTheme(
@@ -190,7 +186,7 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
 // ============================================================================
 
 class AppInitializer extends StatefulWidget {
-  const AppInitializer({Key? key}) : super(key: key);
+  const AppInitializer({super.key});
 
   @override
   State<AppInitializer> createState() => _AppInitializerState();
@@ -241,7 +237,7 @@ class _AppInitializerState extends State<AppInitializer> {
     // Only trigger backup if user is logged in (to avoid 401 errors)
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
     if (loginProvider.user == null) {
-      print('⏭️ Skipping backup - user not logged in yet');
+      debugPrint('⏭️ Skipping backup - user not logged in yet');
       return;
     }
 
@@ -265,17 +261,18 @@ class _AppInitializerState extends State<AppInitializer> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => BackupSetupDialog(
-        onSetup: () async {
-          Navigator.of(context).pop();
-          await _showPathSelectionDialog();
-        },
-        onSkip: () {
-          Navigator.of(context).pop();
-          // Mark as skipped (don't ask again today)
-          _backupPreferences?.setBackupConsent(false);
-        },
-      ),
+      builder:
+          (context) => BackupSetupDialog(
+            onSetup: () async {
+              Navigator.of(context).pop();
+              await _showPathSelectionDialog();
+            },
+            onSkip: () {
+              Navigator.of(context).pop();
+              // Mark as skipped (don't ask again today)
+              _backupPreferences?.setBackupConsent(false);
+            },
+          ),
     );
   }
 
@@ -283,19 +280,20 @@ class _AppInitializerState extends State<AppInitializer> {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => BackupPathSelectionDialog(
-        currentPath: _backupPreferences?.getBackupPath(),
-        onPathSelected: (path) async {
-          await _backupPreferences?.setBackupPath(path);
-          await _backupPreferences?.setBackupConsent(true);
-          
-          // Trigger backup immediately after setup
-          if (mounted) {
-            Navigator.of(context).pop();
-            _performBackgroundBackup();
-          }
-        },
-      ),
+      builder:
+          (context) => BackupPathSelectionDialog(
+            currentPath: _backupPreferences?.getBackupPath(),
+            onPathSelected: (path) async {
+              await _backupPreferences?.setBackupPath(path);
+              await _backupPreferences?.setBackupConsent(true);
+
+              // Trigger backup immediately after setup
+              if (mounted) {
+                Navigator.of(context).pop();
+                _performBackgroundBackup();
+              }
+            },
+          ),
     );
   }
 
@@ -307,7 +305,7 @@ class _AppInitializerState extends State<AppInitializer> {
     final result = await _backupService!.downloadBackupInBackground();
 
     // Show result notification (non-intrusive)
-    if (mounted && result != null) {
+    if (mounted) {
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -333,7 +331,9 @@ class _AppInitializerState extends State<AppInitializer> {
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Backup failed: ${result.error ?? "Unknown error"}'),
+                  child: Text(
+                    'Backup failed: ${result.error ?? "Unknown error"}',
+                  ),
                 ),
               ],
             ),

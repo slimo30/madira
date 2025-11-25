@@ -7,7 +7,6 @@ import '../../providers/login_provider.dart';
 import '../../services/network_service.dart';
 import '../../services/backend_service.dart';
 import '../screens/mode_selection_screen.dart';
-import '../screens/login_screen.dart';
 
 class TopBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final String title;

@@ -8,15 +8,13 @@ import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../services/network_service.dart';
-import '../../services/backend_service.dart';
 import '../../providers/login_provider.dart';
-import '../../main.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 import 'mode_selection_screen.dart';
 
 class SlaveWaitingScreen extends StatelessWidget {
-  const SlaveWaitingScreen({Key? key}) : super(key: key);
+  const SlaveWaitingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

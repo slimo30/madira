@@ -16,7 +16,7 @@ class ProductService {
     String? ordering,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /products/');
       print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.products}');
       print('📊 Pagination: page=$page, pageSize=$pageSize');
@@ -38,7 +38,7 @@ class ProductService {
         },
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -67,14 +67,14 @@ class ProductService {
         'Failed to fetch products - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching products: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -86,14 +86,14 @@ class ProductService {
   Future<ProductModel> getProductById(int productId) async {
     try {
       final endpoint = '${ApiConstants.products}$productId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /products/$productId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -109,13 +109,13 @@ class ProductService {
         'Failed to fetch product - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching product: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -140,7 +140,7 @@ class ProductService {
         if (initialPrice != null) 'initial_price': initialPrice,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /products/');
       print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.products}');
       print('📦 Request Data:');
@@ -154,7 +154,7 @@ class ProductService {
 
       final response = await _dio.post(ApiConstants.products, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -170,7 +170,7 @@ class ProductService {
         'Failed to create product - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -196,7 +196,7 @@ class ProductService {
       }
       throw Exception('Error creating product: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -223,7 +223,7 @@ class ProductService {
         'is_active': isActive,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT /products/$productId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data:');
@@ -235,7 +235,7 @@ class ProductService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -251,13 +251,13 @@ class ProductService {
         'Failed to update product - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error updating product: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -269,14 +269,14 @@ class ProductService {
   Future<void> deleteProduct(int productId) async {
     try {
       final endpoint = '${ApiConstants.products}$productId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: DELETE /products/$productId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('   ✓ Product $productId deleted successfully');
@@ -288,13 +288,13 @@ class ProductService {
         );
       }
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting product: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -318,7 +318,7 @@ class ProductService {
         'is_active': false,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT /products/$productId/ (Deactivate)');
       print('=' * 60);
 
@@ -353,7 +353,7 @@ class ProductService {
         'is_active': true,
       };
 
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT /products/$productId/ (Reactivate)');
       print('=' * 60);
 

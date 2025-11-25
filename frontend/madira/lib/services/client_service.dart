@@ -14,7 +14,7 @@ class ClientService {
     String ordering = 'name',
   }) async {
     try {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: GET /clients/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.clientsEndpoint}',
@@ -34,7 +34,7 @@ class ClientService {
         },
       );
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📦 Response Data Type: ${response.data.runtimeType}');
@@ -70,7 +70,7 @@ class ClientService {
         'Failed to fetch clients - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('📍 Endpoint: ${ApiConstants.clientsEndpoint}');
       print('⚠️ Message: ${e.message}');
@@ -79,7 +79,7 @@ class ClientService {
       print('=' * 60 + '\n');
       throw Exception('Error fetching clients: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -104,14 +104,14 @@ class ClientService {
   Future<ClientModel> getClient(int clientId) async {
     try {
       final endpoint = '${ApiConstants.clientsDetailEndpoint}/$clientId/';
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: GET /clients/$clientId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -127,14 +127,14 @@ class ClientService {
         'Failed to fetch client - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching client: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -151,14 +151,14 @@ class ClientService {
     try {
       final endpoint =
           '${ApiConstants.clientsDetailEndpoint}/$clientId/complete/';
-      print('\n' + '=' * 80);
+      print('\n${'=' * 80}');
       print('🌐 API REQUEST: GET /clients/$clientId/complete/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 80);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 80);
+      print('\n${'=' * 80}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 80 + '\n');
@@ -216,9 +216,7 @@ class ClientService {
         }
 
         print(
-          '=' * 80 +
-              '\n✅ Client complete data fetched successfully.\n' +
-              '=' * 80,
+          '${'=' * 80}\n✅ Client complete data fetched successfully.\n${'=' * 80}',
         );
 
         return data;
@@ -228,7 +226,7 @@ class ClientService {
         'Failed to fetch complete client - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 80);
+      print('\n${'=' * 80}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -236,7 +234,7 @@ class ClientService {
       print('=' * 80 + '\n');
       throw Exception('Error fetching complete client: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 80);
+      print('\n${'=' * 80}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 80 + '\n');
@@ -263,7 +261,7 @@ class ClientService {
         'notes': notes,
       };
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: POST /clients/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.clientsEndpoint}',
@@ -282,7 +280,7 @@ class ClientService {
         data: data,
       );
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -298,7 +296,7 @@ class ClientService {
         'Failed to create client - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -313,7 +311,7 @@ class ClientService {
       }
       throw Exception('Error creating client: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -344,7 +342,7 @@ class ClientService {
         'is_active': isActive,
       };
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: PUT /clients/$clientId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data:');
@@ -359,7 +357,7 @@ class ClientService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -375,14 +373,14 @@ class ClientService {
         'Failed to update client - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating client: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -394,14 +392,14 @@ class ClientService {
   Future<void> deleteClient(int clientId) async {
     try {
       final endpoint = '${ApiConstants.clientsDetailEndpoint}/$clientId/';
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('🌐 API REQUEST: DELETE /clients/$clientId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('   ✓ Client $clientId deactivated successfully');
@@ -413,14 +411,14 @@ class ClientService {
         );
       }
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting client: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');

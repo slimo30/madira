@@ -130,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  dashboardProvider.periodLabel ?? 'All Time',
+                                  dashboardProvider.periodLabel,
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -237,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (dashboardProvider.alerts?.isNotEmpty ?? false) ...[
+                  if (dashboardProvider.alerts.isNotEmpty) ...[
                     _buildAlertsSection(dashboardProvider),
                     const SizedBox(height: 24),
                   ],
@@ -352,7 +352,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAlertsSection(DashboardProvider provider) {
-    final alerts = provider.alerts ?? [];
+    final alerts = provider.alerts;
     if (alerts.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -516,7 +516,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Total Revenue',
-                  provider.totalRevenue ?? 0.0,
+                  provider.totalRevenue,
                   Icons.attach_money,
                   AppColors.info,
                 ),
@@ -525,7 +525,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Cash Collected',
-                  provider.totalCollected ?? 0.0,
+                  provider.totalCollected,
                   Icons.account_balance_wallet,
                   AppColors.success,
                 ),
@@ -534,7 +534,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Outstanding',
-                  provider.totalOutstanding ?? 0.0,
+                  provider.totalOutstanding,
                   Icons.pending_actions,
                   AppColors.warning,
                 ),
@@ -543,7 +543,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Cash in Hand',
-                  provider.cashInHand ?? 0.0,
+                  provider.cashInHand,
                   Icons.account_balance,
                   AppColors.info,
                 ),
@@ -556,29 +556,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Actual Profit',
-                  provider.actualProfit ?? 0.0,
+                  provider.actualProfit,
                   Icons.trending_up,
                   AppColors.success,
                   subtitle:
-                      '${(provider.actualProfitMargin ?? 0.0).toStringAsFixed(1)}% margin',
+                      '${(provider.actualProfitMargin).toStringAsFixed(1)}% margin',
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: _buildMetric(
                   'Expected Profit',
-                  provider.expectedProfit ?? 0.0,
+                  provider.expectedProfit,
                   Icons.insights,
                   AppColors.secondary,
                   subtitle:
-                      '${(provider.expectedProfitMargin ?? 0.0).toStringAsFixed(1)}% margin',
+                      '${(provider.expectedProfitMargin).toStringAsFixed(1)}% margin',
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: _buildMetric(
                   'Total Expenses',
-                  provider.totalExpenses ?? 0.0,
+                  provider.totalExpenses,
                   Icons.receipt_long,
                   AppColors.primary,
                 ),
@@ -587,7 +587,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetric(
                   'Collection Rate',
-                  provider.collectionRate ?? 0.0,
+                  provider.collectionRate,
                   Icons.percent,
                   AppColors.success,
                   isPercentage: true,
@@ -608,7 +608,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String? subtitle,
     bool isPercentage = false,
   }) {
-    final safeValue = value ?? 0.0;
+    final safeValue = value;
     String formattedValue =
         isPercentage
             ? '${safeValue.toStringAsFixed(1)}%'
@@ -669,7 +669,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildTrendsSection(DashboardProvider provider) {
-    final trends = provider.trends ?? [];
+    final trends = provider.trends;
 
     if (trends.isEmpty) {
       return Container(
@@ -826,7 +826,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     IconData icon, {
     bool isCount = false,
   }) {
-    final safeValue = value ?? 0.0;
+    final safeValue = value;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -974,8 +974,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       : (trends.length > 10 ? 2 : 1))),
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
-                        if (index < 0 || index >= trends.length)
+                        if (index < 0 || index >= trends.length) {
                           return const SizedBox.shrink();
+                        }
                         final period =
                             trends[index]['period']?.toString() ?? '';
                         final day =
@@ -1259,7 +1260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          NumberFormat('#,##0', 'en_US').format(value ?? 0.0),
+          NumberFormat('#,##0', 'en_US').format(value),
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -1360,13 +1361,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 final data = expense['data'] as Map?;
                                 final amount =
                                     (data?['amount'] ?? 0.0).toDouble();
-                                if (amount == 0)
+                                if (amount == 0) {
                                   return PieChartSectionData(
                                     value: 0.001,
                                     title: '',
                                     color: Colors.transparent,
                                     radius: 0,
                                   );
+                                }
                                 final percentage =
                                     (amount / totalExpenses * 100);
                                 final color = colors[index % colors.length];
@@ -1479,9 +1481,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBottomStats(DashboardProvider provider) {
-    final clients = provider.topClients ?? [];
-    final debtors = provider.topDebtors ?? [];
-    final lowStockItems = provider.lowStockItems ?? [];
+    final clients = provider.topClients;
+    final debtors = provider.topDebtors;
+    final lowStockItems = provider.lowStockItems;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1553,41 +1555,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 14),
                       _buildStatRow(
                         'Total Orders',
-                        (provider.totalOrders ?? 0).toString(),
+                        (provider.totalOrders).toString(),
                         AppColors.info,
                       ),
                       _buildStatRow(
                         'Completed',
-                        (provider.completedOrders ?? 0).toString(),
+                        (provider.completedOrders).toString(),
                         AppColors.success,
                       ),
                       _buildStatRow(
                         'In Progress',
-                        (provider.inProgressOrders ?? 0).toString(),
+                        (provider.inProgressOrders).toString(),
                         AppColors.warning,
                       ),
                       _buildStatRow(
                         'Pending',
-                        (provider.pendingOrders ?? 0).toString(),
+                        (provider.pendingOrders).toString(),
                         AppColors.textSecondary,
                       ),
                       _buildStatRow(
                         'Fully Paid',
-                        (provider.fullyPaidOrders ?? 0).toString(),
+                        (provider.fullyPaidOrders).toString(),
                         AppColors.success,
                       ),
                       _buildStatRow(
                         'Partially Paid',
-                        (provider.partiallyPaidOrders ?? 0).toString(),
+                        (provider.partiallyPaidOrders).toString(),
                         AppColors.warning,
                       ),
                       _buildStatRow(
                         'Unpaid',
-                        (provider.unpaidOrders ?? 0).toString(),
+                        (provider.unpaidOrders).toString(),
                         AppColors.primary,
                       ),
-                      if (provider.averageOrderValue != null &&
-                          provider.averageOrderValue! > 0)
+                      if (provider.averageOrderValue > 0)
                         _buildStatRow(
                           'Avg Order',
                           '${NumberFormat('#,##0', 'en_US').format(provider.averageOrderValue)} DA',
@@ -1633,22 +1634,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 14),
                       _buildStatRow(
                         'Total Products',
-                        (provider.totalProducts ?? 0).toString(),
+                        (provider.totalProducts ).toString(),
                         AppColors.info,
                       ),
                       _buildStatRow(
                         'Out of Stock',
-                        (provider.outOfStockCount ?? 0).toString(),
+                        (provider.outOfStockCount ).toString(),
                         AppColors.primary,
                       ),
                       _buildStatRow(
                         'Low Stock',
-                        (provider.lowStockCount ?? 0).toString(),
+                        (provider.lowStockCount ).toString(),
                         AppColors.warning,
                       ),
                       _buildStatRow(
                         'Stock Value',
-                        '${NumberFormat('#,##0', 'en_US').format(provider.totalStockValue ?? 0.0)} DA',
+                        '${NumberFormat('#,##0', 'en_US').format(provider.totalStockValue )} DA',
                         AppColors.success,
                       ),
                     ],
@@ -1688,7 +1689,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Top Clients (${provider.totalClients ?? 0} total)',
+                              'Top Clients (${provider.totalClients } total)',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -1729,7 +1730,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      '${NumberFormat('#,##0', 'en_US').format((client['revenue'] ?? 0.0).toDouble())} DA',
+                                      '${NumberFormat('#,##0', 'en_US').format((client['revenue'] ).toDouble())} DA',
                                       style: GoogleFonts.inter(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
@@ -1737,7 +1738,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '${client['orders_count'] ?? 0} orders',
+                                      '${client['orders_count'] } orders',
                                       style: GoogleFonts.inter(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w500,
@@ -1749,7 +1750,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ],
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -1818,7 +1819,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '${NumberFormat('#,##0', 'en_US').format((debtor['outstanding'] ?? 0.0).toDouble())} DA',
+                                  '${NumberFormat('#,##0', 'en_US').format((debtor['outstanding'] ).toDouble())} DA',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -1828,7 +1829,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ],
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -1896,7 +1897,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
-                              '${item['current_quantity'] ?? 0} ${item['unit'] ?? ''}',
+                              '${item['current_quantity'] } ${item['unit'] ?? ''}',
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,

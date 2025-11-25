@@ -8,11 +8,10 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../services/backend_service.dart';
 import '../../services/network_service.dart';
-import '../../main.dart';
 import 'master_waiting_screen.dart';
 
 class BackendSetupScreen extends StatefulWidget {
-  const BackendSetupScreen({Key? key}) : super(key: key);
+  const BackendSetupScreen({super.key});
 
   @override
   State<BackendSetupScreen> createState() => _BackendSetupScreenState();

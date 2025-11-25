@@ -477,7 +477,7 @@ class _InputOutputsScreenState extends State<InputOutputsScreen> {
                 Divider(height: 1, color: AppColors.surfaceVariant),
               ],
             );
-          }).toList(),
+          }),
 
           // Total Row - Right after the last transaction with no space
           Container(

@@ -25,7 +25,7 @@ class CustomButton extends StatelessWidget {
   final bool enabled;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.variant = ButtonVariant.primary,
@@ -34,7 +34,7 @@ class CustomButton extends StatelessWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -269,14 +269,14 @@ class PrimaryButton extends StatelessWidget {
   final ButtonSize size;
 
   const PrimaryButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.icon,
     this.isLoading = false,
     this.isFullWidth = false,
     this.size = ButtonSize.medium,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -301,14 +301,14 @@ class SecondaryButton extends StatelessWidget {
   final ButtonSize size;
 
   const SecondaryButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.icon,
     this.isLoading = false,
     this.isFullWidth = false,
     this.size = ButtonSize.medium,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -333,14 +333,14 @@ class OutlinedCustomButton extends StatelessWidget {
   final ButtonSize size;
 
   const OutlinedCustomButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.icon,
     this.isLoading = false,
     this.isFullWidth = false,
     this.size = ButtonSize.medium,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -364,13 +364,13 @@ class IconButtonCustom extends StatelessWidget {
   final ButtonSize size;
 
   const IconButtonCustom({
-    Key? key,
+    super.key,
     required this.icon,
     required this.onPressed,
     this.tooltip,
     this.color,
     this.size = ButtonSize.medium,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -414,11 +414,11 @@ class FloatingActionButtonCustom extends StatelessWidget {
   final String? tooltip;
 
   const FloatingActionButtonCustom({
-    Key? key,
+    super.key,
     required this.icon,
     required this.onPressed,
     this.tooltip,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -16,7 +16,6 @@ import '../widgets/custom_input_widget.dart';
 import '../widgets/custom_dropdown_widget.dart';
 import '../widgets/custom_dialog_widget.dart';
 import '../widgets/responsive_table_widget.dart';
-import '../dialogs/output_form_dialog.dart';
 
 class OutputsListScreen extends StatefulWidget {
   const OutputsListScreen({super.key});
@@ -677,43 +676,43 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
     );
   }
 
-  Widget _buildTypeChip(String type, dynamic data) {
-    // Handle both Map and individual values
-    final count = data is Map ? (data['count'] ?? 0) : 0;
-    final totalAmount =
-        data is Map ? ((data['total_amount'] as num?)?.toDouble() ?? 0.0) : 0.0;
+  // Widget _buildTypeChip(String type, dynamic data) {
+  //   // Handle both Map and individual values
+  //   final count = data is Map ? (data['count'] ?? 0) : 0;
+  //   final totalAmount =
+  //       data is Map ? ((data['total_amount'] as num?)?.toDouble() ?? 0.0) : 0.0;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            type.replaceAll('_', ' ').toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Count: $count | Total: ${totalAmount.toStringAsFixed(2)} DA',
-            style: GoogleFonts.inter(
-              fontSize: 9,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.primary.withOpacity(0.1),
+  //       borderRadius: BorderRadius.circular(8),
+  //       border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         Text(
+  //           type.replaceAll('_', ' ').toUpperCase(),
+  //           style: GoogleFonts.inter(
+  //             fontSize: 10,
+  //             fontWeight: FontWeight.w600,
+  //             color: AppColors.primary,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 4),
+  //         Text(
+  //           'Count: $count | Total: ${totalAmount.toStringAsFixed(2)} DA',
+  //           style: GoogleFonts.inter(
+  //             fontSize: 9,
+  //             color: AppColors.textSecondary,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // Build Output Row
   List<Widget> _buildOutputRow(
@@ -901,11 +900,6 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
 
   // Dialog Methods
   void _showCreateOutputDialog(BuildContext context) async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => const CreateOutputDialog(),
-    );
-
     // Refresh data after dialog closes (whether created or cancelled)
     if (mounted) {
       final outputProvider = Provider.of<OutputProvider>(
@@ -921,11 +915,6 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
   }
 
   void _showEditOutputDialog(BuildContext context, OutputModel output) async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => EditOutputDialog(output: output),
-    );
-
     // Refresh data after dialog closes
     if (mounted) {
       final outputProvider = Provider.of<OutputProvider>(

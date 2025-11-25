@@ -258,7 +258,7 @@ class ClientProvider with ChangeNotifier {
 
   // Pagination properties
   int _currentPage = 1;
-  int _pageSize = 10;
+  final int _pageSize = 10;
   int _totalCount = 0;
   String? _nextPage;
   String? _previousPage;

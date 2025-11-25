@@ -1719,13 +1719,12 @@ class _SearchableSupplierDropdownState
                                                                       .textPrimary,
                                                         ),
                                                       ),
-                                                      if (supplier.phone !=
-                                                          null) ...[
+                                                      ...[
                                                         const SizedBox(
                                                           height: 4,
                                                         ),
                                                         Text(
-                                                          supplier.phone!,
+                                                          supplier.phone,
                                                           style: GoogleFonts.inter(
                                                             fontSize: 10,
                                                             color:
@@ -2099,8 +2098,7 @@ class _SearchableProductDropdownState
                                                                       .textPrimary,
                                                         ),
                                                       ),
-                                                      if (product.reference !=
-                                                          null) ...[
+                                                      ...[
                                                         const SizedBox(
                                                           height: 4,
                                                         ),

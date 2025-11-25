@@ -17,7 +17,7 @@ class OutputService {
     String? search,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/');
       print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
       print('📊 Pagination: page=$page, pageSize=$pageSize');
@@ -39,7 +39,7 @@ class OutputService {
         },
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📦 Response Data Type: ${response.data.runtimeType}');
@@ -75,7 +75,7 @@ class OutputService {
         'Failed to fetch outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('📍 Endpoint: ${ApiConstants.outputs}');
       print('⚠️ Message: ${e.message}');
@@ -84,7 +84,7 @@ class OutputService {
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -96,14 +96,14 @@ class OutputService {
   Future<OutputModel> getOutputById(int outputId) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/$outputId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -121,14 +121,14 @@ class OutputService {
         'Failed to fetch output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching output: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -143,7 +143,7 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/by_type/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByType}',
@@ -157,7 +157,7 @@ class OutputService {
         queryParameters: {'type': type, 'page': page, 'page_size': pageSize},
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -185,14 +185,14 @@ class OutputService {
         'Failed to fetch outputs by type - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs by type: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -207,7 +207,7 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/by_order/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByOrder}',
@@ -225,7 +225,7 @@ class OutputService {
         },
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -253,14 +253,14 @@ class OutputService {
         'Failed to fetch order outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order outputs: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -275,7 +275,7 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/by_input/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByInput}',
@@ -293,7 +293,7 @@ class OutputService {
         },
       );
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
 
@@ -321,14 +321,14 @@ class OutputService {
         'Failed to fetch input outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching input outputs: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -339,7 +339,7 @@ class OutputService {
   // Get output statistics
   Future<OutputStatistics> getStatistics() async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/statistics/');
       print(
         '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsStatistics}',
@@ -348,7 +348,7 @@ class OutputService {
 
       final response = await _dio.get(ApiConstants.outputsStatistics);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('📦 Response Type: ${response.data.runtimeType}');
@@ -406,14 +406,14 @@ class OutputService {
         'Failed to fetch statistics - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching statistics: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -426,14 +426,14 @@ class OutputService {
     try {
       final endpoint =
           '${ApiConstants.outputsRelatedData}/$outputId/related_data/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: GET /outputs/$outputId/related_data/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -445,14 +445,14 @@ class OutputService {
         'Failed to fetch related data - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching related data: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      print('\n${'=' * 60}');
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -463,7 +463,7 @@ class OutputService {
   // Create output
   Future<OutputModel> createOutput(Map<String, dynamic> data) async {
     try {
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: POST /outputs/');
       print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
       print('📦 Request Data:');
@@ -476,7 +476,7 @@ class OutputService {
 
       final response = await _dio.post(ApiConstants.outputs, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -494,7 +494,7 @@ class OutputService {
         'Failed to create output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
@@ -509,7 +509,7 @@ class OutputService {
       }
       throw Exception('Error creating output: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -524,7 +524,7 @@ class OutputService {
   ) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PUT /outputs/$outputId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data:');
@@ -534,7 +534,7 @@ class OutputService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -552,14 +552,14 @@ class OutputService {
         'Failed to update output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating output: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -574,7 +574,7 @@ class OutputService {
   ) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: PATCH /outputs/$outputId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('📦 Request Data: $data');
@@ -582,7 +582,7 @@ class OutputService {
 
       final response = await _dio.patch(endpoint, data: data);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
@@ -598,14 +598,14 @@ class OutputService {
         'Failed to partially update output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error partially updating output: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');
@@ -617,14 +617,14 @@ class OutputService {
   Future<void> deleteOutput(int outputId) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      print('\n' + '=' * 60);
+      
       print('🌐 API REQUEST: DELETE /outputs/$outputId/');
       print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('\n' + '=' * 60);
+      
       print('✅ API RESPONSE: SUCCESS');
       print('📊 Status Code: ${response.statusCode}');
       print('   ✓ Output $outputId deleted successfully');
@@ -636,14 +636,14 @@ class OutputService {
         );
       }
     } on DioException catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: DioException');
       print('⚠️ Message: ${e.message}');
       print('📊 Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting output: ${e.message}');
     } catch (e) {
-      print('\n' + '=' * 60);
+      
       print('❌ API ERROR: Generic Exception');
       print('⚠️ Error: $e');
       print('=' * 60 + '\n');

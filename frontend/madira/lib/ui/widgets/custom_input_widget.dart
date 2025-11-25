@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/colors.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:flutter/services.dart';
 
 class CustomInputWidget extends StatelessWidget {
@@ -22,7 +21,7 @@ class CustomInputWidget extends StatelessWidget {
   final bool required;
 
   const CustomInputWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.labelText,
     this.hintText,
@@ -38,7 +37,7 @@ class CustomInputWidget extends StatelessWidget {
     this.enabled = true,
     this.errorText,
     this.required = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -169,14 +168,14 @@ class PasswordInputWidget extends StatefulWidget {
   final String? errorText;
 
   const PasswordInputWidget({
-    Key? key,
+    super.key,
     required this.controller,
     this.labelText = 'Password',
     this.validator,
     this.onChanged,
     this.required = false,
     this.errorText,
-  }) : super(key: key);
+  });
 
   @override
   State<PasswordInputWidget> createState() => _PasswordInputWidgetState();
@@ -226,12 +225,12 @@ class SearchInputWidget extends StatelessWidget {
   final VoidCallback? onClear;
 
   const SearchInputWidget({
-    Key? key,
+    super.key,
     required this.controller,
     this.hintText = 'Search...',
     this.onChanged,
     this.onClear,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

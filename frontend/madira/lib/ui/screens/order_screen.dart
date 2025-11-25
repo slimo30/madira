@@ -1593,13 +1593,13 @@ class OrderDetailsDialog extends StatefulWidget {
   final Function(InputModel) onDeletePaymentPressed;
 
   const OrderDetailsDialog({
-    Key? key,
+    super.key,
     required this.order,
     required this.onAddPaymentPressed,
     required this.onEditOrderPressed,
     required this.onEditPaymentPressed,
     required this.onDeletePaymentPressed,
-  }) : super(key: key);
+  });
 
   @override
   State<OrderDetailsDialog> createState() => _OrderDetailsDialogState();
@@ -3061,9 +3061,7 @@ class _DescriptionFieldWithStylingState
         int lineEndPos = charCount + currentLine.length;
 
         final newText =
-            text.substring(0, lineEndPos) +
-            '\n$nextNumber- ' +
-            text.substring(lineEndPos);
+            '${text.substring(0, lineEndPos)}\n$nextNumber- ${text.substring(lineEndPos)}';
 
         widget.controller.text = newText;
 
@@ -3079,9 +3077,7 @@ class _DescriptionFieldWithStylingState
         int lineEndPos = charCount + currentLine.length;
 
         final newText =
-            text.substring(0, lineEndPos) +
-            '\n1- ' +
-            text.substring(lineEndPos);
+            '${text.substring(0, lineEndPos)}\n1- ${text.substring(lineEndPos)}';
 
         widget.controller.text = newText;
 

@@ -10,13 +10,12 @@ import '../../core/constants/colors.dart';
 import '../../services/network_service.dart';
 import '../../services/backend_service.dart';
 import '../../providers/login_provider.dart';
-import '../../main.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 import 'mode_selection_screen.dart';
 
 class MasterWaitingScreen extends StatelessWidget {
-  const MasterWaitingScreen({Key? key}) : super(key: key);
+  const MasterWaitingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

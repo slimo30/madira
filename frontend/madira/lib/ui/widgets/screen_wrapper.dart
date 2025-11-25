@@ -13,12 +13,12 @@ class ScreenWrapper extends StatelessWidget {
   final VoidCallback? onClose;
 
   const ScreenWrapper({
-    Key? key,
+    super.key,
     required this.child,
     required this.title,
     this.showTitle = true,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +37,11 @@ class CustomTitleBar extends StatelessWidget {
   final VoidCallback? onClose;
 
   const CustomTitleBar({
-    Key? key,
+    super.key,
     required this.title,
     this.showTitle = true,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
