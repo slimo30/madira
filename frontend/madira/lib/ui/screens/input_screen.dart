@@ -83,7 +83,7 @@ class _InputsScreenState extends State<InputsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight * 1.5,
+      height: screenHeight * 1.2,
       child: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
@@ -653,16 +653,21 @@ class _InputsScreenState extends State<InputsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      CustomInputWidget(
+                      AmountInputWidget(
                         controller: amountController,
                         labelText: 'Amount (DA)',
                         hintText: '0.00',
-                        prefixIcon: const Icon(Icons.attach_money),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        required: true,
                       ),
+                      // CustomInputWidget(
+                      //   controller: amountController,
+                      //   labelText: 'Amount (DA)',
+                      //   hintText: '0.00',
+                      //   prefixIcon: const Icon(Icons.attach_money),
+                      //   keyboardType: const TextInputType.numberWithOptions(
+                      //     decimal: true,
+                      //   ),
+                      //   required: true,
+                      // ),
                       const SizedBox(height: 16),
                       CustomInputWidget(
                         controller: descriptionController,
@@ -814,15 +819,10 @@ class _InputsScreenState extends State<InputsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      CustomInputWidget(
+                      AmountInputWidget(
                         controller: amountController,
                         labelText: 'Amount (DA)',
                         hintText: '0.00',
-                        prefixIcon: const Icon(Icons.attach_money),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        required: true,
                       ),
                       const SizedBox(height: 16),
                       CustomInputWidget(

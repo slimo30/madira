@@ -316,12 +316,11 @@ class _CreateOutputDialogState extends State<CreateOutputDialog> {
     // Amount (for types that need amount)
     if (_fieldVisible('amount')) {
       fields.add(
-        CustomInputWidget(
+        AmountInputWidget(
           controller: _amountController,
           labelText: 'Amount (DA) ${_fieldRequired('amount') ? '*' : ''}',
           hintText: 'Enter amount',
-          prefixIcon: Icon(Icons.payments),
-          keyboardType: TextInputType.number,
+          prefixIcon: Icons.attach_money,
           validator:
               _fieldRequired('amount')
                   ? (value) {
@@ -335,6 +334,25 @@ class _CreateOutputDialogState extends State<CreateOutputDialog> {
                   }
                   : null,
         ),
+        // CustomInputWidget(
+        //   controller: _amountController,
+        //   labelText: 'Amount (DA) ${_fieldRequired('amount') ? '*' : ''}',
+        //   hintText: 'Enter amount',
+        //   prefixIcon: Icon(Icons.payments),
+        //   keyboardType: TextInputType.number,
+        //   validator:
+        //       _fieldRequired('amount')
+        //           ? (value) {
+        //             if (value == null || value.isEmpty) {
+        //               return 'Amount is required';
+        //             }
+        //             if (double.tryParse(value) == null) {
+        //               return 'Enter a valid number';
+        //             }
+        //             return null;
+        //           }
+        //           : null,
+        // ),
       );
       fields.add(const SizedBox(height: 16));
     }

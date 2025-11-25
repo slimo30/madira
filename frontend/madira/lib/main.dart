@@ -25,6 +25,9 @@ import 'ui/screens/mode_selection_screen.dart';
 import 'ui/screens/backend_setup_screen.dart';
 import 'ui/screens/master_waiting_screen.dart';
 import 'ui/screens/slave_waiting_screen.dart';
+import 'services/backup_service.dart';
+import 'services/backup_preferences.dart';
+import 'widgets/backup_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -195,6 +198,8 @@ class AppInitializer extends StatefulWidget {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _initialized = false;
+  BackupService? _backupService;
+  BackupPreferences? _backupPreferences;
 
   @override
   void initState() {
@@ -212,9 +217,133 @@ class _AppInitializerState extends State<AppInitializer> {
     await backendService.initialize();
     await loginProvider.checkStoredUserData();
 
+    // Initialize backup service
+    _backupPreferences = await BackupPreferences.getInstance();
+    _backupService = await BackupService.initialize();
+
+    // Clear last backup date (for testing)
+    await _backupPreferences?.clearBackupInfos();
+
     setState(() {
       _initialized = true;
     });
+
+    // Trigger backup check after initialization
+    _checkAndTriggerBackup();
+  }
+
+  Future<void> _checkAndTriggerBackup() async {
+    if (_backupService == null || _backupPreferences == null) return;
+
+    // Wait a bit for the UI to settle
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Only trigger backup if user is logged in (to avoid 401 errors)
+    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    if (loginProvider.user == null) {
+      print('⏭️ Skipping backup - user not logged in yet');
+      return;
+    }
+
+    // Check if backup is configured
+    if (!_backupPreferences!.isBackupConfigured()) {
+      // First time - show setup dialog
+      if (mounted) {
+        _showBackupSetupDialog();
+      }
+      return;
+    }
+
+    // Check if backup is needed today
+    if (_backupService!.shouldBackupToday()) {
+      // Trigger background backup
+      _performBackgroundBackup();
+    }
+  }
+
+  void _showBackupSetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => BackupSetupDialog(
+        onSetup: () async {
+          Navigator.of(context).pop();
+          await _showPathSelectionDialog();
+        },
+        onSkip: () {
+          Navigator.of(context).pop();
+          // Mark as skipped (don't ask again today)
+          _backupPreferences?.setBackupConsent(false);
+        },
+      ),
+    );
+  }
+
+  Future<void> _showPathSelectionDialog() async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => BackupPathSelectionDialog(
+        currentPath: _backupPreferences?.getBackupPath(),
+        onPathSelected: (path) async {
+          await _backupPreferences?.setBackupPath(path);
+          await _backupPreferences?.setBackupConsent(true);
+          
+          // Trigger backup immediately after setup
+          if (mounted) {
+            Navigator.of(context).pop();
+            _performBackgroundBackup();
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> _performBackgroundBackup() async {
+    if (_backupService == null) return;
+
+    // Perform backup in background
+    // DioClient automatically handles authentication via interceptors
+    final result = await _backupService!.downloadBackupInBackground();
+
+    // Show result notification (non-intrusive)
+    if (mounted && result != null) {
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('Database backup completed successfully'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Backup failed: ${result.error ?? "Unknown error"}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -381,7 +510,7 @@ class _AppInitializerState extends State<AppInitializer> {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          '🚀 Launching Django backend...',
+                          ' Launching  backend...',
                           style: GoogleFonts.inter(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,

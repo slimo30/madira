@@ -103,7 +103,7 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight * 1.6,
+      height: screenHeight * 1.5,
       child: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(

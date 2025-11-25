@@ -16,6 +16,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/responsive_helper.dart';
 import '../../providers/login_provider.dart';
 import 'users_screen.dart' as users_management;
+import 'backup_settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Products',
     'Reports',
     'Users',
+    'Backup Settings',
   ];
 
   @override
@@ -60,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const ProductsScreen(),
       const ReportsScreen(),
       const users_management.UsersScreen(),
+      const BackupSettingsScreen(),
     ];
   }
 

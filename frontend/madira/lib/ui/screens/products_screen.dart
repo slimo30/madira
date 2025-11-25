@@ -62,7 +62,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight * 1.6,
+      height: screenHeight * 1.2,
       child: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(

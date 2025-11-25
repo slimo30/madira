@@ -406,6 +406,9 @@ class AmountInputWidget extends StatelessWidget {
   final String? hintText;
   final String? errorText;
   final void Function(String)? onChanged;
+  final String? Function(String?)? validator;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
 
   const AmountInputWidget({
     super.key,
@@ -415,12 +418,15 @@ class AmountInputWidget extends StatelessWidget {
     this.hintText,
     this.errorText,
     this.onChanged,
+    this.validator,
+    this.prefixIcon,
+    this.suffixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     final signAndDigits = FilteringTextInputFormatter.allow(
-      RegExp(r'^[\+\-]?\d*$'),
+      RegExp(r'^[\+\-]?\d*\.?\d*$'),
     );
 
     return Column(
@@ -453,46 +459,66 @@ class AmountInputWidget extends StatelessWidget {
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(
             signed: true,
-            decimal: false,
+            decimal: true,
           ),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           inputFormatters: <TextInputFormatter>[
             signAndDigits,
-            LengthLimitingTextInputFormatter(12),
+            LengthLimitingTextInputFormatter(15),
           ],
           onChanged: onChanged,
-          validator: (value) {
-            if (required && (value == null || value.isEmpty)) {
-              return 'Amount is required';
-            }
-            if (value != null && value.isNotEmpty) {
-              final normalized = value.replaceAll(' ', '');
-              if (!RegExp(r'^[\+\-]?\d+$').hasMatch(normalized)) {
-                return 'Enter a valid amount';
-              }
-            }
-            return null;
-          },
+          validator:
+              validator ??
+              (value) {
+                if (required && (value == null || value.isEmpty)) {
+                  return 'Amount is required';
+                }
+                if (value != null && value.isNotEmpty) {
+                  final normalized = value.replaceAll(' ', '');
+                  if (double.tryParse(normalized) == null) {
+                    return 'Enter a valid amount';
+                  }
+                }
+                return null;
+              },
           style: GoogleFonts.inter(
             fontSize: 13,
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
-            hintText: hintText ?? '+2000 or -2000',
+            hintText: hintText ?? 'Enter amount (e.g., +2000 or -2000)',
             hintStyle: GoogleFonts.inter(
               fontSize: 13,
               color: AppColors.textSecondary.withOpacity(0.7),
             ),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 12, right: 8),
-              child: Icon(
-                Icons.account_balance_wallet,
-                color: AppColors.textSecondary,
-                size: 18,
-              ),
-            ),
+            prefixIcon:
+                prefixIcon != null
+                    ? Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 8),
+                      child: Icon(
+                        prefixIcon,
+                        color: AppColors.textSecondary,
+                        size: 18,
+                      ),
+                    )
+                    : null,
             prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
+            suffixIcon:
+                suffixIcon != null
+                    ? Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Icon(
+                        suffixIcon,
+                        color: AppColors.textSecondary,
+                        size: 18,
+                      ),
+                    )
+                    : null,
+            suffixIconConstraints: const BoxConstraints(
               minWidth: 0,
               minHeight: 0,
             ),
@@ -534,3 +560,139 @@ class AmountInputWidget extends StatelessWidget {
     );
   }
 }
+
+// class AmountInputWidget extends StatelessWidget {
+//   final TextEditingController controller;
+//   final bool required;
+//   final String labelText;
+//   final String? hintText;
+//   final String? errorText;
+//   final void Function(String)? onChanged;
+
+//   const AmountInputWidget({
+//     super.key,
+//     required this.controller,
+//     this.required = false,
+//     this.labelText = 'Amount',
+//     this.hintText,
+//     this.errorText,
+//     this.onChanged,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final signAndDigits = FilteringTextInputFormatter.allow(
+//       RegExp(r'^[\+\-]?\d*$'),
+//     );
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         if (labelText.isNotEmpty)
+//           RichText(
+//             text: TextSpan(
+//               text: labelText,
+//               style: GoogleFonts.inter(
+//                 fontSize: 13,
+//                 fontWeight: FontWeight.w600,
+//                 color: AppColors.textPrimary,
+//               ),
+//               children: [
+//                 if (required)
+//                   TextSpan(
+//                     text: ' *',
+//                     style: GoogleFonts.inter(
+//                       fontSize: 13,
+//                       fontWeight: FontWeight.w600,
+//                       color: AppColors.primary,
+//                     ),
+//                   ),
+//               ],
+//             ),
+//           ),
+//         const SizedBox(height: 8),
+//         TextFormField(
+//           controller: controller,
+//           keyboardType: const TextInputType.numberWithOptions(
+//             signed: true,
+//             decimal: false,
+//           ),
+//           autovalidateMode: AutovalidateMode.onUserInteraction,
+//           inputFormatters: <TextInputFormatter>[
+//             signAndDigits,
+//             LengthLimitingTextInputFormatter(12),
+//           ],
+//           onChanged: onChanged,
+//           validator: (value) {
+//             if (required && (value == null || value.isEmpty)) {
+//               return 'Amount is required';
+//             }
+//             if (value != null && value.isNotEmpty) {
+//               final normalized = value.replaceAll(' ', '');
+//               if (!RegExp(r'^[\+\-]?\d+$').hasMatch(normalized)) {
+//                 return 'Enter a valid amount';
+//               }
+//             }
+//             return null;
+//           },
+//           style: GoogleFonts.inter(
+//             fontSize: 13,
+//             color: AppColors.textPrimary,
+//             fontWeight: FontWeight.w500,
+//           ),
+//           decoration: InputDecoration(
+//             hintText: hintText ?? '+2000 or -2000',
+//             hintStyle: GoogleFonts.inter(
+//               fontSize: 13,
+//               color: AppColors.textSecondary.withOpacity(0.7),
+//             ),
+//             prefixIcon: Padding(
+//               padding: const EdgeInsets.only(left: 12, right: 8),
+//               child: Icon(
+//                 Icons.account_balance_wallet,
+//                 color: AppColors.textSecondary,
+//                 size: 18,
+//               ),
+//             ),
+//             prefixIconConstraints: const BoxConstraints(
+//               minWidth: 0,
+//               minHeight: 0,
+//             ),
+//             errorText: errorText,
+//             errorStyle: GoogleFonts.inter(
+//               fontSize: 11,
+//               color: AppColors.primary,
+//               fontWeight: FontWeight.w500,
+//             ),
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(8),
+//               borderSide: BorderSide(color: AppColors.surfaceVariant, width: 1),
+//             ),
+//             enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(8),
+//               borderSide: BorderSide(color: AppColors.surfaceVariant, width: 1),
+//             ),
+//             focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(8),
+//               borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+//             ),
+//             errorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(8),
+//               borderSide: BorderSide(color: AppColors.primary, width: 1),
+//             ),
+//             focusedErrorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(8),
+//               borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+//             ),
+//             filled: true,
+//             fillColor: AppColors.surface,
+//             contentPadding: const EdgeInsets.symmetric(
+//               horizontal: 12,
+//               vertical: 12,
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

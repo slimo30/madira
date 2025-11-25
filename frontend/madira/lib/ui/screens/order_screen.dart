@@ -64,7 +64,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight * 1.5,
+      height: screenHeight * 1.2,
       child: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
@@ -581,6 +581,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             value: 'completed',
                             child: Text('Completed'),
                           ),
+                          const DropdownMenuItem(
+                            value: 'cancelled',
+                            child: Text('Cancelled'),
+                          ),
                         ],
                         onChanged: (value) {
                           if (value != null) {
@@ -658,16 +662,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      CustomInputWidget(
+                      AmountInputWidget(
                         controller: totalAmountController,
                         labelText: 'Total Amount (DA)',
                         hintText: '0.00',
-                        prefixIcon: const Icon(Icons.attach_money),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
                         required: true,
                       ),
+                      // CustomInputWidget(
+                      //   controller: totalAmountController,
+                      //   labelText: ' Amount (DA)',
+                      //   hintText: '0.00',
+                      //   prefixIcon: const Icon(Icons.attach_money),
+                      //   keyboardType: const TextInputType.numberWithOptions(
+                      //     decimal: true,
+                      //   ),
+                      //   required: true,
+                      // ),
                       const SizedBox(height: 16),
                       _DescriptionFieldWithStyling(
                         controller: descriptionController,
@@ -816,17 +826,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      CustomInputWidget(
+                      AmountInputWidget(
                         controller: totalAmountController,
                         labelText: 'Total Amount (DA)',
                         hintText: '0.00',
-                        prefixIcon: const Icon(Icons.attach_money),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
                         required: true,
                       ),
-                      const SizedBox(height: 16),
+                      // CustomInputWidget(
+                      //   controller: totalAmountController,
+                      //   labelText: 'Total Amount (DA)',
+                      //   hintText: '0.00',
+                      //   prefixIcon: const Icon(Icons.attach_money),
+                      //   keyboardType: const TextInputType.numberWithOptions(
+                      //     decimal: true,
+                      //   ),
+                      //   required: true,
+                      // ),
+                      // const SizedBox(height: 16),
                       _DescriptionFieldWithStyling(
                         controller: descriptionController,
                       ),
@@ -1043,16 +1059,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                CustomInputWidget(
+                AmountInputWidget(
                   controller: amountController,
                   labelText: 'Payment Amount (DA)',
                   hintText: '0.00',
-                  prefixIcon: const Icon(Icons.attach_money),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
                   required: true,
                 ),
+                // CustomInputWidget(
+                //   controller: amountController,
+                //   labelText: 'Payment Amount (DA)',
+                //   hintText: '0.00',
+                //   prefixIcon: const Icon(Icons.attach_money),
+                //   keyboardType: const TextInputType.numberWithOptions(
+                //     decimal: true,
+                //   ),
+                //   required: true,
+                // ),
                 const SizedBox(height: 16),
                 CustomInputWidget(
                   controller: descriptionController,
@@ -1218,17 +1240,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                CustomInputWidget(
+
+                AmountInputWidget(
                   controller: amountController,
                   labelText: 'Payment Amount (DA)',
                   hintText: '0.00',
-                  prefixIcon: const Icon(Icons.attach_money),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
                   required: true,
                 ),
-                const SizedBox(height: 16),
+                // CustomInputWidget(
+                //   controller: amountController,
+                //   labelText: 'Payment Amount (DA)',
+                //   hintText: '0.00',
+                //   prefixIcon: const Icon(Icons.attach_money),
+                //   keyboardType: const TextInputType.numberWithOptions(
+                //     decimal: true,
+                //   ),
+                //   required: true,
+                // ),
+                // const SizedBox(height: 16),
                 CustomInputWidget(
                   controller: descriptionController,
                   labelText: 'Description',
