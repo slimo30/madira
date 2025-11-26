@@ -26,13 +26,13 @@ class DatabaseBackupView(APIView):
     
     Returns: SQL file that can be used to restore the database
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get(self, request):
         """Generate and download SQL backup"""
         try:
             print("="*80)
-            print("🗄️  DATABASE BACKUP STARTED")
+            print("  DATABASE BACKUP STARTED")
             print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             print("="*80)
             
@@ -42,7 +42,7 @@ class DatabaseBackupView(APIView):
             db_settings = settings.DATABASES['default']
             db_engine = db_settings['ENGINE']
             
-            print(f"📊 Database Engine: {db_engine}")
+            print(f" Database Engine: {db_engine}")
             
             # Generate SQL dump based on database type
             if 'sqlite' in db_engine:
@@ -62,7 +62,7 @@ class DatabaseBackupView(APIView):
             backup_size_mb = len(sql_dump.encode('utf-8')) / (1024 * 1024)
             
             print("="*80)
-            print("✅ DATABASE BACKUP COMPLETED")
+            print(" DATABASE BACKUP COMPLETED")
             print(f"   Time: {backup_time:.2f} seconds")
             print(f"   Size: {backup_size_mb:.2f} MB")
             print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -76,7 +76,7 @@ class DatabaseBackupView(APIView):
             return response
             
         except Exception as e:
-            print(f"❌ Backup failed: {str(e)}")
+            print(f" Backup failed: {str(e)}")
             import traceback
             traceback.print_exc()
             return Response({
@@ -88,14 +88,14 @@ class DatabaseBackupView(APIView):
         """Backup SQLite database to SQL dump"""
         db_path = str(db_settings['NAME'])
         
-        print(f"📂 Database file: {db_path}")
+        print(f" Database file: {db_path}")
         
         if not os.path.exists(db_path):
             raise FileNotFoundError(f"Database file not found: {db_path}")
         
         try:
             # Method 1: Try using sqlite3 command line tool
-            print("🔧 Using sqlite3 command to create backup...")
+            print(" Using sqlite3 command to create backup...")
             result = subprocess.run(
                 ['sqlite3', db_path, '.dump'],
                 capture_output=True,
@@ -119,16 +119,16 @@ class DatabaseBackupView(APIView):
 -- Size: {os.path.getsize(db_path) / (1024 * 1024):.2f} MB
 
 """
-                print("✅ SQLite backup created successfully using sqlite3 command")
+                print(" SQLite backup created successfully using sqlite3 command")
                 return header + sql_dump
             else:
                 # Fall through to Python method
-                print(f"⚠️  sqlite3 command failed or produced no output: {result.stderr}")
+                print(f"  sqlite3 command failed or produced no output: {result.stderr}")
                 raise FileNotFoundError("sqlite3 not available")
                 
         except (FileNotFoundError, subprocess.TimeoutExpired) as e:
             # Method 2: Use Python sqlite3 module (more reliable)
-            print("🐍 Using Python sqlite3 module to create backup...")
+            print("Using Python sqlite3 module to create backup...")
             
             conn = sqlite3.connect(db_path)
             sql_dump_lines = []
@@ -153,7 +153,7 @@ class DatabaseBackupView(APIView):
 -- Method: Python sqlite3 module
 
 """
-            print("✅ SQLite backup created successfully using Python")
+            print(" SQLite backup created successfully using Python")
             return header + sql_dump
     
     def _backup_postgresql(self, db_settings):
@@ -164,7 +164,7 @@ class DatabaseBackupView(APIView):
         db_host = db_settings.get('HOST', 'localhost')
         db_port = db_settings.get('PORT', '5432')
         
-        print(f"🐘 PostgreSQL: {db_user}@{db_host}:{db_port}/{db_name}")
+        print(f"PostgreSQL: {db_user}@{db_host}:{db_port}/{db_name}")
         
         # Set password environment variable
         env = os.environ.copy()
@@ -199,7 +199,7 @@ class DatabaseBackupView(APIView):
 -- Database Name: {db_name}
 
 """
-        print("✅ PostgreSQL backup created successfully")
+        print(" PostgreSQL backup created successfully")
         return header + result.stdout
     
     def _backup_mysql(self, db_settings):
@@ -210,7 +210,7 @@ class DatabaseBackupView(APIView):
         db_host = db_settings.get('HOST', 'localhost')
         db_port = db_settings.get('PORT', '3306')
         
-        print(f"🐬 MySQL: {db_user}@{db_host}:{db_port}/{db_name}")
+        print(f" MySQL: {db_user}@{db_host}:{db_port}/{db_name}")
         
         # Build mysqldump command
         cmd = [
@@ -245,7 +245,7 @@ class DatabaseBackupView(APIView):
 -- Database Name: {db_name}
 
 """
-        print("✅ MySQL backup created successfully")
+        print(" MySQL backup created successfully")
         return header + result.stdout
 
 

@@ -47,8 +47,7 @@ dependencies:
   network_info_plus: ^6.0.2
   process_run: ^1.2.0
   file_picker: ^8.1.6
-  csv: ^6.0.0
-  excel: ^4.0.6
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -95,3 +94,13 @@ flutter:
           weight: 800
         - asset: assets/fonts/Inter-Black.ttf
           weight: 900
+
+
+flutter_icons:
+  image_path: "assets/images/logo.png"
+  windows:
+    generate: true
+  macos:
+    generate: true
+  linux:
+    generate: true
