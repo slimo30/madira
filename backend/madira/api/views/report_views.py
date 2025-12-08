@@ -44,7 +44,7 @@ class SystemBenchmark:
     @classmethod
     def _run_benchmark(cls):
         """Run actual performance tests on this hardware"""
-        print("🔧 Running system benchmark...")
+        print(" Running system benchmark...")
         
         # Test 1: Database query performance
         db_start = time.time()
@@ -118,7 +118,7 @@ class SystemBenchmark:
             }
         }
         
-        print(f"✅ Benchmark complete: DB={db_query_per_1k:.3f}s, Excel={excel_write_per_1k:.3f}s, Style={style_per_1k:.3f}s per 1K rows")
+        print(f" Benchmark complete: DB={db_query_per_1k:.3f}s, Excel={excel_write_per_1k:.3f}s, Style={style_per_1k:.3f}s per 1K rows")
         
         return benchmarks
 
@@ -412,23 +412,23 @@ class ReportEstimateView(APIView):
         
         if total_time_estimate < 3:
             recommendation = "very_fast"
-            message = "⚡ This report will generate very quickly (under 3 seconds)."
+            message = " This report will generate very quickly (under 3 seconds)."
         elif total_time_estimate < 8:
             recommendation = "fast"
-            message = "✅ This report will generate quickly (3-8 seconds)."
+            message = " This report will generate quickly (3-8 seconds)."
         elif total_time_estimate < 20:
             recommendation = "moderate"
             message = "⏱️ This report will take 8-20 seconds to generate."
         elif total_time_estimate < 60:
             recommendation = "slow"
-            message = "⚠️ This report will take 20-60 seconds. Please be patient."
+            message = "️ This report will take 20-60 seconds. Please be patient."
         elif total_time_estimate < 180:
             recommendation = "very_slow"
             message = f"⏳ This report will take 1-3 minutes. Consider filtering the data."
         else:
             recommendation = "extremely_slow"
             minutes = int(total_time_estimate / 60)
-            message = f"🐌 This report will take over 3 minutes (~{minutes} min). Strongly recommend using filters."
+            message = f" This report will take over 3 minutes (~{minutes} min). Strongly recommend using filters."
         
         # ============================================
         # RESPONSE
@@ -657,7 +657,7 @@ class ReportEstimateView(APIView):
         
 #         # Print to console - Start
 #         print("="*80)
-#         print(f"📊 REPORT GENERATION STARTED")
+#         print(f" REPORT GENERATION STARTED")
 #         print(f"   Type: {report_type.upper()}")
 #         print(f"   Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
 #         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -671,7 +671,7 @@ class ReportEstimateView(APIView):
         
 #         # Print to console - Complete
 #         print("="*80)
-#         print(f"✅ REPORT GENERATION COMPLETED")
+#         print(f" REPORT GENERATION COMPLETED")
 #         print(f"   Total Time: {total_generation_time:.2f} seconds ({self._format_time(total_generation_time)})")
 #         print(f"   File Ready for Download")
 #         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -1608,7 +1608,7 @@ class ComprehensiveReportView(APIView):
         start_date, end_date = self.get_date_range(report_type)
         
         print("="*80)
-        print(f"📊 REPORT GENERATION STARTED")
+        print(f" REPORT GENERATION STARTED")
         print(f"   Type: {report_type.upper()}")
         print(f"   Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
         if client_id:
@@ -1629,7 +1629,7 @@ class ComprehensiveReportView(APIView):
         total_generation_time = time.time() - generation_start_time
         
         print("="*80)
-        print(f"✅ REPORT GENERATION COMPLETED")
+        print(f" REPORT GENERATION COMPLETED")
         print(f"   Total Time: {total_generation_time:.2f} seconds")
         print(f"   File Ready for Download")
         print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

@@ -17,7 +17,7 @@ from ..models import (
 
 class ComprehensiveDashboardView(APIView):
     """
-    🎯 ESSENTIAL DASHBOARD ANALYTICS API
+     ESSENTIAL DASHBOARD ANALYTICS API
     
     Core Metrics Only:
     - Financial Overview (Revenue, Expenses, Profit, Cash)
@@ -28,7 +28,7 @@ class ComprehensiveDashboardView(APIView):
     - Critical Alerts
     
     ═══════════════════════════════════════════════════════════════════
-    📚 METRICS CALCULATION GUIDE
+     METRICS CALCULATION GUIDE
     ═══════════════════════════════════════════════════════════════════
     
     1️⃣ FINANCIAL OVERVIEW:
@@ -196,7 +196,7 @@ class ComprehensiveDashboardView(APIView):
 
     def get(self, request):
         # ============================================
-        # 🔧 PERIOD SETUP & VALIDATION
+        #  PERIOD SETUP & VALIDATION
         # ============================================
         # Determines the time range for all metrics
         # Valid options: 'today', 'month', 'year', 'all_time'
@@ -242,7 +242,7 @@ class ComprehensiveDashboardView(APIView):
             stock_movements_filter = Q()
         
         # ============================================
-        # 📊 1. ORDERS AGGREGATION
+        #  1. ORDERS AGGREGATION
         # ============================================
         # Calculates: revenue, order counts, status breakdown
         # Formula: SUM(total_amount), COUNT(*), COUNT(*) per status
@@ -265,7 +265,7 @@ class ComprehensiveDashboardView(APIView):
         )
         
         # ============================================
-        # 💰 2. INPUTS AGGREGATION
+        #  2. INPUTS AGGREGATION
         # ============================================
         # Calculates: total money IN, by category
         # Inputs represent money coming INTO the business
@@ -282,7 +282,7 @@ class ComprehensiveDashboardView(APIView):
         )
         
         # ============================================
-        # 💸 3. OUTPUTS AGGREGATION
+        #  3. OUTPUTS AGGREGATION
         # ============================================
         # Calculates: total money OUT, by category
         # Outputs represent money going OUT of the business
@@ -317,7 +317,7 @@ class ComprehensiveDashboardView(APIView):
         )
         
         # ============================================
-        # 🧮 4. FINANCIAL CALCULATIONS
+        #  4. FINANCIAL CALCULATIONS
         # ============================================
         # Derives key financial metrics from raw data
         
@@ -358,7 +358,7 @@ class ComprehensiveDashboardView(APIView):
         cash_in_hand = inputs_aggregate['total_inputs'] - total_expenses
         
         # ============================================
-        # 📊 5. FINANCIAL OVERVIEW (ESSENTIAL ONLY)
+        #  5. FINANCIAL OVERVIEW (ESSENTIAL ONLY)
         # ============================================
         
         financial_overview = {
@@ -410,7 +410,7 @@ class ComprehensiveDashboardView(APIView):
         }
 
         # ============================================
-        # 📈 6. ORDERS ANALYTICS (SIMPLIFIED)
+        #  6. ORDERS ANALYTICS (SIMPLIFIED)
         # ============================================
         # Analyzes order payment status
         # For each order, calculates total paid and compares to order total
@@ -444,7 +444,7 @@ class ComprehensiveDashboardView(APIView):
         }
         
         # ============================================
-        # 👥 7. CLIENT ANALYTICS (TOP 5 & DEBTORS)
+        #  7. CLIENT ANALYTICS (TOP 5 & DEBTORS)
         # ============================================
         
         clients_aggregate = Client.objects.filter(is_active=True).aggregate(
@@ -505,7 +505,7 @@ class ComprehensiveDashboardView(APIView):
         }
         
         # ============================================
-        # 📦 8. INVENTORY ANALYTICS (CRITICAL ONLY)
+        #  8. INVENTORY ANALYTICS (CRITICAL ONLY)
         # ============================================
         
         products_aggregate = Product.objects.filter(is_active=True).aggregate(
@@ -568,7 +568,7 @@ class ComprehensiveDashboardView(APIView):
         }
         
         # ============================================
-        # 📅 9. TIME-BASED TRENDS
+        #  9. TIME-BASED TRENDS
         # ============================================
         # Shows how metrics change over time
         # Granularity depends on selected period
@@ -731,7 +731,7 @@ class ComprehensiveDashboardView(APIView):
                 })
         
         # ============================================
-        # 🚨 10. ALERTS & WARNINGS
+        #  10. ALERTS & WARNINGS
         # ============================================
         # Business health indicators - flags potential issues
         
@@ -792,7 +792,7 @@ class ComprehensiveDashboardView(APIView):
             })
         
         # ============================================
-        # 📊 FINAL RESPONSE
+        #  FINAL RESPONSE
         # ============================================
         
         dashboard_data = {

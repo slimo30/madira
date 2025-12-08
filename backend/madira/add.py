@@ -50,11 +50,11 @@ class DataGenerator:
         
     def log(self, message):
         if self.verbose:
-            print(f"✓ {message}")
+            print(f" {message}")
     
     def clear_all_data(self):
         """Clear all data from the database in correct order (respecting FK constraints)"""
-        print("\n🗑️  Clearing all data...")
+        print("\n️  Clearing all data...")
         
         # Delete in correct order to respect PROTECT foreign keys
         OrderOutput.objects.all().delete()  # First - references StockMovement and Output
@@ -67,10 +67,10 @@ class DataGenerator:
         Client.objects.all().delete()
         User.objects.exclude(is_superuser=True).delete()
         
-        print("✓ All data cleared!\n")
+        print(" All data cleared!\n")
     
     def create_users(self, count=5):
-        print(f"\n👥 Creating {count} users...")
+        print(f"\n Creating {count} users...")
         roles = [User.Role.ADMIN, User.Role.RESPONSIBLE]
         
         for i in range(count):
@@ -83,10 +83,10 @@ class DataGenerator:
                 is_active=True
             )
             self.created_users.append(user)
-        print(f"✓ Created {len(self.created_users)} users\n")
+        print(f" Created {len(self.created_users)} users\n")
     
     def create_clients(self, count=50):
-        print(f"\n👤 Creating {count} clients...")
+        print(f"\n Creating {count} clients...")
         cities = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Blida']
         client_types = [Client.Type.NEW, Client.Type.OLD]
         
@@ -103,10 +103,10 @@ class DataGenerator:
             self.created_clients.append(client)
             if (i + 1) % 100 == 0:
                 self.log(f"Created {i+1}/{count} clients...")
-        print(f"✓ Created {len(self.created_clients)} clients\n")
+        print(f" Created {len(self.created_clients)} clients\n")
     
     def create_suppliers(self, count=20):
-        print(f"\n🏪 Creating {count} suppliers...")
+        print(f"\n Creating {count} suppliers...")
         types = ['Construction', 'Quincaillerie', 'Électricité', 'Plomberie']
         
         for i in range(count):
@@ -118,10 +118,10 @@ class DataGenerator:
                 notes=''
             )
             self.created_suppliers.append(supplier)
-        print(f"✓ Created {len(self.created_suppliers)} suppliers\n")
+        print(f" Created {len(self.created_suppliers)} suppliers\n")
     
     def create_products(self, count=30):
-        print(f"\n📦 Creating {count} products...")
+        print(f"\n Creating {count} products...")
         products = [
             ('Ciment 50kg', Product.Unit.KILOGRAM),
             ('Sable', Product.Unit.SQUARE_METER),
@@ -143,10 +143,10 @@ class DataGenerator:
                 is_active=True
             )
             self.created_products.append(product)
-        print(f"✓ Created {len(self.created_products)} products\n")
+        print(f" Created {len(self.created_products)} products\n")
     
     def create_orders(self, count=100):
-        print(f"\n📋 Creating {count} orders...")
+        print(f"\n Creating {count} orders...")
         statuses = [Order.Status.PENDING, Order.Status.IN_PROGRESS, Order.Status.COMPLETED, Order.Status.CANCELLED]
         
         for i in range(count):
@@ -173,10 +173,10 @@ class DataGenerator:
             
             if (i + 1) % 500 == 0:
                 self.log(f"Created {i+1}/{count} orders...")
-        print(f"✓ Created {len(self.created_orders)} orders\n")
+        print(f" Created {len(self.created_orders)} orders\n")
     
     def create_inputs(self, count=200):
-        print(f"\n💵 Creating {count} inputs...")
+        print(f"\n Creating {count} inputs...")
         input_types = [Input.Type.CLIENT_PAYMENT, Input.Type.SHOP_DEPOSIT]
         
         created = 0
@@ -224,10 +224,10 @@ class DataGenerator:
             except Exception as e:
                 continue
         
-        print(f"✓ Created {len(self.created_inputs)} inputs\n")
+        print(f" Created {len(self.created_inputs)} inputs\n")
     
     def create_outputs(self, count=300):
-        print(f"\n💸 Creating {count} outputs...")
+        print(f"\n Creating {count} outputs...")
         
         # All 6 output types
         output_types = [
@@ -256,7 +256,7 @@ class DataGenerator:
             ]
             
             if not available_inputs:
-                print(f"⚠️  No more inputs with sufficient balance. Created {created}/{count} outputs.")
+                print(f"️  No more inputs with sufficient balance. Created {created}/{count} outputs.")
                 break
             
             user = random.choice(self.created_users)
@@ -338,10 +338,10 @@ class DataGenerator:
                 input_balances[source_input.id] += amount
                 continue
         
-        print(f"✓ Created {len(self.created_outputs)} outputs\n")
+        print(f" Created {len(self.created_outputs)} outputs\n")
     
     def create_stock_movements(self, count=200):
-        print(f"\n📊 Creating {count} stock movements...")
+        print(f"\n Creating {count} stock movements...")
         
         if not self.created_products:
             print("No products available")
@@ -389,7 +389,7 @@ class DataGenerator:
             except Exception as e:
                 continue
         
-        print(f"✓ Created {created} stock movements\n")
+        print(f" Created {created} stock movements\n")
 
 
 def main():
@@ -469,17 +469,17 @@ def main():
         }
     
     print("\n" + "="*60)
-    print("🚀 MADIRA DATABASE - CONSTRAINT-AWARE DATA GENERATOR")
+    print(" MADIRA DATABASE - CONSTRAINT-AWARE DATA GENERATOR")
     print("="*60)
-    print(f"\n📊 Generation Plan: ~{sum(counts.values())} rows")
+    print(f"\n Generation Plan: ~{sum(counts.values())} rows")
     for key, val in counts.items():
         print(f"   {key.title()}: {val}")
     print("="*60)
     
     if not args.quiet:
-        confirm = input("\n⚠️  Proceed? (y/n): ")
+        confirm = input("\n️  Proceed? (y/n): ")
         if confirm.lower() != 'y':
-            print("❌ Cancelled.")
+            print(" Cancelled.")
             return
     
     generator = DataGenerator(verbose=not args.quiet)
@@ -502,10 +502,10 @@ def main():
         duration = (datetime.now() - start_time).total_seconds()
         
         print("\n" + "="*60)
-        print("✅ COMPLETED!")
+        print(" COMPLETED!")
         print("="*60)
         print(f"⏱️  Duration: {duration:.2f} seconds")
-        print(f"📊 Created:")
+        print(f" Created:")
         print(f"   Users: {len(generator.created_users)}")
         print(f"   Clients: {len(generator.created_clients)}")
         print(f"   Suppliers: {len(generator.created_suppliers)}")
@@ -516,7 +516,7 @@ def main():
         print("="*60 + "\n")
         
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
+        print(f"\n Error: {str(e)}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

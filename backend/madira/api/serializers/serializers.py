@@ -44,7 +44,7 @@ from ..models import Order
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    # ✅ Custom read-only fields
+    #  Custom read-only fields
     client_name = serializers.CharField(source='client.name', read_only=True)
     total_expenses = serializers.DecimalField(
         max_digits=12, decimal_places=2, read_only=True

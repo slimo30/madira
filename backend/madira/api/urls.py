@@ -56,14 +56,14 @@ from .views.report_views import ComprehensiveReportView, ReportEstimateView
 from .views.backup_views import DatabaseBackupView
 
 # ======================================================
-# 🧭 1. Add DRF router for OutputViewSet and StockMovementViewSet
+#  1. Add DRF router for OutputViewSet and StockMovementViewSet
 # ======================================================
 router = DefaultRouter()
 router.register(r'outputs', OutputViewSet, basename='output')
 router.register(r'stock-movements', StockMovementViewSet, basename='stockmovement')
 
 # ======================================================
-# 🧭 2. Define URL patterns (your existing + router URLs)
+#  2. Define URL patterns (your existing + router URLs)
 # ======================================================
 urlpatterns = [
     # Test endpoint
@@ -88,7 +88,7 @@ urlpatterns = [
     path('clients/<int:pk>/', ClientRetrieveUpdateDeleteView.as_view(), name='client-detail'),
     
    
-    # 🎯 FLUTTER DESKTOP - COMPLETE CLIENT DETAILS (EVERYTHING IN ONE API)
+    #  FLUTTER DESKTOP - COMPLETE CLIENT DETAILS (EVERYTHING IN ONE API)
     path('clients/<int:client_id>/complete/', ClientCompleteDetailsView.as_view(), name='client-complete-details'),
 
     # Suppliers CRUD
@@ -113,12 +113,12 @@ urlpatterns = [
     path('clients/<int:client_id>/inputs/', ClientInputsListView.as_view(), name='client-inputs'),
 
     # ======================================================
-    # 📊 COMPREHENSIVE DASHBOARD ANALYTICS - ALL DATA IN ONE API
+    #  COMPREHENSIVE DASHBOARD ANALYTICS - ALL DATA IN ONE API
     # ======================================================
     path('dashboard/', ComprehensiveDashboardView.as_view(), name='dashboard'),
 
     # ======================================================
-    # 📊 COMPREHENSIVE REPORT - All Data in One Excel File
+    #  COMPREHENSIVE REPORT - All Data in One Excel File
     # ======================================================
     # Estimate report generation time before downloading
     path('reports/estimate/', ReportEstimateView.as_view(), name='report-estimate'),
@@ -127,7 +127,7 @@ urlpatterns = [
     path('reports/download/', ComprehensiveReportView.as_view(), name='report-download'),
 
     # ======================================================
-    # 💾 DATABASE BACKUP & RESTORE - SQL Files
+    #  DATABASE BACKUP & RESTORE - SQL Files
     # ======================================================
     # Get backup/restore information
     # path('backup/info/', BackupInfoView.as_view(), name='backup-info'),
@@ -139,7 +139,7 @@ urlpatterns = [
     # path('backup/restore/', DatabaseRestoreView.as_view(), name='backup-restore'),
 
     # ======================================================
-    # 🧭 3. Include router-generated URLs (Outputs)
+    #  3. Include router-generated URLs (Outputs)
     # ======================================================
     path('', include(router.urls)),
 ]

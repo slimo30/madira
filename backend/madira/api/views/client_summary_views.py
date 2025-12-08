@@ -12,7 +12,7 @@ from ..models import Client, Order, Input, OrderOutput
 
 class ClientCompleteDetailsView(APIView):
     """
-    🎯 SINGLE API FOR FLUTTER DESKTOP - COMPLETE CLIENT DETAILS
+     SINGLE API FOR FLUTTER DESKTOP - COMPLETE CLIENT DETAILS
     
     Returns EVERYTHING for ONE client in a single response:
     - Client basic info
@@ -142,7 +142,7 @@ class ClientCompleteDetailsView(APIView):
         total_unpaid = total_all_orders - total_all_paid
         total_benefit = total_all_orders - total_all_expenses
         
-        # 💰 FINAL BALANCE CALCULATION:
+        #  FINAL BALANCE CALCULATION:
         # If credit_balance is POSITIVE: Client paid advance (we owe them or they have credit)
         # If credit_balance is NEGATIVE: Client owes us initial debt
         # Final Balance = total_unpaid - credit_balance

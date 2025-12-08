@@ -179,7 +179,7 @@ class Supplier(models.Model):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ==========================================================
-# 🧾 ORDER MODEL
+#  ORDER MODEL
 # ==========================================================
 class Order(models.Model):
     """
@@ -212,7 +212,7 @@ class Order(models.Model):
         validators=[MinValueValidator(Decimal('0.00'))]
     )
 
-    # ⚠️ REMOVED: paid_amount field - now calculated dynamically
+    # ️ REMOVED: paid_amount field - now calculated dynamically
     # paid_amount is now a @property that calculates from related Inputs
 
     status = models.CharField(
@@ -237,13 +237,13 @@ class Order(models.Model):
             models.Index(fields=['-order_date', 'client']),
             models.Index(fields=['delivery_date', 'status']),
         ]
-        # ⚠️ REMOVED: Check constraint for paid_amount (no longer a database field)
+        # ️ REMOVED: Check constraint for paid_amount (no longer a database field)
 
     def __str__(self):
         return f"Order {self.order_number} - {self.client.name}"
 
     # -----------------------------
-    # 💰 Financial Calculations
+    #  Financial Calculations
     # -----------------------------
     @property
     def paid_amount(self):
@@ -281,7 +281,7 @@ class Order(models.Model):
         return self.paid_amount >= self.total_amount
 
     # -----------------------------
-    # 🔢 Auto-generate Order Number
+    #  Auto-generate Order Number
     # -----------------------------
     def _generate_order_number(self):
         """
@@ -333,7 +333,7 @@ class Order(models.Model):
         return f"{base_prefix}-{new_number + 1:04d}-{timestamp}-{random_suffix}"
 
     # -----------------------------
-    # 💾 Save Override
+    #  Save Override
     # -----------------------------
     def save(self, *args, **kwargs):
         """
@@ -471,7 +471,7 @@ class Input(models.Model):
                     with transaction.atomic():
                         super().save(*args, **kwargs)
                         
-                        # ✅ After saving, check if order should be marked as completed
+                        #  After saving, check if order should be marked as completed
                         if self.order and self.type == self.Type.CLIENT_PAYMENT:
                             if self.order.is_fully_paid and self.order.status != Order.Status.COMPLETED:
                                 self.order.status = Order.Status.COMPLETED
@@ -487,7 +487,7 @@ class Input(models.Model):
         
         super().save(*args, **kwargs)
         
-        # ✅ After saving, check if order should be marked as completed
+        #  After saving, check if order should be marked as completed
         if self.order and self.type == self.Type.CLIENT_PAYMENT:
             if self.order.is_fully_paid and self.order.status != Order.Status.COMPLETED:
                 self.order.status = Order.Status.COMPLETED
@@ -608,7 +608,7 @@ class Product(models.Model):
 
 
 # ==========================================================
-# 💸 ORDER OUTPUT MODEL (Expenses)
+#  ORDER OUTPUT MODEL (Expenses)
 # ==========================================================
 class OrderOutput(models.Model):
     """

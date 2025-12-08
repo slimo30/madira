@@ -69,7 +69,7 @@ class OrderAdmin(admin.ModelAdmin):
     ordering = ('-order_date',)
 
     # -----------------------------
-    # 🧠 Display Computed Values
+    #  Display Computed Values
     # -----------------------------
     def total_expenses_display(self, obj):
         return f"{obj.total_expenses:.2f} DA"
