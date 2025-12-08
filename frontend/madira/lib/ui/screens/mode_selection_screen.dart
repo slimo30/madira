@@ -32,6 +32,25 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
       backgroundColor: AppColors.background,
       body: ScreenWrapper(
         title: 'Device Mode',
+        onReset: () async {
+          final networkService = Provider.of<NetworkService>(
+            context,
+            listen: false,
+          );
+          final backendService = Provider.of<BackendService>(
+            context,
+            listen: false,
+          );
+          await backendService.resetConfiguration();
+          await networkService.resetMode();
+
+          if (context.mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const ModeSelectionScreen()),
+              (route) => false,
+            );
+          }
+        },
         child: Stack(
           children: [
             Center(
@@ -167,11 +186,11 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
 
       // Initialize network
       await networkService.initialize();
-      print('✅ Network initialized');
+      print(' Network initialized');
 
       // Set master mode
       await networkService.setMasterMode();
-      print('✅ Master mode set');
+      print(' Master mode set');
 
       // Check if backend path is configured
       setState(() {
@@ -183,7 +202,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
 
       if (backendPath == null || !await Directory(backendPath).exists()) {
         // Navigate to backend setup
-        print('⚠️ Backend not configured - showing setup screen');
+        print('️ Backend not configured - showing setup screen');
 
         if (mounted) {
           setState(() {
@@ -202,11 +221,11 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
         _statusMessage = 'Starting Django backend...';
       });
 
-      print('🚀 Starting backend from path: $backendPath');
+      print(' Starting backend from path: $backendPath');
       final started = await backendService.startBackend();
 
       if (started) {
-        print('✅ Backend started successfully');
+        print(' Backend started successfully');
 
         // Start broadcasting after backend is ready
         setState(() {
@@ -214,7 +233,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
         });
 
         await networkService.startBroadcastingAfterBackend();
-        print('✅ Broadcasting started');
+        print(' Broadcasting started');
 
         if (mounted) {
           setState(() {
@@ -230,7 +249,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
         throw Exception('Failed to start backend');
       }
     } catch (e) {
-      print('❌ Master mode setup failed: $e');
+      print(' Master mode setup failed: $e');
 
       if (mounted) {
         setState(() {
@@ -274,7 +293,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
 
       // Initialize network
       await networkService.initialize();
-      print('✅ Network initialized');
+      print(' Network initialized');
 
       // Set slave mode (this starts listening)
       setState(() {
@@ -282,7 +301,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
       });
 
       await networkService.setSlaveMode();
-      print('✅ Slave mode set - listening for master');
+      print(' Slave mode set - listening for master');
 
       // Small delay for UX
       await Future.delayed(const Duration(milliseconds: 500));
@@ -298,7 +317,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
         );
       }
     } catch (e) {
-      print('❌ Slave mode setup failed: $e');
+      print(' Slave mode setup failed: $e');
 
       if (mounted) {
         setState(() {

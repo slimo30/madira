@@ -1584,7 +1584,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 }
 
-// ✅ Order Details Dialog Widget
+//  Order Details Dialog Widget
 class OrderDetailsDialog extends StatefulWidget {
   final OrderModel order;
   final VoidCallback onAddPaymentPressed;
@@ -2437,7 +2437,7 @@ class _OrderDetailsDialogState extends State<OrderDetailsDialog>
   }
 }
 
-// ✅ Searchable Client Dropdown - Using API Search
+//  Searchable Client Dropdown - Using API Search
 class _SearchableClientDropdownWidget extends StatefulWidget {
   final String labelText;
   final String selectedId;
@@ -2996,7 +2996,7 @@ class _SearchableClientDropdownWidgetState
   }
 }
 
-// ✅ Simple Description Field with Optional Auto-Numbering
+//  Simple Description Field with Optional Auto-Numbering
 class _DescriptionFieldWithStyling extends StatefulWidget {
   final TextEditingController controller;
 
@@ -3283,7 +3283,7 @@ class _DescriptionFieldWithStylingState
               const SizedBox(height: 8),
               Text(
                 _autoNumberingEnabled
-                    ? '✓ Auto-numbering is ON\n• Write any text on first line\n• Press Enter to start: 1-\n• Press Enter again for: 2-, 3-, etc.'
+                    ? ' Auto-numbering is ON\n• Write any text on first line\n• Press Enter to start: 1-\n• Press Enter again for: 2-, 3-, etc.'
                     : '○ Auto-numbering is OFF\n• Click the button above to enable\n• Then write text and press Enter',
                 style: GoogleFonts.inter(
                   fontSize: 10,

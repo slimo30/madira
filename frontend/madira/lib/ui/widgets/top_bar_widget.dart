@@ -344,20 +344,22 @@ class _TopBarWidgetState extends State<TopBarWidget> {
                 ],
               ),
             ),
-            const PopupMenuDivider(),
-            PopupMenuItem<String>(
-              value: 'reset',
-              child: Row(
-                children: [
-                  Icon(Icons.refresh, size: 18, color: Colors.orange[700]),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Reset Configuration',
-                    style: GoogleFonts.inter(fontSize: 13),
-                  ),
-                ],
+            if (loginProvider.user?.role == 'admin') ...[
+              const PopupMenuDivider(),
+              PopupMenuItem<String>(
+                value: 'reset',
+                child: Row(
+                  children: [
+                    Icon(Icons.refresh, size: 18, color: Colors.orange[700]),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Reset Configuration',
+                      style: GoogleFonts.inter(fontSize: 13),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
       onSelected: (String value) async {
         if (value == 'reset') {
@@ -551,12 +553,14 @@ class _TopBarWidgetState extends State<TopBarWidget> {
         context,
         listen: false,
       );
-      print('🔄 Starting reset process...');
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      print(' Starting reset process...');
+      await loginProvider.logout();
       await Future.wait([
         backendService.resetConfiguration(),
         networkService.resetMode(),
       ]);
-      print('✅ All configurations reset');
+      print(' All configurations reset');
       navigator.pop();
       messenger.showSnackBar(
         SnackBar(
@@ -577,14 +581,14 @@ class _TopBarWidgetState extends State<TopBarWidget> {
         ),
       );
       await Future.delayed(const Duration(milliseconds: 300));
-      print('🔄 Navigating to ModeSelectionScreen...');
+      print(' Navigating to ModeSelectionScreen...');
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const ModeSelectionScreen()),
         (route) => false,
       );
-      print('✅ Navigation complete');
+      print(' Navigation complete');
     } catch (e) {
-      print('❌ Reset error: $e');
+      print(' Reset error: $e');
       navigator.pop();
       messenger.showSnackBar(
         SnackBar(
@@ -654,6 +658,7 @@ class _CustomTitleBar extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            _SmartWindowButton(),
             _TitleBarButton(
               icon: Icons.remove,
               tooltip: 'Minimize',
@@ -728,6 +733,71 @@ class _TitleBarButtonState extends State<_TitleBarButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SmartWindowButton extends StatefulWidget {
+  const _SmartWindowButton();
+
+  @override
+  State<_SmartWindowButton> createState() => _SmartWindowButtonState();
+}
+
+class _SmartWindowButtonState extends State<_SmartWindowButton>
+    with WindowListener {
+  bool _isMaximized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkWindowState();
+    windowManager.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  Future<void> _checkWindowState() async {
+    final isMax = await windowManager.isMaximized();
+    if (mounted) {
+      setState(() => _isMaximized = isMax);
+    }
+  }
+
+  @override
+  void onWindowEvent(String eventName) {
+    if (eventName == 'maximize' || eventName == 'unmaximize') {
+      _checkWindowState();
+    }
+  }
+
+  @override
+  void onWindowMaximize() {
+    _checkWindowState();
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    _checkWindowState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _TitleBarButton(
+      icon: _isMaximized ? Icons.fullscreen_exit : Icons.fullscreen,
+      tooltip: _isMaximized ? 'Restore' : 'Maximize',
+      onPressed: () async {
+        if (_isMaximized) {
+          await windowManager.unmaximize();
+        } else {
+          await windowManager.maximize();
+        }
+        _checkWindowState();
+      },
     );
   }
 }

@@ -88,7 +88,7 @@ class DashboardProvider with ChangeNotifier {
       alerts.where((a) => a['type'] == 'warning').toList();
 
   Future<void> fetchDashboardData({String? period}) async {
-    print('📊 DashboardProvider: Starting to fetch dashboard data...');
+    print(' DashboardProvider: Starting to fetch dashboard data...');
 
     if (period != null) {
       _selectedPeriod = period;
@@ -97,27 +97,27 @@ class DashboardProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    print('📊 DashboardProvider: Set loading to true, notified listeners');
+    print(' DashboardProvider: Set loading to true, notified listeners');
 
     try {
       print(
-        '📊 DashboardProvider: Calling DashboardService.getDashboardData(period: $_selectedPeriod)',
+        ' DashboardProvider: Calling DashboardService.getDashboardData(period: $_selectedPeriod)',
       );
       _dashboardData = await _dashboardService.getDashboardData(
         period: _selectedPeriod,
       );
-      print('📊 DashboardProvider: Dashboard data received successfully');
-      print('📊 Generated at: ${_dashboardData?['generated_at']}');
-      print('📊 Period: ${_dashboardData?['period_label']}');
+      print(' DashboardProvider: Dashboard data received successfully');
+      print(' Generated at: ${_dashboardData?['generated_at']}');
+      print(' Period: ${_dashboardData?['period_label']}');
     } catch (e) {
-      print('❌ DashboardProvider: Failed to fetch dashboard data: $e');
+      print(' DashboardProvider: Failed to fetch dashboard data: $e');
       _error = _extractErrorMessage(e);
       _dashboardData = null;
     } finally {
       _isLoading = false;
-      print('📊 DashboardProvider: Set loading to false');
+      print(' DashboardProvider: Set loading to false');
       notifyListeners();
-      print('📊 DashboardProvider: Final notification sent to listeners');
+      print(' DashboardProvider: Final notification sent to listeners');
     }
   }
 

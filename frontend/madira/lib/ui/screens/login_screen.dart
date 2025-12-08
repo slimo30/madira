@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import '../widgets/custom_input_widget.dart';
 import '../widgets/custom_button_widget.dart';
 import '../../core/constants/colors.dart';
-import 'home_screen.dart'; // ← ADD THIS IMPORT
+import '../../services/backend_service.dart';
+import '../../services/network_service.dart';
+import 'home_screen.dart';
+import 'mode_selection_screen.dart'; // ← ADD THIS IMPORT
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -88,6 +91,25 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.background,
       body: ScreenWrapper(
         title: 'Login',
+        onReset: () async {
+          final networkService = Provider.of<NetworkService>(
+            context,
+            listen: false,
+          );
+          final backendService = Provider.of<BackendService>(
+            context,
+            listen: false,
+          );
+          await backendService.resetConfiguration();
+          await networkService.resetMode();
+
+          if (context.mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const ModeSelectionScreen()),
+              (route) => false,
+            );
+          }
+        },
         child: Center(
           child: Container(
             width: 400,
@@ -117,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 80,
                   ),
                   const SizedBox(height: 28),
-        
+
                   // Title
                   Text(
                     'MADERA Kitchen',
@@ -130,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-        
+
                   // Subtitle
                   Text(
                     'Sign in to your account',
@@ -141,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-        
+
                   // Username Field
                   CustomInputWidget(
                     controller: usernameController,
@@ -156,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     errorText: usernameError,
                   ),
                   const SizedBox(height: 16),
-        
+
                   // Password Field
                   PasswordInputWidget(
                     controller: passwordController,
@@ -164,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     errorText: passwordError,
                   ),
                   const SizedBox(height: 28),
-        
+
                   // Login Button
                   PrimaryButton(
                     text: "Sign In",
@@ -172,29 +194,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         loginProvider.isLoading
                             ? null
                             : () async {
-                              print('🔵 LoginScreen: Sign In button pressed');
-        
+                              print(' LoginScreen: Sign In button pressed');
+
                               if (!_validateInputs()) {
-                                print('❌ LoginScreen: Validation failed');
+                                print(' LoginScreen: Validation failed');
                                 _showValidationError();
                                 return;
                               }
-        
-                              print('✅ LoginScreen: Validation passed');
-        
+
+                              print(' LoginScreen: Validation passed');
+
                               try {
                                 print(
-                                  '🔵 LoginScreen: Calling loginProvider.login()...',
+                                  ' LoginScreen: Calling loginProvider.login()...',
                                 );
-        
+
                                 await loginProvider.login(
                                   usernameController.text.trim(),
                                   passwordController.text.trim(),
                                 );
-        
-                                print('✅ LoginScreen: Login successful');
-                                print('👤 User: ${loginProvider.user?.username}');
-        
+
+                                print(' LoginScreen: Login successful');
+                                print(' User: ${loginProvider.user?.username}');
+
                                 if (mounted) {
                                   // Show success message
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -222,14 +244,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
-        
+
                                   // Navigate to HomeScreen after a short delay
                                   await Future.delayed(
                                     const Duration(milliseconds: 500),
                                   );
-        
+
                                   if (mounted) {
-                                    print('🏠 Navigating to HomeScreen...');
+                                    print(' Navigating to HomeScreen...');
                                     Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(
                                         builder: (_) => const HomeScreen(),
@@ -238,11 +260,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   }
                                 }
                               } catch (e) {
-                                print('❌ LoginScreen: Login failed - $e');
-        
+                                print(' LoginScreen: Login failed - $e');
+
                                 if (mounted) {
-                                  String errorMessage = _getCleanErrorMessage(e);
-        
+                                  String errorMessage = _getCleanErrorMessage(
+                                    e,
+                                  );
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Row(

@@ -53,7 +53,7 @@ class OrderProvider with ChangeNotifier {
   }) async {
     if (_isFetching) {
       print(
-        '⚠️ OrderProvider: Fetch already in progress, skipping duplicate request',
+        '️ OrderProvider: Fetch already in progress, skipping duplicate request',
       );
       return;
     }
@@ -90,11 +90,11 @@ class OrderProvider with ChangeNotifier {
       _nextPage = response['next'] as String?;
       _previousPage = response['previous'] as String?;
 
-      print('✅ OrderProvider: Fetched ${_orders.length} orders successfully');
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' OrderProvider: Fetched ${_orders.length} orders successfully');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
     } catch (e) {
       _error = e.toString();
-      print('❌ OrderProvider: Error fetching orders: $e');
+      print(' OrderProvider: Error fetching orders: $e');
     } finally {
       _isLoading = false;
       _isFetching = false;
@@ -172,7 +172,7 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('📝 OrderProvider: Creating order for client: $client');
+      print(' OrderProvider: Creating order for client: $client');
       await _orderService.createOrder(
         client: client,
         totalAmount: totalAmount,
@@ -181,12 +181,12 @@ class OrderProvider with ChangeNotifier {
       );
 
       // Refresh orders list
-      print('🔄 OrderProvider: Refreshing orders list');
+      print(' OrderProvider: Refreshing orders list');
       await fetchOrders();
-      print('✅ OrderProvider: Order created and list refreshed');
+      print(' OrderProvider: Order created and list refreshed');
     } catch (e) {
       _error = e.toString();
-      print('❌ OrderProvider: Error creating order: $e');
+      print(' OrderProvider: Error creating order: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -204,7 +204,7 @@ class OrderProvider with ChangeNotifier {
     required String status,
   }) async {
     try {
-      print('🔄 OrderProvider: Updating order $orderId');
+      print(' OrderProvider: Updating order $orderId');
       final updatedOrder = await _orderService.updateOrder(
         orderId,
         client: client,
@@ -218,12 +218,12 @@ class OrderProvider with ChangeNotifier {
       final index = _orders.indexWhere((o) => o.id == orderId);
       if (index != -1) {
         _orders[index] = updatedOrder;
-        print('✅ OrderProvider: Order $orderId updated locally');
+        print(' OrderProvider: Order $orderId updated locally');
       }
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      print('❌ OrderProvider: Error updating order: $e');
+      print(' OrderProvider: Error updating order: $e');
       rethrow;
     }
   }
@@ -231,15 +231,15 @@ class OrderProvider with ChangeNotifier {
   // Cancel order
   Future<void> cancelOrder(int orderId) async {
     try {
-      print('🔄 OrderProvider: Cancelling order $orderId');
+      print(' OrderProvider: Cancelling order $orderId');
       await _orderService.deleteOrder(orderId);
 
       // Refresh the orders data
       await fetchOrders();
-      print('✅ OrderProvider: Order $orderId cancelled and list refreshed');
+      print(' OrderProvider: Order $orderId cancelled and list refreshed');
     } catch (e) {
       _error = e.toString();
-      print('❌ OrderProvider: Error cancelling order: $e');
+      print(' OrderProvider: Error cancelling order: $e');
       rethrow;
     }
   }
@@ -247,14 +247,14 @@ class OrderProvider with ChangeNotifier {
   // Get client orders
   Future<List<OrderModel>> getClientOrders(int clientId) async {
     try {
-      print('🔄 OrderProvider: Fetching orders for client $clientId');
+      print(' OrderProvider: Fetching orders for client $clientId');
       final response = await _orderService.getClientOrders(clientId: clientId);
       final orders = response['results'] as List<OrderModel>;
-      print('✅ OrderProvider: Fetched ${orders.length} orders for client');
+      print(' OrderProvider: Fetched ${orders.length} orders for client');
       return orders;
     } catch (e) {
       _error = e.toString();
-      print('❌ OrderProvider: Error fetching client orders: $e');
+      print(' OrderProvider: Error fetching client orders: $e');
       rethrow;
     }
   }

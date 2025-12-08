@@ -11,9 +11,8 @@ class StockMovementService {
     int productId,
   ) async {
     try {
-      
-      print('🌐 API REQUEST: GET /stock-movements/by_product/');
-      print('📍 Product ID: $productId');
+      print(' API REQUEST: GET /stock-movements/by_product/');
+      print(' Product ID: $productId');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -21,9 +20,8 @@ class StockMovementService {
         queryParameters: {'product_id': productId},
       );
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -33,16 +31,14 @@ class StockMovementService {
       }
       throw Exception('Failed to fetch stock movements');
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching stock movements: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching stock movements: $e');
     }
@@ -61,9 +57,8 @@ class StockMovementService {
         'quantity': quantity,
       };
 
-      
-      print('🌐 API REQUEST: POST /stock-movements/');
-      print('📦 Request Data:');
+      print(' API REQUEST: POST /stock-movements/');
+      print(' Request Data:');
       print('   - Product: $productId');
       print('   - Order: $orderId');
       print('   - Quantity: $quantity');
@@ -71,9 +66,8 @@ class StockMovementService {
 
       final response = await _dio.post(ApiConstants.stockMovements, data: data);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -83,11 +77,10 @@ class StockMovementService {
       }
       throw Exception('Failed to create stock movement');
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       if (e.response?.statusCode == 400) {
         final errorDetail =
@@ -98,9 +91,8 @@ class StockMovementService {
       }
       throw Exception('Error creating stock movement: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error creating stock movement: $e');
     }
@@ -121,9 +113,8 @@ class StockMovementService {
         'quantity': quantity,
       };
 
-      
-      print('🌐 API REQUEST: PUT /stock-movements/$movementId/');
-      print('📦 Request Data:');
+      print(' API REQUEST: PUT /stock-movements/$movementId/');
+      print(' Request Data:');
       print('   - Product: $productId');
       print('   - Order: $orderId');
       print('   - Quantity: $quantity');
@@ -131,9 +122,8 @@ class StockMovementService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -143,15 +133,13 @@ class StockMovementService {
       }
       throw Exception('Failed to update stock movement');
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error updating stock movement: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error updating stock movement: $e');
     }
@@ -161,31 +149,28 @@ class StockMovementService {
   Future<void> deleteMovement(int movementId) async {
     try {
       final endpoint = '${ApiConstants.stockMovements}$movementId/';
-      
-      print('🌐 API REQUEST: DELETE /stock-movements/$movementId/');
+
+      print(' API REQUEST: DELETE /stock-movements/$movementId/');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('   ✓ Movement $movementId deleted successfully');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print('    Movement $movementId deleted successfully');
       print('=' * 60 + '\n');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw Exception('Failed to delete stock movement');
       }
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting stock movement: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error deleting stock movement: $e');
     }

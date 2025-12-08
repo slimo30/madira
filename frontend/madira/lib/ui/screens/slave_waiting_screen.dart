@@ -8,6 +8,7 @@ import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../services/network_service.dart';
+import '../../services/backend_service.dart';
 import '../../providers/login_provider.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
@@ -26,7 +27,26 @@ class SlaveWaitingScreen extends StatelessWidget {
           backgroundColor: AppColors.background,
           body: Column(
             children: [
-              CustomTitleBar(title: 'Madera Kitchen - Slave Mode'),
+              CustomTitleBar(
+                title: 'Madera Kitchen - Slave Mode',
+                onReset: () async {
+                  final backendService = Provider.of<BackendService>(
+                    context,
+                    listen: false,
+                  );
+                  await backendService.resetConfiguration();
+                  await networkService.resetMode();
+
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const ModeSelectionScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                },
+              ),
               Expanded(
                 child: Center(
                   child: Card(
@@ -321,7 +341,7 @@ class SlaveWaitingScreen extends StatelessWidget {
 
       // Reset network configuration
       await networkService.resetMode();
-      print('✅ Mode reset - returning to selection');
+      print(' Mode reset - returning to selection');
 
       // Close loading dialog
       if (context.mounted) Navigator.pop(context);
@@ -334,7 +354,7 @@ class SlaveWaitingScreen extends StatelessWidget {
         );
       }
     } catch (e) {
-      print('❌ Error changing mode: $e');
+      print(' Error changing mode: $e');
 
       // Close loading dialog
       if (context.mounted) Navigator.pop(context);
@@ -374,7 +394,7 @@ class SlaveWaitingScreen extends StatelessWidget {
     final masterUrl = 'http://${networkService.masterIp}:8000';
     DioClient().updateBaseUrl(masterUrl);
 
-    print('✅ API requests will now go to: $masterUrl/api');
+    print(' API requests will now go to: $masterUrl/api');
 
     if (context.mounted) {
       final isLoggedIn = loginProvider.user != null;

@@ -1,4 +1,4 @@
-// ✅ Input Outputs Screen - View outputs for a specific input with complete details
+//  Input Outputs Screen - View outputs for a specific input with complete details
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

@@ -1,4 +1,4 @@
-// ✅ Output Model
+//  Output Model
 import 'package:intl/intl.dart';
 
 class OutputModel {

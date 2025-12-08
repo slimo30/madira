@@ -34,7 +34,7 @@
 //   // Initialization - get local IP and load saved mode and master IP
 //   Future<void> initialize() async {
 //     _localIp = await _getLocalIp();
-//     print('📡 Local IP: $_localIp');
+//     print(' Local IP: $_localIp');
 //     await loadSavedMode();
 //     await loadSavedMasterIp();
 //   }
@@ -52,7 +52,7 @@
 //         }
 //       }
 //     } catch (e) {
-//       print('❌ Error getting local IP: $e');
+//       print(' Error getting local IP: $e');
 //     }
 //     return null;
 //   }
@@ -69,7 +69,7 @@
 //       (e) => e.toString() == savedMode,
 //       orElse: () => DeviceMode.notSelected,
 //     );
-//     print('📱 Loaded saved mode: $_mode');
+//     print(' Loaded saved mode: $_mode');
 //     notifyListeners();
 //     return _mode;
 //   }
@@ -78,7 +78,7 @@
 //   Future<void> _saveMode(DeviceMode mode) async {
 //     final prefs = await SharedPreferences.getInstance();
 //     await prefs.setString('device_mode', mode.toString());
-//     print('💾 Saved mode: $mode');
+//     print(' Saved mode: $mode');
 //   }
 
 //   // Save master IP address persistently
@@ -86,7 +86,7 @@
 //     final prefs = await SharedPreferences.getInstance();
 //     await prefs.setString('master_ip', ip);
 //     _masterIp = ip;
-//     print('💾 Saved master IP: $ip');
+//     print(' Saved master IP: $ip');
 //     notifyListeners();
 //   }
 
@@ -95,25 +95,25 @@
 //     final prefs = await SharedPreferences.getInstance();
 //     _masterIp = prefs.getString('master_ip');
 //     if (_masterIp != null) {
-//       print('📡 Loaded saved master IP: $_masterIp');
+//       print(' Loaded saved master IP: $_masterIp');
 //       notifyListeners();
 //     }
 //   }
 
 //   // Set Master mode, save mode and local IP as master IP
 //   Future<void> setMasterMode() async {
-//     print('👑 Setting Master mode...');
+//     print(' Setting Master mode...');
 //     _mode = DeviceMode.master;
 //     _masterIp = _localIp;
 //     await _saveMode(DeviceMode.master);
 //     await saveMasterIp(_localIp ?? '');
 //     notifyListeners();
-//     print('✅ Master mode set (backend will start next)');
+//     print(' Master mode set (backend will start next)');
 //   }
 
 //   Future<void> startBroadcastingAfterBackend() async {
 //     if (_mode != DeviceMode.master) return;
-//     print('📢 Starting broadcasting after backend is ready...');
+//     print(' Starting broadcasting after backend is ready...');
 //     await _startBroadcasting();
 //     await _startSlaveListener();
 //     notifyListeners();
@@ -130,9 +130,9 @@
 //       _broadcastTimer = Timer.periodic(const Duration(seconds: 3), (_) {
 //         _broadcastMasterInfo();
 //       });
-//       print('📢 Broadcasting started on port $broadcastPort');
+//       print(' Broadcasting started on port $broadcastPort');
 //     } catch (e) {
-//       print('❌ Error starting broadcast: $e');
+//       print(' Error starting broadcast: $e');
 //     }
 //   }
 
@@ -153,7 +153,7 @@
 //       broadcastPort,
 //     );
 
-//     print('📡 Broadcasting: $_localIp');
+//     print(' Broadcasting: $_localIp');
 //   }
 
 //   Future<void> _startSlaveListener() async {
@@ -170,9 +170,9 @@
 //           }
 //         }
 //       });
-//       print('👂 Listening for slaves on port $slaveListenPort');
+//       print(' Listening for slaves on port $slaveListenPort');
 //     } catch (e) {
-//       print('❌ Error starting slave listener: $e');
+//       print(' Error starting slave listener: $e');
 //     }
 //   }
 
@@ -184,22 +184,22 @@
 //         final slaveIp = data['ip'];
 //         if (!_connectedSlaves.contains(slaveIp)) {
 //           _connectedSlaves.add(slaveIp);
-//           print('✅ Slave connected: $slaveIp');
+//           print(' Slave connected: $slaveIp');
 //           notifyListeners();
 //         }
 //       }
 //     } catch (e) {
-//       print('❌ Error handling slave message: $e');
+//       print(' Error handling slave message: $e');
 //     }
 //   }
 
 //   Future<void> setSlaveMode() async {
-//     print('🔗 Setting Slave mode...');
+//     print(' Setting Slave mode...');
 //     _mode = DeviceMode.slave;
 //     await _saveMode(DeviceMode.slave);
 //     await _startListeningForMaster();
 //     notifyListeners();
-//     print('✅ Slave mode activated - listening for master...');
+//     print(' Slave mode activated - listening for master...');
 //   }
 
 //   Future<void> _startListeningForMaster() async {
@@ -217,10 +217,10 @@
 //           }
 //         }
 //       });
-//       print('👂 Listening for master on port $broadcastPort');
+//       print(' Listening for master on port $broadcastPort');
 //       notifyListeners();
 //     } catch (e) {
-//       print('❌ Error listening for master: $e');
+//       print(' Error listening for master: $e');
 //     }
 //   }
 
@@ -233,18 +233,18 @@
 //         if (_masterIp != masterIp) {
 //           _masterIp = masterIp;
 //           saveMasterIp(masterIp); // save on change
-//           print('🎯 Master found: $masterIp');
+//           print(' Master found: $masterIp');
 //           notifyListeners();
 //         }
 //       }
 //     } catch (e) {
-//       print('❌ Error handling master broadcast: $e');
+//       print(' Error handling master broadcast: $e');
 //     }
 //   }
 
 //   Future<void> connectToMaster() async {
 //     if (_masterIp == null || _localIp == null) {
-//       print('❌ Cannot connect: No master IP');
+//       print(' Cannot connect: No master IP');
 //       return;
 //     }
 //     try {
@@ -258,14 +258,14 @@
 //       socket.send(data, InternetAddress(_masterIp!), slaveListenPort);
 //       await Future.delayed(const Duration(milliseconds: 500));
 //       socket.close();
-//       print('✅ Connected to master: $_masterIp');
+//       print(' Connected to master: $_masterIp');
 //     } catch (e) {
-//       print('❌ Error connecting to master: $e');
+//       print(' Error connecting to master: $e');
 //     }
 //   }
 
 //   void confirmAndStart() {
-//     print('✅ Master confirmed - ${_connectedSlaves.length} slaves connected');
+//     print(' Master confirmed - ${_connectedSlaves.length} slaves connected');
 //     if (_isBroadcasting) _stopBroadcasting();
 //     notifyListeners();
 //   }
@@ -273,22 +273,22 @@
 //   void _stopBroadcasting() {
 //     _broadcastTimer?.cancel();
 //     _isBroadcasting = false;
-//     print('🛑 Broadcasting stopped');
+//     print(' Broadcasting stopped');
 //   }
 
 //   Future<void> stop() async {
-//     print('🛑 Stopping NetworkService...');
+//     print(' Stopping NetworkService...');
 //     _stopBroadcasting();
 //     _broadcastSocket?.close();
 //     _listenSocket?.close();
 //     _isListening = false;
 //     _connectedSlaves.clear();
 //     notifyListeners();
-//     print('✅ NetworkService stopped');
+//     print(' NetworkService stopped');
 //   }
 
 //   Future<void> resetMode() async {
-//     print('🔄 Resetting mode...');
+//     print(' Resetting mode...');
 //     await stop();
 //     final prefs = await SharedPreferences.getInstance();
 //     await prefs.remove('device_mode');
@@ -296,7 +296,7 @@
 //     _mode = DeviceMode.notSelected;
 //     _masterIp = null;
 //     notifyListeners();
-//     print('✅ Mode reset');
+//     print(' Mode reset');
 //   }
 
 //   @override
@@ -341,7 +341,7 @@ class NetworkService extends ChangeNotifier {
   // Initialization - get local IP and load saved mode and master IP
   Future<void> initialize() async {
     _localIp = await _getLocalIp();
-    print('📡 Local IP selected: $_localIp');
+    print(' Local IP selected: $_localIp');
     await loadSavedMode();
     await loadSavedMasterIp();
   }
@@ -384,7 +384,7 @@ class NetworkService extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('❌ Error getting local IP: $e');
+      print(' Error getting local IP: $e');
     }
     return null;
   }
@@ -410,7 +410,7 @@ class NetworkService extends ChangeNotifier {
       (e) => e.toString() == savedMode,
       orElse: () => DeviceMode.notSelected,
     );
-    print('📱 Loaded saved mode: $_mode');
+    print(' Loaded saved mode: $_mode');
     notifyListeners();
     return _mode;
   }
@@ -419,7 +419,7 @@ class NetworkService extends ChangeNotifier {
   Future<void> _saveMode(DeviceMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('device_mode', mode.toString());
-    print('💾 Saved mode: $mode');
+    print(' Saved mode: $mode');
   }
 
   // Save master IP address persistently
@@ -427,7 +427,7 @@ class NetworkService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('master_ip', ip);
     _masterIp = ip;
-    print('💾 Saved master IP: $ip');
+    print(' Saved master IP: $ip');
     notifyListeners();
   }
 
@@ -436,14 +436,14 @@ class NetworkService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _masterIp = prefs.getString('master_ip');
     if (_masterIp != null) {
-      print('📡 Loaded saved master IP: $_masterIp');
+      print(' Loaded saved master IP: $_masterIp');
       notifyListeners();
     }
   }
 
   // Set Master mode, save mode and local IP as master IP
   Future<void> setMasterMode() async {
-    print('👑 Setting Master mode...');
+    print(' Setting Master mode...');
     _mode = DeviceMode.master;
     _masterIp = _localIp;
     await _saveMode(DeviceMode.master);
@@ -456,12 +456,12 @@ class NetworkService extends ChangeNotifier {
       if (_localIp != null) await saveMasterIp(_localIp!);
     }
     notifyListeners();
-    print('✅ Master mode set (backend will start next)');
+    print(' Master mode set (backend will start next)');
   }
 
   Future<void> startBroadcastingAfterBackend() async {
     if (_mode != DeviceMode.master) return;
-    print('📢 Starting broadcasting after backend is ready...');
+    print(' Starting broadcasting after backend is ready...');
     await _startBroadcasting();
     await _startSlaveListener();
     notifyListeners();
@@ -483,9 +483,9 @@ class NetworkService extends ChangeNotifier {
       _broadcastTimer = Timer.periodic(const Duration(seconds: 3), (_) {
         _broadcastMasterInfo();
       });
-      print('📢 Broadcasting started on port $broadcastPort');
+      print(' Broadcasting started on port $broadcastPort');
     } catch (e) {
-      print('❌ Error starting broadcast: $e');
+      print(' Error starting broadcast: $e');
     }
   }
 
@@ -506,9 +506,9 @@ class NetworkService extends ChangeNotifier {
         InternetAddress(broadcastAddress),
         broadcastPort,
       );
-      print('📡 Broadcasting my IP: $_localIp');
+      print(' Broadcasting my IP: $_localIp');
     } catch (e) {
-      print('❌ Error sending broadcast: $e');
+      print(' Error sending broadcast: $e');
     }
   }
 
@@ -526,9 +526,9 @@ class NetworkService extends ChangeNotifier {
           }
         }
       });
-      print('👂 Listening for slaves on port $slaveListenPort');
+      print(' Listening for slaves on port $slaveListenPort');
     } catch (e) {
-      print('❌ Error starting slave listener: $e');
+      print(' Error starting slave listener: $e');
     }
   }
 
@@ -540,22 +540,22 @@ class NetworkService extends ChangeNotifier {
         final slaveIp = data['ip'];
         if (!_connectedSlaves.contains(slaveIp)) {
           _connectedSlaves.add(slaveIp);
-          print('✅ Slave connected: $slaveIp');
+          print(' Slave connected: $slaveIp');
           notifyListeners();
         }
       }
     } catch (e) {
-      print('❌ Error handling slave message: $e');
+      print(' Error handling slave message: $e');
     }
   }
 
   Future<void> setSlaveMode() async {
-    print('🔗 Setting Slave mode...');
+    print(' Setting Slave mode...');
     _mode = DeviceMode.slave;
     await _saveMode(DeviceMode.slave);
     await _startListeningForMaster();
     notifyListeners();
-    print('✅ Slave mode activated - listening for master...');
+    print(' Slave mode activated - listening for master...');
   }
 
   Future<void> _startListeningForMaster() async {
@@ -573,10 +573,10 @@ class NetworkService extends ChangeNotifier {
           }
         }
       });
-      print('👂 Listening for master on port $broadcastPort');
+      print(' Listening for master on port $broadcastPort');
       notifyListeners();
     } catch (e) {
-      print('❌ Error listening for master: $e');
+      print(' Error listening for master: $e');
     }
   }
 
@@ -593,7 +593,7 @@ class NetworkService extends ChangeNotifier {
             !masterIp.startsWith('169.254')) {
           _masterIp = masterIp;
           saveMasterIp(masterIp); // save on change
-          print('🎯 Master found: $masterIp');
+          print(' Master found: $masterIp');
           notifyListeners();
 
           // Auto connect back to confirm presence
@@ -601,13 +601,13 @@ class NetworkService extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('❌ Error handling master broadcast: $e');
+      print(' Error handling master broadcast: $e');
     }
   }
 
   Future<void> connectToMaster() async {
     if (_masterIp == null || _localIp == null) {
-      print('❌ Cannot connect: No master IP or Local IP');
+      print(' Cannot connect: No master IP or Local IP');
       // Try to refresh local IP if missing
       _localIp ??= await _getLocalIp();
       return;
@@ -623,14 +623,14 @@ class NetworkService extends ChangeNotifier {
       socket.send(data, InternetAddress(_masterIp!), slaveListenPort);
       await Future.delayed(const Duration(milliseconds: 500));
       socket.close();
-      print('✅ Connected/Ack sent to master: $_masterIp');
+      print(' Connected/Ack sent to master: $_masterIp');
     } catch (e) {
-      print('❌ Error connecting to master: $e');
+      print(' Error connecting to master: $e');
     }
   }
 
   void confirmAndStart() {
-    print('✅ Master confirmed - ${_connectedSlaves.length} slaves connected');
+    print(' Master confirmed - ${_connectedSlaves.length} slaves connected');
     if (_isBroadcasting) _stopBroadcasting();
     notifyListeners();
   }
@@ -638,22 +638,22 @@ class NetworkService extends ChangeNotifier {
   void _stopBroadcasting() {
     _broadcastTimer?.cancel();
     _isBroadcasting = false;
-    print('🛑 Broadcasting stopped');
+    print(' Broadcasting stopped');
   }
 
   Future<void> stop() async {
-    print('🛑 Stopping NetworkService...');
+    print(' Stopping NetworkService...');
     _stopBroadcasting();
     _broadcastSocket?.close();
     _listenSocket?.close();
     _isListening = false;
     _connectedSlaves.clear();
     notifyListeners();
-    print('✅ NetworkService stopped');
+    print(' NetworkService stopped');
   }
 
   Future<void> resetMode() async {
-    print('🔄 Resetting mode...');
+    print(' Resetting mode...');
     await stop();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('device_mode');
@@ -661,7 +661,7 @@ class NetworkService extends ChangeNotifier {
     _mode = DeviceMode.notSelected;
     _masterIp = null;
     notifyListeners();
-    print('✅ Mode reset');
+    print(' Mode reset');
   }
 
   @override

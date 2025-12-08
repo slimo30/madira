@@ -1,4 +1,4 @@
-// ✅ Stock Movement Model
+//  Stock Movement Model
 import 'package:intl/intl.dart';
 
 class StockMovementModel {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/providers/dashboard_provider.dart';
@@ -16,7 +17,7 @@ import 'package:madira/ui/screens/login_screen.dart';
 import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-import 'dart:io' show Platform;
+import 'dart:io';
 import 'core/constants/colors.dart';
 import 'services/backend_service.dart';
 import 'services/network_service.dart';
@@ -25,33 +26,146 @@ import 'ui/screens/backend_setup_screen.dart';
 import 'services/backup_service.dart';
 import 'services/backup_preferences.dart';
 import 'widgets/backup_dialog.dart';
+import 'widgets/performance_overlay.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await LogManager.initialize();
 
-  if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-    await windowManager.ensureInitialized();
+  // Override debugPrint only
+  final originalDebugPrint = debugPrint;
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) {
+      LogManager.log(message);
+    }
+    originalDebugPrint(message, wrapWidth: wrapWidth);
+  };
 
-    const windowOptions = WindowOptions(
-      size: Size(1920, 1080),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
-      fullScreen: false,
-    );
+  // Intercept all print calls using Zone
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-      await windowManager.maximize();
-      await windowManager.setResizable(false);
-      await windowManager.setMaximizable(false);
-      await windowManager.setMinimizable(true);
-    });
+      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        windowManager.ensureInitialized().then((_) async {
+          const windowOptions = WindowOptions(
+            center: true,
+            backgroundColor: Colors.transparent,
+            skipTaskbar: false,
+            titleBarStyle: TitleBarStyle.hidden,
+          );
+          await windowManager.waitUntilReadyToShow(windowOptions, () async {
+            await windowManager.show();
+            await windowManager.focus();
+            await windowManager.maximize(); // Maximize after showing
+            await windowManager.setResizable(false);
+            await windowManager.setMaximizable(false);
+            await windowManager.setMinimizable(true);
+            await windowManager.setPreventClose(true);
+          });
+        });
+      }
+      runApp(const MaderaKitchenApp());
+    },
+    (error, stack) {
+      LogManager.log('Uncaught error: $error\n$stack');
+    },
+    zoneSpecification: ZoneSpecification(
+      print: (self, parent, zone, line) {
+        LogManager.log(line);
+        parent.print(zone, line);
+      },
+    ),
+  );
+}
+
+class LogManager {
+  static LogManager? _instance;
+  late final IOSink _sink;
+  bool _initialized = false;
+  String? _logPath;
+
+  LogManager._();
+
+  static Future<void> initialize() async {
+    if (_instance != null) return;
+    _instance = LogManager._();
+    await _instance!._init();
   }
 
-  runApp(const MaderaKitchenApp());
+  static LogManager? get instance => _instance;
+
+  Future<void> _init() async {
+    String dirPath;
+    try {
+      // First try: Use logs subdirectory in installation folder
+      dirPath = '${File(Platform.resolvedExecutable).parent.path}\\logs';
+      Directory logsDir = Directory(dirPath);
+
+      // Create logs directory if it doesn't exist
+      if (!await logsDir.exists()) {
+        await logsDir.create(recursive: true);
+      }
+
+      String path = '$dirPath\\madira_app_log.txt';
+      File file = File(path);
+      IOSink? sink;
+
+      try {
+        // Try to write to logs directory
+        sink = file.openWrite(mode: FileMode.writeOnlyAppend);
+        sink.writeln('[${DateTime.now()}] Log initialized in logs directory');
+      } catch (e) {
+        // Second try: Use root installation directory
+        dirPath = File(Platform.resolvedExecutable).parent.path;
+        path = '$dirPath\\madira_app_log.txt';
+        file = File(path);
+
+        try {
+          sink = file.openWrite(mode: FileMode.writeOnlyAppend);
+          sink.writeln(
+            '[${DateTime.now()}] Log initialized in installation directory',
+          );
+        } catch (e2) {
+          // Third fallback: Documents folder
+          final appDir = await getApplicationDocumentsDirectory();
+          path = '${appDir.path}\\madira_app_log.txt';
+          file = File(path);
+          sink = file.openWrite(mode: FileMode.writeOnlyAppend);
+          sink.writeln(
+            '[${DateTime.now()}] Warning: Could not write to installation folder. Logging to Documents instead.',
+          );
+        }
+      }
+
+      _logPath = path;
+      _sink = sink;
+      _initialized = true;
+    } catch (e) {
+      // Complete failure - can't log anywhere
+      return;
+    }
+  }
+
+  static void log(String message) {
+    final inst = _instance;
+    if (inst?._initialized ?? false) {
+      inst!._sink.writeln('[${DateTime.now()}] $message');
+    }
+  }
+
+  static Future<void> dispose() async {
+    final inst = _instance;
+    if (inst?._initialized ?? false) {
+      await inst!._sink.flush();
+      await inst._sink.close();
+      inst._initialized = false;
+    }
+  }
+
+  static Future<String?> getLogFilePath() async {
+    return _instance?._logPath;
+  }
 }
 
 class MaderaKitchenApp extends StatefulWidget {
@@ -65,6 +179,7 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
     with WindowListener {
   late BackendService _backendService;
   late NetworkService _networkService;
+  bool _isClosing = false; // Track closing state
 
   @override
   void initState() {
@@ -82,26 +197,41 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
     if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
       windowManager.removeListener(this);
     }
+    LogManager.dispose();
     super.dispose();
   }
 
   @override
   void onWindowClose() async {
-    debugPrint('🚪 Application closing - cleaning up resources...');
+    setState(() {
+      _isClosing = true;
+    });
+    debugPrint(' Application closing - cleaning up resources...');
 
     try {
       await _networkService.stop();
       await _backendService.stopBackend();
-      debugPrint('✅ Cleanup completed');
+      debugPrint(' Cleanup completed');
     } catch (e) {
-      debugPrint('⚠️ Error during cleanup: $e');
+      debugPrint('️ Error during cleanup: $e');
     }
 
+    // Wait for UI to show closing screen
+    await Future.delayed(const Duration(seconds: 1));
     await windowManager.destroy();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isClosing) {
+      // Only show the fallback (closing) screen, do NOT build providers or AppInitializer
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _buildTheme(),
+        home: const FallbackScreen(),
+      );
+    }
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _backendService),
@@ -128,21 +258,20 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
         title: 'Madera Kitchen Fabrication',
         debugShowCheckedModeBanner: false,
         theme: _buildTheme(),
-        home: const AppInitializer(),
+        home: SelectionArea(child: AppInitializer(isClosing: _isClosing)),
       ),
     );
   }
 
   ThemeData _buildTheme() {
     return ThemeData(
-      useMaterial3: true,
-      textTheme: GoogleFonts.interTextTheme(),
       colorScheme: ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
       ),
       scaffoldBackgroundColor: AppColors.background,
+      textTheme: GoogleFonts.interTextTheme(),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
@@ -186,7 +315,8 @@ class _MaderaKitchenAppState extends State<MaderaKitchenApp>
 // ============================================================================
 
 class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
+  final bool isClosing;
+  const AppInitializer({super.key, required this.isClosing});
 
   @override
   State<AppInitializer> createState() => _AppInitializerState();
@@ -218,7 +348,7 @@ class _AppInitializerState extends State<AppInitializer> {
     _backupService = await BackupService.initialize();
 
     // Clear last backup date (for testing)
-    await _backupPreferences?.clearBackupInfos();
+    // await _backupPreferences?.clearBackupInfos();
 
     setState(() {
       _initialized = true;
@@ -348,10 +478,12 @@ class _AppInitializerState extends State<AppInitializer> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isClosing) {
+      return const FallbackScreen();
+    }
     if (!_initialized) {
       return _buildInitializingScreen();
     }
-
     return Consumer3<NetworkService, BackendService, LoginProvider>(
       builder: (context, networkService, backendService, loginProvider, child) {
         // Mode not selected? Show ModeSelectionScreen
@@ -388,7 +520,10 @@ class _AppInitializerState extends State<AppInitializer> {
         }
 
         // Fallback
-        return const ModeSelectionScreen();
+        if (widget.isClosing) {
+          return const FallbackScreen();
+        }
+        return const FallbackScreen();
       },
     );
   }
@@ -532,6 +667,43 @@ class _AppInitializerState extends State<AppInitializer> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class FallbackScreen extends StatelessWidget {
+  const FallbackScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 120,
+              height: 120,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Closing...',
+              style: GoogleFonts.inter(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

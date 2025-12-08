@@ -48,6 +48,7 @@ dependencies:
   process_run: ^1.2.0
   file_picker: ^8.1.6
   flutter_launcher_icons: ^0.14.4
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +95,6 @@ flutter:
           weight: 800
         - asset: assets/fonts/Inter-Black.ttf
           weight: 900
-
 
 flutter_icons:
   image_path: "assets/images/logo.png"

@@ -67,15 +67,15 @@ class ProductProvider with ChangeNotifier {
       _nextPage = result['next'] as String?;
       _previousPage = result['previous'] as String?;
 
-      print('✅ ProductProvider: Loaded ${_products.length} products');
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' ProductProvider: Loaded ${_products.length} products');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
     }
   }
@@ -97,7 +97,7 @@ class ProductProvider with ChangeNotifier {
         initialPrice: initialPrice,
       );
 
-      print('✅ ProductProvider: Product created successfully');
+      print(' ProductProvider: Product created successfully');
 
       // Refresh the list - go to page 1 to see the new product (newest first)
       await fetchProducts(
@@ -110,7 +110,7 @@ class ProductProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -135,7 +135,7 @@ class ProductProvider with ChangeNotifier {
         isActive: isActive,
       );
 
-      print('✅ ProductProvider: Product $productId updated successfully');
+      print(' ProductProvider: Product $productId updated successfully');
 
       // Refresh the list
       await fetchProducts(
@@ -148,7 +148,7 @@ class ProductProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -159,7 +159,7 @@ class ProductProvider with ChangeNotifier {
     try {
       await _productService.deleteProduct(productId);
 
-      print('✅ ProductProvider: Product $productId deleted successfully');
+      print(' ProductProvider: Product $productId deleted successfully');
 
       // Refresh the list
       await fetchProducts(
@@ -172,7 +172,7 @@ class ProductProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -183,7 +183,7 @@ class ProductProvider with ChangeNotifier {
     try {
       await _productService.deactivateProduct(productId);
 
-      print('✅ ProductProvider: Product $productId deactivated successfully');
+      print(' ProductProvider: Product $productId deactivated successfully');
 
       // Refresh the list
       await fetchProducts(
@@ -196,7 +196,7 @@ class ProductProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -207,7 +207,7 @@ class ProductProvider with ChangeNotifier {
     try {
       await _productService.reactivateProduct(productId);
 
-      print('✅ ProductProvider: Product $productId reactivated successfully');
+      print(' ProductProvider: Product $productId reactivated successfully');
 
       // Refresh the list
       await fetchProducts(
@@ -220,7 +220,7 @@ class ProductProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ ProductProvider Error: $e');
+      print(' ProductProvider Error: $e');
       notifyListeners();
       return false;
     }

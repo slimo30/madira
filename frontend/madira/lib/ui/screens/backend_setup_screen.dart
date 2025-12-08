@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/ui/widgets/screen_wrapper.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
 import '../../core/constants/colors.dart';
 import '../../services/backend_service.dart';
 import '../../services/network_service.dart';
 import 'master_waiting_screen.dart';
+import 'mode_selection_screen.dart';
 
 class BackendSetupScreen extends StatefulWidget {
   const BackendSetupScreen({super.key});
@@ -32,7 +34,24 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
                 title: 'Madera Kitchen - Backend Setup',
                 onClose: () async {
                   await backendService.stopBackend();
-                  // await windowManager.close();
+                  await windowManager.close();
+                },
+                onReset: () async {
+                  final networkService = Provider.of<NetworkService>(
+                    context,
+                    listen: false,
+                  );
+                  await backendService.resetConfiguration();
+                  await networkService.resetMode();
+
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const ModeSelectionScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 },
               ),
               Expanded(
@@ -231,18 +250,18 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
         listen: false,
       );
 
-      print('🚀 Starting backend from BackendSetupScreen...');
+      print(' Starting backend from BackendSetupScreen...');
 
       // Start backend
       final started = await backendService.startBackend();
 
       if (started) {
-        print('✅ Backend started successfully');
+        print(' Backend started successfully');
 
         // Start broadcasting after backend is ready
-        print('📢 Starting broadcasting...');
+        print(' Starting broadcasting...');
         await networkService.startBroadcastingAfterBackend();
-        print('✅ Broadcasting started');
+        print(' Broadcasting started');
 
         if (mounted) {
           setState(() {
@@ -258,7 +277,7 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
         throw Exception('Failed to start backend');
       }
     } catch (e) {
-      print('❌ Failed to start backend: $e');
+      print(' Failed to start backend: $e');
 
       if (mounted) {
         setState(() {

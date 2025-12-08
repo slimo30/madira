@@ -88,10 +88,10 @@ class InputProvider with ChangeNotifier {
       _previousPage = result['previous'] as String?;
       _currentPage = page;
 
-      print('✅ InputProvider: Loaded ${_inputs.length} inputs');
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' InputProvider: Loaded ${_inputs.length} inputs');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
       print(
-        '🔍 Active filters - Type: $_selectedType, Order: $_selectedOrderId, Search: "$_searchQuery", Sort: $_ordering',
+        ' Active filters - Type: $_selectedType, Order: $_selectedOrderId, Search: "$_searchQuery", Sort: $_ordering',
       );
 
       _isLoading = false;
@@ -99,7 +99,7 @@ class InputProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ InputProvider Error: $e');
+      print(' InputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -125,10 +125,10 @@ class InputProvider with ChangeNotifier {
       _selectedOrderId = orderId;
 
       print(
-        '✅ InputProvider: Loaded ${_orderInputs.length} inputs for order $orderId',
+        ' InputProvider: Loaded ${_orderInputs.length} inputs for order $orderId',
       );
       print(
-        '📊 Total count: $_orderTotalCount, Page: $_orderCurrentPage/$orderTotalPages',
+        ' Total count: $_orderTotalCount, Page: $_orderCurrentPage/$orderTotalPages',
       );
 
       _isLoading = false;
@@ -136,7 +136,7 @@ class InputProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ InputProvider Error: $e');
+      print(' InputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -170,7 +170,7 @@ class InputProvider with ChangeNotifier {
         description: description,
       );
 
-      print('✅ InputProvider: Input created successfully');
+      print(' InputProvider: Input created successfully');
 
       // Refresh the order inputs list if we're viewing this order
       if (order != null && _selectedOrderId == order) {
@@ -189,7 +189,7 @@ class InputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ InputProvider Error: $e');
+      print(' InputProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -212,7 +212,7 @@ class InputProvider with ChangeNotifier {
         description: description,
       );
 
-      print('✅ InputProvider: Input $inputId updated successfully');
+      print(' InputProvider: Input $inputId updated successfully');
 
       // Always refetch inputs after update
       await fetchInputs(
@@ -226,7 +226,7 @@ class InputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ InputProvider Error: $e');
+      print(' InputProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -237,7 +237,7 @@ class InputProvider with ChangeNotifier {
     try {
       await _inputService.deleteInput(inputId);
 
-      print('✅ InputProvider: Input $inputId deleted successfully');
+      print(' InputProvider: Input $inputId deleted successfully');
 
       // Always refetch inputs after delete
       await fetchInputs(
@@ -251,7 +251,7 @@ class InputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ InputProvider Error: $e');
+      print(' InputProvider Error: $e');
       notifyListeners();
       return false;
     }

@@ -42,7 +42,7 @@
 //   }) async {
 //     if (_isFetching) {
 //       print(
-//         '⚠️ ClientProvider: Fetch already in progress, skipping duplicate request',
+//         '️ ClientProvider: Fetch already in progress, skipping duplicate request',
 //       );
 //       return;
 //     }
@@ -72,12 +72,12 @@
 //       _previousPage = response['previous'] as String?;
 
 //       print(
-//         '✅ ClientProvider: Fetched ${_clients.length} clients successfully',
+//         ' ClientProvider: Fetched ${_clients.length} clients successfully',
 //       );
-//       print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+//       print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
 //     } catch (e) {
 //       _error = e.toString();
-//       print('❌ ClientProvider: Error fetching clients: $e');
+//       print(' ClientProvider: Error fetching clients: $e');
 //     } finally {
 //       _isLoading = false;
 //       _isFetching = false;
@@ -134,7 +134,7 @@
 //     notifyListeners();
 
 //     try {
-//       print('📝 ClientProvider: Creating client: $name');
+//       print(' ClientProvider: Creating client: $name');
 //       await _clientService.createClient(
 //         name: name,
 //         phone: phone,
@@ -145,12 +145,12 @@
 //       );
 
 //       // Refresh clients list
-//       print('🔄 ClientProvider: Refreshing clients list');
+//       print(' ClientProvider: Refreshing clients list');
 //       await fetchClients();
-//       print('✅ ClientProvider: Client created and list refreshed');
+//       print(' ClientProvider: Client created and list refreshed');
 //     } catch (e) {
 //       _error = e.toString();
-//       print('❌ ClientProvider: Error creating client: $e');
+//       print(' ClientProvider: Error creating client: $e');
 //       rethrow;
 //     } finally {
 //       _isLoading = false;
@@ -170,7 +170,7 @@
 //     required bool isActive,
 //   }) async {
 //     try {
-//       print('🔄 ClientProvider: Updating client $clientId');
+//       print(' ClientProvider: Updating client $clientId');
 //       final updatedClient = await _clientService.updateClient(
 //         clientId,
 //         name: name,
@@ -186,12 +186,12 @@
 //       final index = _clients.indexWhere((c) => c.id == clientId);
 //       if (index != -1) {
 //         _clients[index] = updatedClient;
-//         print('✅ ClientProvider: Client $clientId updated locally');
+//         print(' ClientProvider: Client $clientId updated locally');
 //       }
 //       notifyListeners();
 //     } catch (e) {
 //       _error = e.toString();
-//       print('❌ ClientProvider: Error updating client: $e');
+//       print(' ClientProvider: Error updating client: $e');
 //       rethrow;
 //     }
 //   }
@@ -199,17 +199,17 @@
 //   // Deactivate client
 //   Future<void> deactivateClient(int clientId) async {
 //     try {
-//       print('🔄 ClientProvider: Deactivating client $clientId');
+//       print(' ClientProvider: Deactivating client $clientId');
 //       await _clientService.deleteClient(clientId);
 
 //       // Refresh the client data
 //       await fetchClients();
 //       print(
-//         '✅ ClientProvider: Client $clientId deactivated and list refreshed',
+//         ' ClientProvider: Client $clientId deactivated and list refreshed',
 //       );
 //     } catch (e) {
 //       _error = e.toString();
-//       print('❌ ClientProvider: Error deactivating client: $e');
+//       print(' ClientProvider: Error deactivating client: $e');
 //       rethrow;
 //     }
 //   }
@@ -218,14 +218,14 @@
 //   Future<Map<String, dynamic>> getClientComplete(int clientId) async {
 //     try {
 //       print(
-//         '🔄 ClientProvider: Fetching complete profile for client $clientId',
+//         ' ClientProvider: Fetching complete profile for client $clientId',
 //       );
 //       final completeData = await _clientService.getClientComplete(clientId);
-//       print('✅ ClientProvider: Complete profile fetched');
+//       print(' ClientProvider: Complete profile fetched');
 //       return completeData;
 //     } catch (e) {
 //       _error = e.toString();
-//       print('❌ ClientProvider: Error fetching complete profile: $e');
+//       print(' ClientProvider: Error fetching complete profile: $e');
 //       rethrow;
 //     }
 //   }
@@ -288,7 +288,7 @@ class ClientProvider with ChangeNotifier {
   }) async {
     if (_isFetching) {
       print(
-        '⚠️ ClientProvider: Fetch already in progress, skipping duplicate request',
+        '️ ClientProvider: Fetch already in progress, skipping duplicate request',
       );
       return;
     }
@@ -317,13 +317,11 @@ class ClientProvider with ChangeNotifier {
       _nextPage = response['next'] as String?;
       _previousPage = response['previous'] as String?;
 
-      print(
-        '✅ ClientProvider: Fetched ${_clients.length} clients successfully',
-      );
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' ClientProvider: Fetched ${_clients.length} clients successfully');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
     } catch (e) {
       _error = e.toString();
-      print('❌ ClientProvider: Error fetching clients: $e');
+      print(' ClientProvider: Error fetching clients: $e');
     } finally {
       _isLoading = false;
       _isFetching = false;
@@ -331,7 +329,7 @@ class ClientProvider with ChangeNotifier {
     }
   }
 
-  // ✅ API SEARCH METHOD - Server-side search with pagination
+  //  API SEARCH METHOD - Server-side search with pagination
   Future<List<ClientModel>> searchClientsAPI(String query) async {
     if (query.isEmpty) {
       _clients = [];
@@ -346,7 +344,7 @@ class ClientProvider with ChangeNotifier {
 
     if (_isFetching) {
       print(
-        '⚠️ ClientProvider: Search already in progress, skipping duplicate request',
+        '️ ClientProvider: Search already in progress, skipping duplicate request',
       );
       return _clients;
     }
@@ -360,7 +358,7 @@ class ClientProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('🔍 ClientProvider: Searching API for clients: "$query"');
+      print(' ClientProvider: Searching API for clients: "$query"');
       final response = await _clientService.getClients(
         page: _currentPage,
         pageSize: _pageSize,
@@ -374,15 +372,15 @@ class ClientProvider with ChangeNotifier {
       _previousPage = response['previous'] as String?;
 
       print(
-        '✅ ClientProvider: Search found ${_clients.length} clients for "$_searchQuery"',
+        ' ClientProvider: Search found ${_clients.length} clients for "$_searchQuery"',
       );
-      print('📊 Total results: $_totalCount');
+      print(' Total results: $_totalCount');
 
       return _clients;
     } catch (e) {
       _error = e.toString();
       _clients = [];
-      print('❌ ClientProvider: Error searching clients: $e');
+      print(' ClientProvider: Error searching clients: $e');
       return [];
     } finally {
       _isLoading = false;
@@ -440,7 +438,7 @@ class ClientProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('📝 ClientProvider: Creating client: $name');
+      print(' ClientProvider: Creating client: $name');
       await _clientService.createClient(
         name: name,
         phone: phone,
@@ -451,12 +449,12 @@ class ClientProvider with ChangeNotifier {
       );
 
       // Refresh clients list
-      print('🔄 ClientProvider: Refreshing clients list');
+      print(' ClientProvider: Refreshing clients list');
       await fetchClients();
-      print('✅ ClientProvider: Client created and list refreshed');
+      print(' ClientProvider: Client created and list refreshed');
     } catch (e) {
       _error = e.toString();
-      print('❌ ClientProvider: Error creating client: $e');
+      print(' ClientProvider: Error creating client: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -476,7 +474,7 @@ class ClientProvider with ChangeNotifier {
     required bool isActive,
   }) async {
     try {
-      print('🔄 ClientProvider: Updating client $clientId');
+      print(' ClientProvider: Updating client $clientId');
       final updatedClient = await _clientService.updateClient(
         clientId,
         name: name,
@@ -492,12 +490,12 @@ class ClientProvider with ChangeNotifier {
       final index = _clients.indexWhere((c) => c.id == clientId);
       if (index != -1) {
         _clients[index] = updatedClient;
-        print('✅ ClientProvider: Client $clientId updated locally');
+        print(' ClientProvider: Client $clientId updated locally');
       }
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      print('❌ ClientProvider: Error updating client: $e');
+      print(' ClientProvider: Error updating client: $e');
       rethrow;
     }
   }
@@ -505,17 +503,15 @@ class ClientProvider with ChangeNotifier {
   // Deactivate client
   Future<void> deactivateClient(int clientId) async {
     try {
-      print('🔄 ClientProvider: Deactivating client $clientId');
+      print(' ClientProvider: Deactivating client $clientId');
       await _clientService.deleteClient(clientId);
 
       // Refresh the client data
       await fetchClients();
-      print(
-        '✅ ClientProvider: Client $clientId deactivated and list refreshed',
-      );
+      print(' ClientProvider: Client $clientId deactivated and list refreshed');
     } catch (e) {
       _error = e.toString();
-      print('❌ ClientProvider: Error deactivating client: $e');
+      print(' ClientProvider: Error deactivating client: $e');
       rethrow;
     }
   }
@@ -523,15 +519,13 @@ class ClientProvider with ChangeNotifier {
   // Get complete client profile
   Future<Map<String, dynamic>> getClientComplete(int clientId) async {
     try {
-      print(
-        '🔄 ClientProvider: Fetching complete profile for client $clientId',
-      );
+      print(' ClientProvider: Fetching complete profile for client $clientId');
       final completeData = await _clientService.getClientComplete(clientId);
-      print('✅ ClientProvider: Complete profile fetched');
+      print(' ClientProvider: Complete profile fetched');
       return completeData;
     } catch (e) {
       _error = e.toString();
-      print('❌ ClientProvider: Error fetching complete profile: $e');
+      print(' ClientProvider: Error fetching complete profile: $e');
       rethrow;
     }
   }

@@ -9,7 +9,7 @@ class CustomDialogWidget extends StatelessWidget {
   final Widget content;
   final List<Widget> actions;
   final bool isScrollable;
-  final DialogSize size; // ✅ new parameter
+  final DialogSize size; //  new parameter
 
   const CustomDialogWidget({
     super.key,
@@ -17,7 +17,7 @@ class CustomDialogWidget extends StatelessWidget {
     required this.content,
     required this.actions,
     this.isScrollable = true,
-    this.size = DialogSize.big, // ✅ default is big
+    this.size = DialogSize.big, //  default is big
   });
 
   @override
@@ -62,7 +62,7 @@ class CustomDialogWidget extends StatelessWidget {
                   color: AppColors.textPrimary,
                   letterSpacing: -0.5,
                 ),
-                textAlign: TextAlign.center, // ✅ title centered
+                textAlign: TextAlign.center, //  title centered
               ),
               const SizedBox(height: 16),
 
@@ -73,10 +73,10 @@ class CustomDialogWidget extends StatelessWidget {
                         ? SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
                           child: Center(
-                            child: content, // ✅ content centered
+                            child: content, //  content centered
                           ),
                         )
-                        : Center(child: content), // ✅ content centered
+                        : Center(child: content), //  content centered
               ),
 
               const SizedBox(height: 16),

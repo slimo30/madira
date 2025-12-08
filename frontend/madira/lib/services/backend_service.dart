@@ -30,7 +30,7 @@
 //   // INITIALIZATION
 //   // ═══════════════════════════════════════════════════════════════
 //   Future<void> initialize() async {
-//     print('🔧 Initializing BackendService...');
+//     print(' Initializing BackendService...');
 
 //     final prefs = await SharedPreferences.getInstance();
 //     _backendPath = prefs.getString('backend_path');
@@ -69,7 +69,7 @@
 //         final prefs = await SharedPreferences.getInstance();
 //         await prefs.setString('backend_path', selectedDirectory);
 
-//         print('✅ Backend path saved: $selectedDirectory');
+//         print(' Backend path saved: $selectedDirectory');
 //         notifyListeners();
 //       }
 //     } catch (e) {
@@ -107,12 +107,12 @@
 
 //     // FIX: Check if already running OR starting
 //     if (_isRunning) {
-//       print('⚠️ Backend already running');
+//       print('️ Backend already running');
 //       return true; // Return true since it's already running
 //     }
 
 //     if (_isStarting) {
-//       print('⚠️ Backend already starting');
+//       print('️ Backend already starting');
 //       return false; // Prevent duplicate starts
 //     }
 
@@ -123,8 +123,8 @@
 //       _needsConfiguration = false; // ← FIX: Set to false when starting
 //       notifyListeners();
 
-//       print('🚀 Starting Django backend...');
-//       print('📂 Path: $_backendPath');
+//       print(' Starting Django backend...');
+//       print(' Path: $_backendPath');
 
 //       _process = await _startProcess();
 
@@ -133,7 +133,7 @@
 //       }
 
 //       _mainProcessPid = _process!.pid;
-//       print('✅ Process started with PID: $_mainProcessPid');
+//       print(' Process started with PID: $_mainProcessPid');
 //       _monitorOutput();
 
 //       await Future.delayed(const Duration(seconds: 8));
@@ -146,7 +146,7 @@
 //         _isRunning = true;
 //         _needsConfiguration = false;
 //         _statusMessage = 'Backend running successfully';
-//         print('✅ Django backend running at http://127.0.0.1:8000');
+//         print(' Django backend running at http://127.0.0.1:8000');
 //         notifyListeners();
 //         return true;
 //       } else {
@@ -174,7 +174,7 @@
 //   //   }
 
 //   //   if (_isRunning) {
-//   //     print('⚠️ Backend already running');
+//   //     print('️ Backend already running');
 //   //     return true;
 //   //   }
 
@@ -184,8 +184,8 @@
 //   //     _errorMessage = '';
 //   //     notifyListeners();
 
-//   //     print('🚀 Starting Django backend...');
-//   //     print('📂 Path: $_backendPath');
+//   //     print(' Starting Django backend...');
+//   //     print(' Path: $_backendPath');
 
 //   //     _process = await _startProcess();
 
@@ -194,7 +194,7 @@
 //   //     }
 
 //   //     _mainProcessPid = _process!.pid;
-//   //     print('✅ Process started with PID: $_mainProcessPid');
+//   //     print(' Process started with PID: $_mainProcessPid');
 //   //     _monitorOutput();
 
 //   //     await Future.delayed(const Duration(seconds: 8));
@@ -207,7 +207,7 @@
 //   //       _isRunning = true;
 //   //       _needsConfiguration = false;
 //   //       _statusMessage = 'Backend running successfully';
-//   //       print('✅ Django backend running at http://127.0.0.1:8000');
+//   //       print(' Django backend running at http://127.0.0.1:8000');
 //   //       notifyListeners();
 //   //       return true;
 //   //     } else {
@@ -252,7 +252,7 @@
 //         runInShell: false,
 //       );
 //     } catch (e) {
-//       print('❌ Process start error: $e');
+//       print(' Process start error: $e');
 //       return null;
 //     }
 //   }
@@ -263,7 +263,7 @@
 //         .transform(SystemEncoding().decoder)
 //         .transform(const LineSplitter())
 //         .listen((line) {
-//           if (line.trim().isNotEmpty) print('🟢 Django: $line');
+//           if (line.trim().isNotEmpty) print(' Django: $line');
 //         });
 
 //     _process?.stderr
@@ -278,15 +278,15 @@
 //               line.contains('Started server process') ||
 //               line.contains('Application startup complete') ||
 //               line.contains('Waiting for application startup')) {
-//             print('🔵 Django: $line'); // Blue for info
+//             print(' Django: $line'); // Blue for info
 //           } else {
-//             print('🔴 Django Error: $line'); // Red for actual errors
+//             print(' Django Error: $line'); // Red for actual errors
 //           }
 //         });
 
 //     _process?.exitCode.then((code) {
 //       if (code != 0) {
-//         print('⚠️ Django process exited with code: $code');
+//         print('️ Django process exited with code: $code');
 //         _isRunning = false;
 //         _killAllPythonProcesses();
 //         notifyListeners();
@@ -305,7 +305,7 @@
 //           timeout: const Duration(seconds: 2),
 //         );
 //         socket.destroy();
-//         print('✅ Server responding (${i + 1}/20)');
+//         print(' Server responding (${i + 1}/20)');
 //         return true;
 //       } catch (e) {
 //         print('⏳ Waiting for server... (${i + 1}/20)');
@@ -319,12 +319,12 @@
 //   // ═══════════════════════════════════════════════════════════════
 //   Future<void> stopBackend() async {
 //     if (!_isRunning && _process == null) {
-//       print('⚠️ Backend not running');
+//       print('️ Backend not running');
 //       return;
 //     }
 
 //     try {
-//       print('🛑 Stopping Django backend...');
+//       print(' Stopping Django backend...');
 
 //       // First try graceful shutdown
 //       if (_process != null) {
@@ -334,13 +334,13 @@
 //           await _process!.exitCode.timeout(
 //             const Duration(seconds: 3),
 //             onTimeout: () {
-//               print('⚠️ Graceful shutdown timeout, force killing...');
+//               print('️ Graceful shutdown timeout, force killing...');
 //               _process!.kill(ProcessSignal.sigkill);
 //               return -1;
 //             },
 //           );
 //         } catch (e) {
-//           print('⚠️ Error waiting for process exit: $e');
+//           print('️ Error waiting for process exit: $e');
 //         }
 //       }
 
@@ -351,10 +351,10 @@
 //       _mainProcessPid = null;
 //       _isRunning = false;
 
-//       print('✅ Backend stopped completely');
+//       print(' Backend stopped completely');
 //       notifyListeners();
 //     } catch (e) {
-//       print('❌ Error stopping backend: $e');
+//       print(' Error stopping backend: $e');
 //       // Force kill as fallback
 //       await _killAllPythonProcesses();
 //       _process = null;
@@ -369,7 +369,7 @@
 //     if (!Platform.isWindows) return;
 
 //     try {
-//       print('🔪 Killing all Python processes...');
+//       print(' Killing all Python processes...');
 
 //       // Use taskkill to forcefully terminate all python.exe processes
 //       final result = await Process.run('taskkill', [
@@ -379,13 +379,13 @@
 //       ], runInShell: true);
 
 //       if (result.exitCode == 0) {
-//         print('✅ All Python processes killed');
+//         print(' All Python processes killed');
 //         print(result.stdout);
 //       } else if (result.exitCode == 128) {
 //         // Exit code 128 means no process found - this is fine
 //         print('ℹ️ No Python processes found');
 //       } else {
-//         print('⚠️ taskkill exit code: ${result.exitCode}');
+//         print('️ taskkill exit code: ${result.exitCode}');
 //         print(result.stderr);
 //       }
 
@@ -395,7 +395,7 @@
 //       // Verify port is free
 //       await _verifyPortFree();
 //     } catch (e) {
-//       print('❌ Error killing Python processes: $e');
+//       print(' Error killing Python processes: $e');
 //     }
 //   }
 
@@ -405,9 +405,9 @@
 //       // Try to bind to port 8000
 //       final serverSocket = await ServerSocket.bind('127.0.0.1', 8000);
 //       await serverSocket.close();
-//       print('✅ Port 8000 is free');
+//       print(' Port 8000 is free');
 //     } catch (e) {
-//       print('⚠️ Port 8000 still in use, waiting...');
+//       print('️ Port 8000 still in use, waiting...');
 //       await Future.delayed(const Duration(seconds: 2));
 
 //       // Try one more time to kill processes
@@ -421,7 +421,7 @@
 //   // RESET CONFIGURATION
 //   // ═══════════════════════════════════════════════════════════════
 //   Future<void> resetConfiguration() async {
-//     print('🔄 Resetting backend configuration...');
+//     print(' Resetting backend configuration...');
 
 //     await stopBackend();
 
@@ -434,7 +434,7 @@
 //     _statusMessage = '';
 
 //     notifyListeners();
-//     print('✅ Configuration reset');
+//     print(' Configuration reset');
 //   }
 
 //   @override
@@ -477,7 +477,7 @@ class BackendService extends ChangeNotifier {
   // INITIALIZATION
   // ═══════════════════════════════════════════════════════════════
   Future<void> initialize() async {
-    print('🔧 Initializing BackendService...');
+    print(' Initializing BackendService...');
 
     final prefs = await SharedPreferences.getInstance();
     _backendPath = prefs.getString('backend_path');
@@ -516,7 +516,7 @@ class BackendService extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('backend_path', selectedDirectory);
 
-        print('✅ Backend path saved: $selectedDirectory');
+        print(' Backend path saved: $selectedDirectory');
         notifyListeners();
       }
     } catch (e) {
@@ -551,12 +551,12 @@ class BackendService extends ChangeNotifier {
     }
 
     if (_isRunning) {
-      print('⚠️ Backend already running');
+      print('️ Backend already running');
       return true;
     }
 
     if (_isStarting) {
-      print('⚠️ Backend already starting');
+      print('️ Backend already starting');
       return false;
     }
 
@@ -567,8 +567,8 @@ class BackendService extends ChangeNotifier {
       _needsConfiguration = false;
       notifyListeners();
 
-      print('🚀 Starting Django backend...');
-      print('📂 Path: $_backendPath');
+      print(' Starting Django backend...');
+      print(' Path: $_backendPath');
 
       _process = await _startProcess();
 
@@ -577,7 +577,7 @@ class BackendService extends ChangeNotifier {
       }
 
       _mainProcessPid = _process!.pid;
-      print('✅ Process started with PID: $_mainProcessPid');
+      print(' Process started with PID: $_mainProcessPid');
       _monitorOutput();
 
       await Future.delayed(const Duration(seconds: 8));
@@ -590,7 +590,7 @@ class BackendService extends ChangeNotifier {
         _isRunning = true;
         _needsConfiguration = false;
         _statusMessage = 'Backend running successfully';
-        print('✅ Django backend running at http://127.0.0.1:8000');
+        print(' Django backend running at http://127.0.0.1:8000');
         notifyListeners();
         return true;
       } else {
@@ -611,64 +611,65 @@ class BackendService extends ChangeNotifier {
     }
   }
 
-Future<Process?> _startProcess() async {
-  try {
-    if (Platform.isWindows) {
-      // Windows implementation - exactly as before
-      final arguments = [
-        '/c',
-        'cd',
-        '/d',
-        _backendPath!,
-        '&&',
-        'python',
-        '-m',
-        'uvicorn',
-        'madira.asgi:application',
-        '--host',
-        '0.0.0.0',
-        '--port',
-        '8000',
-        '--workers',
-        '4',
-      ];
+  Future<Process?> _startProcess() async {
+    try {
+      if (Platform.isWindows) {
+        // Windows implementation - exactly as before
+        final arguments = [
+          '/c',
+          'cd',
+          '/d',
+          _backendPath!,
+          '&&',
+          'python',
+          '-m',
+          'uvicorn',
+          'madira.asgi:application',
+          '--host',
+          '0.0.0.0',
+          '--port',
+          '8000',
+          '--workers',
+          '4',
+        ];
 
-      return await Process.start(
-        'cmd',
-        arguments,
-        workingDirectory: _backendPath,
-        runInShell: false,
-      );
-    } else if (Platform.isMacOS) {
-      // macOS implementation - Use python3.11 explicitly
-      final script = '''
+        return await Process.start(
+          'cmd',
+          arguments,
+          workingDirectory: _backendPath,
+          runInShell: false,
+        );
+      } else if (Platform.isMacOS) {
+        // macOS implementation - Use python3.11 explicitly
+        final script = '''
 cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0.0 --port 8000 --workers 4
 ''';
 
-      return await Process.start(
-        '/bin/bash',
-        ['-c', script],
-        workingDirectory: _backendPath,
-        runInShell: false,
-        environment: {
-          'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
-        },
-      );
-    } else {
-      throw Exception('Unsupported platform');
+        return await Process.start(
+          '/bin/bash',
+          ['-c', script],
+          workingDirectory: _backendPath,
+          runInShell: false,
+          environment: {
+            'PATH':
+                '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+          },
+        );
+      } else {
+        throw Exception('Unsupported platform');
+      }
+    } catch (e) {
+      print(' Process start error: $e');
+      return null;
     }
-  } catch (e) {
-    print('❌ Process start error: $e');
-    return null;
   }
-}
 
   void _monitorOutput() {
     _process?.stdout
         .transform(SystemEncoding().decoder)
         .transform(const LineSplitter())
         .listen((line) {
-          if (line.trim().isNotEmpty) print('🟢 Django: $line');
+          if (line.trim().isNotEmpty) print(' Django: $line');
         });
 
     _process?.stderr
@@ -683,9 +684,9 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
               line.contains('Started server process') ||
               line.contains('Application startup complete') ||
               line.contains('Waiting for application startup')) {
-            print('🔵 Django: $line');
+            print(' Django: $line');
           } else {
-            print('🔴 Django Error: $line');
+            print(' Django Error: $line');
             // Capture critical errors
             if (line.contains('ModuleNotFoundError')) {
               _errorMessage =
@@ -696,7 +697,7 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
 
     _process?.exitCode.then((code) {
       if (code != 0) {
-        print('⚠️ Django process exited with code: $code');
+        print('️ Django process exited with code: $code');
         _isRunning = false;
         _killAllPythonProcesses();
         notifyListeners();
@@ -715,7 +716,7 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
           timeout: const Duration(seconds: 2),
         );
         socket.destroy();
-        print('✅ Server responding (${i + 1}/20)');
+        print(' Server responding (${i + 1}/20)');
         return true;
       } catch (e) {
         print('⏳ Waiting for server... (${i + 1}/20)');
@@ -729,12 +730,12 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
   // ═══════════════════════════════════════════════════════════════
   Future<void> stopBackend() async {
     if (!_isRunning && _process == null) {
-      print('⚠️ Backend not running');
+      print('️ Backend not running');
       return;
     }
 
     try {
-      print('🛑 Stopping Django backend...');
+      print(' Stopping Django backend...');
 
       // First try graceful shutdown
       if (_process != null) {
@@ -744,13 +745,13 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
           await _process!.exitCode.timeout(
             const Duration(seconds: 3),
             onTimeout: () {
-              print('⚠️ Graceful shutdown timeout, force killing...');
+              print('️ Graceful shutdown timeout, force killing...');
               _process!.kill(ProcessSignal.sigkill);
               return -1;
             },
           );
         } catch (e) {
-          print('⚠️ Error waiting for process exit: $e');
+          print('️ Error waiting for process exit: $e');
         }
       }
 
@@ -761,10 +762,10 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
       _mainProcessPid = null;
       _isRunning = false;
 
-      print('✅ Backend stopped completely');
+      print(' Backend stopped completely');
       notifyListeners();
     } catch (e) {
-      print('❌ Error stopping backend: $e');
+      print(' Error stopping backend: $e');
       await _killAllPythonProcesses();
       _process = null;
       _mainProcessPid = null;
@@ -776,7 +777,7 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
   /// Kill all Python processes - platform specific
   Future<void> _killAllPythonProcesses() async {
     try {
-      print('🔪 Killing all Python processes...');
+      print(' Killing all Python processes...');
 
       if (Platform.isWindows) {
         // Windows implementation - exactly as before
@@ -787,12 +788,12 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
         ], runInShell: true);
 
         if (result.exitCode == 0) {
-          print('✅ All Python processes killed');
+          print(' All Python processes killed');
           print(result.stdout);
         } else if (result.exitCode == 128) {
           print('ℹ️ No Python processes found');
         } else {
-          print('⚠️ taskkill exit code: ${result.exitCode}');
+          print('️ taskkill exit code: ${result.exitCode}');
           print(result.stderr);
         }
       } else if (Platform.isMacOS) {
@@ -810,21 +811,21 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
             for (final pid in pids) {
               if (pid.isNotEmpty) {
                 await Process.run('kill', ['-9', pid], runInShell: false);
-                print('✅ Killed process with PID: $pid');
+                print(' Killed process with PID: $pid');
               }
             }
           } else {
             print('ℹ️ No processes found on port 8000');
           }
         } catch (e) {
-          print('⚠️ Error using lsof: $e');
+          print('️ Error using lsof: $e');
         }
       }
 
       await Future.delayed(const Duration(milliseconds: 500));
       await _verifyPortFree();
     } catch (e) {
-      print('❌ Error killing Python processes: $e');
+      print(' Error killing Python processes: $e');
     }
   }
 
@@ -833,9 +834,9 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
     try {
       final serverSocket = await ServerSocket.bind('127.0.0.1', 8000);
       await serverSocket.close();
-      print('✅ Port 8000 is free');
+      print(' Port 8000 is free');
     } catch (e) {
-      print('⚠️ Port 8000 still in use, waiting...');
+      print('️ Port 8000 still in use, waiting...');
       await Future.delayed(const Duration(seconds: 2));
 
       try {
@@ -860,7 +861,7 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
   // RESET CONFIGURATION
   // ═══════════════════════════════════════════════════════════════
   Future<void> resetConfiguration() async {
-    print('🔄 Resetting backend configuration...');
+    print(' Resetting backend configuration...');
 
     await stopBackend();
 
@@ -873,7 +874,7 @@ cd "$_backendPath" && python3.11 -m uvicorn madira.asgi:application --host 0.0.0
     _statusMessage = '';
 
     notifyListeners();
-    print('✅ Configuration reset');
+    print(' Configuration reset');
   }
 
   @override

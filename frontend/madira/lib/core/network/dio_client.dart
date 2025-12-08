@@ -27,7 +27,7 @@
 //           return handler.next(options);
 //         },
 //         onError: (error, handler) {
-//           debugPrint("❌ API Error: ${error.response?.statusCode} ${error.message}");
+//           debugPrint(" API Error: ${error.response?.statusCode} ${error.message}");
 //           return handler.next(error);
 //         },
 //       ),
@@ -36,7 +36,7 @@
 
 //   /// Update the base URL dynamically (used when master IP changes)
 //   void updateBaseUrl(String newBaseUrl) {
-//     debugPrint('🔄 Updating Dio base URL to: $newBaseUrl');
+//     debugPrint(' Updating Dio base URL to: $newBaseUrl');
 //     dio.options.baseUrl = '$newBaseUrl/api';
 //   }
 // }
@@ -70,7 +70,7 @@ class DioClient {
           return handler.next(options);
         },
         onError: (error, handler) {
-          print("❌ API Error: ${error.response?.statusCode} ${error.message}");
+          print(" API Error: ${error.response?.statusCode} ${error.message}");
           return handler.next(error);
         },
       ),
@@ -83,7 +83,7 @@ class DioClient {
     final url = newBaseUrl.endsWith('/api') ? newBaseUrl : '$newBaseUrl/api';
 
     dio.options.baseUrl = url;
-    print('🔄 Dio base URL updated to: $url');
+    print(' Dio base URL updated to: $url');
   }
 
   /// Get current base URL
@@ -94,6 +94,6 @@ class DioClient {
   /// Reset to default localhost (for master mode)
   void resetToLocalhost() {
     dio.options.baseUrl = ApiConstants.baseUrl;
-    print('🔄 Dio base URL reset to: ${ApiConstants.baseUrl}');
+    print(' Dio base URL reset to: ${ApiConstants.baseUrl}');
   }
 }

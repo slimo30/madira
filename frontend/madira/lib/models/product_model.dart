@@ -1,4 +1,4 @@
-// ✅ Product Model
+//  Product Model
 import 'package:intl/intl.dart';
 
 class ProductModel {

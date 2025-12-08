@@ -1,4 +1,4 @@
-// ✅ Output Service
+//  Output Service
 import 'package:dio/dio.dart';
 import '../core/network/dio_client.dart';
 import '../core/constants/api_constants.dart';
@@ -17,14 +17,13 @@ class OutputService {
     String? search,
   }) async {
     try {
-      
-      print('🌐 API REQUEST: GET /outputs/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
-      if (type != null && type.isNotEmpty) print('🏷️ Type: $type');
-      if (orderId != null) print('📦 Order ID: $orderId');
-      if (inputId != null) print('📥 Input ID: $inputId');
-      if (search != null && search.isNotEmpty) print('🔍 Search: $search');
+      print(' API REQUEST: GET /outputs/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
+      print(' Pagination: page=$page, pageSize=$pageSize');
+      if (type != null && type.isNotEmpty) print('️ Type: $type');
+      if (orderId != null) print(' Order ID: $orderId');
+      if (inputId != null) print(' Input ID: $inputId');
+      if (search != null && search.isNotEmpty) print(' Search: $search');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -39,10 +38,9 @@ class OutputService {
         },
       );
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('📦 Response Data Type: ${response.data.runtimeType}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print(' Response Data Type: ${response.data.runtimeType}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -54,13 +52,13 @@ class OutputService {
                 .toList() ??
             [];
 
-        print('📥 Number of Outputs: ${outputs.length}');
-        print('📈 Total Count: ${data['count']}');
+        print(' Number of Outputs: ${outputs.length}');
+        print(' Total Count: ${data['count']}');
         print('=' * 60 + '\n');
 
         for (var output in outputs) {
           print(
-            '   ✓ Output: ${output.typeDisplay} - Amount: ${output.amount} DA (ID: ${output.id}) - Ref: ${output.reference}',
+            '    Output: ${output.typeDisplay} - Amount: ${output.amount} DA (ID: ${output.id}) - Ref: ${output.reference}',
           );
         }
 
@@ -75,18 +73,16 @@ class OutputService {
         'Failed to fetch outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('📍 Endpoint: ${ApiConstants.outputs}');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print(' Endpoint: ${ApiConstants.outputs}');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs: $e');
     }
@@ -96,16 +92,15 @@ class OutputService {
   Future<OutputModel> getOutputById(int outputId) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      
-      print('🌐 API REQUEST: GET /outputs/$outputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
+
+      print(' API REQUEST: GET /outputs/$outputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -113,7 +108,7 @@ class OutputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Output: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
+          '    Output: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
         );
         return output;
       }
@@ -121,16 +116,14 @@ class OutputService {
         'Failed to fetch output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching output: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching output: $e');
     }
@@ -143,13 +136,10 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      
-      print('🌐 API REQUEST: GET /outputs/by_type/');
-      print(
-        '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByType}',
-      );
-      print('🏷️ Type: $type');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
+      print(' API REQUEST: GET /outputs/by_type/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByType}');
+      print('️ Type: $type');
+      print(' Pagination: page=$page, pageSize=$pageSize');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -157,9 +147,8 @@ class OutputService {
         queryParameters: {'type': type, 'page': page, 'page_size': pageSize},
       );
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -171,7 +160,7 @@ class OutputService {
                 .toList() ??
             [];
 
-        print('📥 Outputs with type "$type": ${outputs.length}');
+        print(' Outputs with type "$type": ${outputs.length}');
         print('=' * 60 + '\n');
 
         return {
@@ -185,16 +174,14 @@ class OutputService {
         'Failed to fetch outputs by type - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs by type: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching outputs by type: $e');
     }
@@ -207,13 +194,10 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      
-      print('🌐 API REQUEST: GET /outputs/by_order/');
-      print(
-        '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByOrder}',
-      );
-      print('📦 Order ID: $orderId');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
+      print(' API REQUEST: GET /outputs/by_order/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByOrder}');
+      print(' Order ID: $orderId');
+      print(' Pagination: page=$page, pageSize=$pageSize');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -225,9 +209,8 @@ class OutputService {
         },
       );
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -239,7 +222,7 @@ class OutputService {
                 .toList() ??
             [];
 
-        print('📥 Outputs for Order $orderId: ${outputs.length}');
+        print(' Outputs for Order $orderId: ${outputs.length}');
         print('=' * 60 + '\n');
 
         return {
@@ -253,16 +236,14 @@ class OutputService {
         'Failed to fetch order outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order outputs: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order outputs: $e');
     }
@@ -275,13 +256,10 @@ class OutputService {
     int pageSize = 10,
   }) async {
     try {
-      
-      print('🌐 API REQUEST: GET /outputs/by_input/');
-      print(
-        '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByInput}',
-      );
-      print('📥 Input ID: $inputId');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
+      print(' API REQUEST: GET /outputs/by_input/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsByInput}');
+      print(' Input ID: $inputId');
+      print(' Pagination: page=$page, pageSize=$pageSize');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -293,9 +271,8 @@ class OutputService {
         },
       );
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -307,7 +284,7 @@ class OutputService {
                 .toList() ??
             [];
 
-        print('📥 Outputs for Input $inputId: ${outputs.length}');
+        print(' Outputs for Input $inputId: ${outputs.length}');
         print('=' * 60 + '\n');
 
         return {
@@ -321,16 +298,14 @@ class OutputService {
         'Failed to fetch input outputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching input outputs: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching input outputs: $e');
     }
@@ -339,20 +314,18 @@ class OutputService {
   // Get output statistics
   Future<OutputStatistics> getStatistics() async {
     try {
-      
-      print('🌐 API REQUEST: GET /outputs/statistics/');
+      print(' API REQUEST: GET /outputs/statistics/');
       print(
-        '📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsStatistics}',
+        ' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputsStatistics}',
       );
       print('=' * 60);
 
       final response = await _dio.get(ApiConstants.outputsStatistics);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('📦 Response Type: ${response.data.runtimeType}');
-      print('📦 Raw Response: ${response.data}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print(' Response Type: ${response.data.runtimeType}');
+      print(' Raw Response: ${response.data}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -368,7 +341,7 @@ class OutputService {
         final totalCount = overall['total_outputs'] as int? ?? 0;
 
         print(
-          '📊 Parsing overall: total_amount=$totalAmount, total_outputs=$totalCount',
+          ' Parsing overall: total_amount=$totalAmount, total_outputs=$totalCount',
         );
 
         // Convert by_type list to map
@@ -379,7 +352,7 @@ class OutputService {
             final count = item['count'] as int? ?? 0;
             final total = (item['total'] as num?)?.toDouble() ?? 0.0;
 
-            print('   📌 Type: $type, Count: $count, Total: $total');
+            print('    Type: $type, Count: $count, Total: $total');
 
             byTypeMap[type] = {'count': count, 'total_amount': total};
           }
@@ -393,11 +366,11 @@ class OutputService {
           'recent_outputs': [],
         };
 
-        print('📦 Final statistics data: $statisticsData');
+        print(' Final statistics data: $statisticsData');
 
         final statistics = OutputStatistics.fromJson(statisticsData);
-        print('📊 Total Outputs: ${statistics.totalCount}');
-        print('💰 Total Amount: ${statistics.formattedTotalAmount} DA');
+        print(' Total Outputs: ${statistics.totalCount}');
+        print(' Total Amount: ${statistics.formattedTotalAmount} DA');
         print('=' * 60 + '\n');
 
         return statistics;
@@ -406,16 +379,14 @@ class OutputService {
         'Failed to fetch statistics - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching statistics: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching statistics: $e');
     }
@@ -426,16 +397,15 @@ class OutputService {
     try {
       final endpoint =
           '${ApiConstants.outputsRelatedData}/$outputId/related_data/';
-      
-      print('🌐 API REQUEST: GET /outputs/$outputId/related_data/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
+
+      print(' API REQUEST: GET /outputs/$outputId/related_data/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -446,15 +416,15 @@ class OutputService {
       );
     } on DioException catch (e) {
       print('\n${'=' * 60}');
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching related data: ${e.message}');
     } catch (e) {
       print('\n${'=' * 60}');
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching related data: $e');
     }
@@ -463,10 +433,9 @@ class OutputService {
   // Create output
   Future<OutputModel> createOutput(Map<String, dynamic> data) async {
     try {
-      
-      print('🌐 API REQUEST: POST /outputs/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
-      print('📦 Request Data:');
+      print(' API REQUEST: POST /outputs/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.outputs}');
+      print(' Request Data:');
       print('   - Type: ${data['type']}');
       print('   - Amount: ${data['amount']} DA');
       if (data['product'] != null) print('   - Product: ${data['product']}');
@@ -476,9 +445,8 @@ class OutputService {
 
       final response = await _dio.post(ApiConstants.outputs, data: data);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -486,7 +454,7 @@ class OutputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Output Created: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
+          '    Output Created: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
         );
         return output;
       }
@@ -494,11 +462,10 @@ class OutputService {
         'Failed to create output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       if (e.response?.statusCode == 400) {
         final errorDetail =
@@ -509,9 +476,8 @@ class OutputService {
       }
       throw Exception('Error creating output: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error creating output: $e');
     }
@@ -524,19 +490,18 @@ class OutputService {
   ) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      
-      print('🌐 API REQUEST: PUT /outputs/$outputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
-      print('📦 Request Data:');
+
+      print(' API REQUEST: PUT /outputs/$outputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' Request Data:');
       print('   - Type: ${data['type']}');
       print('   - Amount: ${data['amount']} DA');
       print('=' * 60);
 
       final response = await _dio.put(endpoint, data: data);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -544,7 +509,7 @@ class OutputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Output Updated: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
+          '    Output Updated: ${output.typeDisplay} - ${output.amount} DA (ID: ${output.id})',
         );
         return output;
       }
@@ -552,16 +517,14 @@ class OutputService {
         'Failed to update output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating output: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error updating output: $e');
     }
@@ -574,40 +537,37 @@ class OutputService {
   ) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      
-      print('🌐 API REQUEST: PATCH /outputs/$outputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
-      print('📦 Request Data: $data');
+
+      print(' API REQUEST: PATCH /outputs/$outputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' Request Data: $data');
       print('=' * 60);
 
       final response = await _dio.patch(endpoint, data: data);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
         final output = OutputModel.fromJson(
           response.data as Map<String, dynamic>,
         );
-        print('   ✓ Output Partially Updated (ID: ${output.id})');
+        print('    Output Partially Updated (ID: ${output.id})');
         return output;
       }
       throw Exception(
         'Failed to partially update output - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error partially updating output: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error partially updating output: $e');
     }
@@ -617,17 +577,16 @@ class OutputService {
   Future<void> deleteOutput(int outputId) async {
     try {
       final endpoint = '${ApiConstants.outputsDetail}/$outputId/';
-      
-      print('🌐 API REQUEST: DELETE /outputs/$outputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
+
+      print(' API REQUEST: DELETE /outputs/$outputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('   ✓ Output $outputId deleted successfully');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print('    Output $outputId deleted successfully');
       print('=' * 60 + '\n');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -636,16 +595,14 @@ class OutputService {
         );
       }
     } on DioException catch (e) {
-      
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting output: ${e.message}');
     } catch (e) {
-      
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error deleting output: $e');
     }

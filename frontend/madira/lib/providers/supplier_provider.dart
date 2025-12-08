@@ -42,7 +42,7 @@ class SupplierProvider with ChangeNotifier {
   }) async {
     if (_isFetching) {
       print(
-        '⚠️ SupplierProvider: Fetch already in progress, skipping duplicate request',
+        '️ SupplierProvider: Fetch already in progress, skipping duplicate request',
       );
       return;
     }
@@ -72,12 +72,12 @@ class SupplierProvider with ChangeNotifier {
       _previousPage = response['previous'] as String?;
 
       print(
-        '✅ SupplierProvider: Fetched ${_suppliers.length} suppliers successfully',
+        ' SupplierProvider: Fetched ${_suppliers.length} suppliers successfully',
       );
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
     } catch (e) {
       _error = e.toString();
-      print('❌ SupplierProvider: Error fetching suppliers: $e');
+      print(' SupplierProvider: Error fetching suppliers: $e');
     } finally {
       _isLoading = false;
       _isFetching = false;
@@ -132,7 +132,7 @@ class SupplierProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('📝 SupplierProvider: Creating supplier: $name');
+      print(' SupplierProvider: Creating supplier: $name');
       await _supplierService.createSupplier(
         name: name,
         phone: phone,
@@ -141,12 +141,12 @@ class SupplierProvider with ChangeNotifier {
       );
 
       // Refresh suppliers list
-      print('🔄 SupplierProvider: Refreshing suppliers list');
+      print(' SupplierProvider: Refreshing suppliers list');
       await fetchSuppliers();
-      print('✅ SupplierProvider: Supplier created and list refreshed');
+      print(' SupplierProvider: Supplier created and list refreshed');
     } catch (e) {
       _error = e.toString();
-      print('❌ SupplierProvider: Error creating supplier: $e');
+      print(' SupplierProvider: Error creating supplier: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -164,7 +164,7 @@ class SupplierProvider with ChangeNotifier {
     required bool isActive,
   }) async {
     try {
-      print('🔄 SupplierProvider: Updating supplier $supplierId');
+      print(' SupplierProvider: Updating supplier $supplierId');
       final updatedSupplier = await _supplierService.updateSupplier(
         supplierId,
         name: name,
@@ -178,12 +178,12 @@ class SupplierProvider with ChangeNotifier {
       final index = _suppliers.indexWhere((s) => s.id == supplierId);
       if (index != -1) {
         _suppliers[index] = updatedSupplier;
-        print('✅ SupplierProvider: Supplier $supplierId updated locally');
+        print(' SupplierProvider: Supplier $supplierId updated locally');
       }
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      print('❌ SupplierProvider: Error updating supplier: $e');
+      print(' SupplierProvider: Error updating supplier: $e');
       rethrow;
     }
   }
@@ -191,17 +191,17 @@ class SupplierProvider with ChangeNotifier {
   // Deactivate supplier
   Future<void> deactivateSupplier(int supplierId) async {
     try {
-      print('🔄 SupplierProvider: Deactivating supplier $supplierId');
+      print(' SupplierProvider: Deactivating supplier $supplierId');
       await _supplierService.deleteSupplier(supplierId);
 
       // Refresh the supplier data
       await fetchSuppliers();
       print(
-        '✅ SupplierProvider: Supplier $supplierId deactivated and list refreshed',
+        ' SupplierProvider: Supplier $supplierId deactivated and list refreshed',
       );
     } catch (e) {
       _error = e.toString();
-      print('❌ SupplierProvider: Error deactivating supplier: $e');
+      print(' SupplierProvider: Error deactivating supplier: $e');
       rethrow;
     }
   }

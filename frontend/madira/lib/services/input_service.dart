@@ -16,14 +16,14 @@ class InputService {
     String? ordering,
   }) async {
     try {
-      print('🌐 API REQUEST: GET /inputs/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.inputs}');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
-      if (type != null && type.isNotEmpty) print('🏷️ Type: $type');
-      if (orderId != null) print('📦 Order ID: $orderId');
-      if (search != null && search.isNotEmpty) print('🔍 Search: $search');
+      print(' API REQUEST: GET /inputs/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.inputs}');
+      print(' Pagination: page=$page, pageSize=$pageSize');
+      if (type != null && type.isNotEmpty) print('️ Type: $type');
+      if (orderId != null) print(' Order ID: $orderId');
+      if (search != null && search.isNotEmpty) print(' Search: $search');
       if (ordering != null && ordering.isNotEmpty) {
-        print('🔃 Ordering: $ordering');
+        print(' Ordering: $ordering');
       }
       print('=' * 60);
 
@@ -39,9 +39,9 @@ class InputService {
         },
       );
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('📦 Response Data Type: ${response.data.runtimeType}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print(' Response Data Type: ${response.data.runtimeType}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -53,13 +53,13 @@ class InputService {
                 .toList() ??
             [];
 
-        print('📥 Number of Inputs: ${inputs.length}');
-        print('📈 Total Count: ${data['count']}');
+        print(' Number of Inputs: ${inputs.length}');
+        print(' Total Count: ${data['count']}');
         print('=' * 60 + '\n');
 
         for (var input in inputs) {
           print(
-            '   ✓ Input: ${input.type} - Amount: ${input.amount} DA (ID: ${input.id}) - Order: ${input.order}',
+            '    Input: ${input.type} - Amount: ${input.amount} DA (ID: ${input.id}) - Order: ${input.order}',
           );
         }
 
@@ -74,16 +74,16 @@ class InputService {
         'Failed to fetch inputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('📍 Endpoint: ${ApiConstants.inputs}');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print(' Endpoint: ${ApiConstants.inputs}');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching inputs: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching inputs: $e');
     }
@@ -94,14 +94,14 @@ class InputService {
     try {
       final endpoint = '${ApiConstants.inputsDetail}/$inputId/';
 
-      print('🌐 API REQUEST: GET /inputs/$inputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' API REQUEST: GET /inputs/$inputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.get(endpoint);
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -109,20 +109,20 @@ class InputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Input: ${input.type} - ${input.amount} DA (ID: ${input.id})',
+          '    Input: ${input.type} - ${input.amount} DA (ID: ${input.id})',
         );
         return input;
       }
       throw Exception('Failed to fetch input - Status: ${response.statusCode}');
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching input: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching input: $e');
     }
@@ -137,9 +137,9 @@ class InputService {
     try {
       final endpoint = '${ApiConstants.orders}$orderId/inputs/';
 
-      print('🌐 API REQUEST: GET /orders/$orderId/inputs/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
-      print('📊 Pagination: page=$page, pageSize=$pageSize');
+      print(' API REQUEST: GET /orders/$orderId/inputs/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' Pagination: page=$page, pageSize=$pageSize');
       print('=' * 60);
 
       final response = await _dio.get(
@@ -147,8 +147,8 @@ class InputService {
         queryParameters: {'page': page, 'page_size': pageSize},
       );
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -160,12 +160,12 @@ class InputService {
                 .toList() ??
             [];
 
-        print('📥 Inputs for Order $orderId: ${inputs.length}');
+        print(' Inputs for Order $orderId: ${inputs.length}');
         print('=' * 60 + '\n');
 
         for (var input in inputs) {
           print(
-            '   ✓ Input: ${input.type} - Amount: ${input.amount} DA (ID: ${input.id})',
+            '    Input: ${input.type} - Amount: ${input.amount} DA (ID: ${input.id})',
           );
         }
 
@@ -180,15 +180,15 @@ class InputService {
         'Failed to fetch order inputs - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order inputs: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error fetching order inputs: $e');
     }
@@ -209,9 +209,9 @@ class InputService {
         'description': description,
       };
 
-      print('🌐 API REQUEST: POST /inputs/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}${ApiConstants.inputs}');
-      print('📦 Request Data:');
+      print(' API REQUEST: POST /inputs/');
+      print(' Full URL: ${ApiConstants.baseUrl}${ApiConstants.inputs}');
+      print(' Request Data:');
       print('   - Type: $type');
       print('   - Amount: $amount DA');
       print('   - Order: ${order ?? "null"}');
@@ -220,8 +220,8 @@ class InputService {
 
       final response = await _dio.post(ApiConstants.inputs, data: data);
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -229,7 +229,7 @@ class InputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Input Created: ${input.type} - ${input.amount} DA (ID: ${input.id})',
+          '    Input Created: ${input.type} - ${input.amount} DA (ID: ${input.id})',
         );
         return input;
       }
@@ -237,10 +237,10 @@ class InputService {
         'Failed to create input - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
-      print('📝 Response: ${e.response?.data}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       if (e.response?.statusCode == 400) {
         final errorDetail =
@@ -251,8 +251,8 @@ class InputService {
       }
       throw Exception('Error creating input: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error creating input: $e');
     }
@@ -275,9 +275,9 @@ class InputService {
         'description': description,
       };
 
-      print('🌐 API REQUEST: PUT /inputs/$inputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
-      print('📦 Request Data:');
+      print(' API REQUEST: PUT /inputs/$inputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' Request Data:');
       print('   - Type: $type');
       print('   - Amount: $amount DA');
       print('   - Order: ${order ?? "null"}');
@@ -286,8 +286,8 @@ class InputService {
 
       final response = await _dio.put(endpoint, data: data);
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
       print('=' * 60 + '\n');
 
       if (response.statusCode == 200) {
@@ -295,7 +295,7 @@ class InputService {
           response.data as Map<String, dynamic>,
         );
         print(
-          '   ✓ Input Updated: ${input.type} - ${input.amount} DA (ID: ${input.id})',
+          '    Input Updated: ${input.type} - ${input.amount} DA (ID: ${input.id})',
         );
         return input;
       }
@@ -303,14 +303,14 @@ class InputService {
         'Failed to update input - Status: ${response.statusCode}',
       );
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error updating input: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error updating input: $e');
     }
@@ -321,15 +321,15 @@ class InputService {
     try {
       final endpoint = '${ApiConstants.inputsDetail}/$inputId/';
 
-      print('🌐 API REQUEST: DELETE /inputs/$inputId/');
-      print('📍 Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print(' API REQUEST: DELETE /inputs/$inputId/');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
       print('=' * 60);
 
       final response = await _dio.delete(endpoint);
 
-      print('✅ API RESPONSE: SUCCESS');
-      print('📊 Status Code: ${response.statusCode}');
-      print('   ✓ Input $inputId deleted successfully');
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print('    Input $inputId deleted successfully');
       print('=' * 60 + '\n');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -338,14 +338,14 @@ class InputService {
         );
       }
     } on DioException catch (e) {
-      print('❌ API ERROR: DioException');
-      print('⚠️ Message: ${e.message}');
-      print('📊 Status Code: ${e.response?.statusCode}');
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
       print('=' * 60 + '\n');
       throw Exception('Error deleting input: ${e.message}');
     } catch (e) {
-      print('❌ API ERROR: Generic Exception');
-      print('⚠️ Error: $e');
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
       print('=' * 60 + '\n');
       throw Exception('Error deleting input: $e');
     }

@@ -1,4 +1,4 @@
-// ✅ Output Provider
+//  Output Provider
 import 'package:flutter/material.dart';
 import '../models/output_model.dart';
 import '../services/output_service.dart';
@@ -103,15 +103,15 @@ class OutputProvider with ChangeNotifier {
       _previousPage = result['previous'] as String?;
       _currentPage = page;
 
-      print('✅ OutputProvider: Loaded ${_outputs.length} outputs');
-      print('📊 Total count: $_totalCount, Page: $_currentPage/$totalPages');
+      print(' OutputProvider: Loaded ${_outputs.length} outputs');
+      print(' Total count: $_totalCount, Page: $_currentPage/$totalPages');
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -137,10 +137,10 @@ class OutputProvider with ChangeNotifier {
       _selectedOrderId = orderId;
 
       print(
-        '✅ OutputProvider: Loaded ${_orderOutputs.length} outputs for order $orderId',
+        ' OutputProvider: Loaded ${_orderOutputs.length} outputs for order $orderId',
       );
       print(
-        '📊 Total count: $_orderTotalCount, Page: $_orderCurrentPage/$orderTotalPages',
+        ' Total count: $_orderTotalCount, Page: $_orderCurrentPage/$orderTotalPages',
       );
 
       _isLoading = false;
@@ -148,7 +148,7 @@ class OutputProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -180,10 +180,10 @@ class OutputProvider with ChangeNotifier {
       _selectedInputId = inputId;
 
       print(
-        '✅ OutputProvider: Loaded ${_inputOutputs.length} outputs for input $inputId',
+        ' OutputProvider: Loaded ${_inputOutputs.length} outputs for input $inputId',
       );
       print(
-        '📊 Total count: $_inputTotalCount, Page: $_inputCurrentPage (Page size: $effectivePageSize)',
+        ' Total count: $_inputTotalCount, Page: $_inputCurrentPage (Page size: $effectivePageSize)',
       );
 
       _isLoading = false;
@@ -191,7 +191,7 @@ class OutputProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -217,7 +217,7 @@ class OutputProvider with ChangeNotifier {
       _selectedType = type;
 
       print(
-        '✅ OutputProvider: Loaded ${_outputs.length} outputs with type "$type"',
+        ' OutputProvider: Loaded ${_outputs.length} outputs with type "$type"',
       );
 
       _isLoading = false;
@@ -225,7 +225,7 @@ class OutputProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -239,16 +239,16 @@ class OutputProvider with ChangeNotifier {
     try {
       _statistics = await _outputService.getStatistics();
 
-      print('✅ OutputProvider: Statistics loaded');
-      print('📊 Total outputs: ${_statistics?.totalCount}');
-      print('💰 Total amount: ${_statistics?.formattedTotalAmount} DA');
+      print(' OutputProvider: Statistics loaded');
+      print(' Total outputs: ${_statistics?.totalCount}');
+      print(' Total amount: ${_statistics?.formattedTotalAmount} DA');
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
     }
   }
@@ -257,11 +257,11 @@ class OutputProvider with ChangeNotifier {
   Future<OutputModel?> getOutputById(int outputId) async {
     try {
       final output = await _outputService.getOutputById(outputId);
-      print('✅ OutputProvider: Retrieved output $outputId');
+      print(' OutputProvider: Retrieved output $outputId');
       return output;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return null;
     }
@@ -271,11 +271,11 @@ class OutputProvider with ChangeNotifier {
   Future<Map<String, dynamic>?> getRelatedData(int outputId) async {
     try {
       final data = await _outputService.getRelatedData(outputId);
-      print('✅ OutputProvider: Retrieved related data for output $outputId');
+      print(' OutputProvider: Retrieved related data for output $outputId');
       return data;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return null;
     }
@@ -286,7 +286,7 @@ class OutputProvider with ChangeNotifier {
     try {
       final output = await _outputService.createOutput(data);
 
-      print('✅ OutputProvider: Output created successfully (ID: ${output.id})');
+      print(' OutputProvider: Output created successfully (ID: ${output.id})');
 
       // Refresh the appropriate list
       if (data['order'] != null && _selectedOrderId == data['order']) {
@@ -315,7 +315,7 @@ class OutputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -326,7 +326,7 @@ class OutputProvider with ChangeNotifier {
     try {
       await _outputService.updateOutput(outputId, data);
 
-      print('✅ OutputProvider: Output $outputId updated successfully');
+      print(' OutputProvider: Output $outputId updated successfully');
 
       // Always refetch outputs after update
       await fetchOutputs(
@@ -345,7 +345,7 @@ class OutputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -359,7 +359,7 @@ class OutputProvider with ChangeNotifier {
     try {
       await _outputService.partialUpdateOutput(outputId, data);
 
-      print('✅ OutputProvider: Output $outputId partially updated');
+      print(' OutputProvider: Output $outputId partially updated');
 
       // Refetch current list
       await fetchOutputs(
@@ -373,7 +373,7 @@ class OutputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -384,7 +384,7 @@ class OutputProvider with ChangeNotifier {
     try {
       await _outputService.deleteOutput(outputId);
 
-      print('✅ OutputProvider: Output $outputId deleted successfully');
+      print(' OutputProvider: Output $outputId deleted successfully');
 
       // Always refetch outputs after delete
       await fetchOutputs(
@@ -403,7 +403,7 @@ class OutputProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ OutputProvider Error: $e');
+      print(' OutputProvider Error: $e');
       notifyListeners();
       return false;
     }

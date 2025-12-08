@@ -1,4 +1,4 @@
-// ✅ Input Model
+//  Input Model
 import 'package:intl/intl.dart';
 
 class InputModel {

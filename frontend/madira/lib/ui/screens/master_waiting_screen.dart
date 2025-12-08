@@ -25,183 +25,206 @@ class MasterWaitingScreen extends StatelessWidget {
           backgroundColor: AppColors.background,
           body: Column(
             children: [
-              CustomTitleBar(title: 'Madera Kitchen - Master Mode'),
+              CustomTitleBar(
+                title: 'Madera Kitchen - Master Mode',
+                onReset: () async {
+                  final backendService = Provider.of<BackendService>(
+                    context,
+                    listen: false,
+                  );
+                  await backendService.resetConfiguration();
+                  await networkService.resetMode();
+
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const ModeSelectionScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                },
+              ),
               Expanded(
                 child: Center(
-                  child: Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.all(32),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      padding: const EdgeInsets.all(48),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.broadcast_on_personal,
-                            size: 80,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Master Mode Active',
-                            style: GoogleFonts.inter(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.secondary,
+                  child: SingleChildScrollView(
+                    child: Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.all(32),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        padding: const EdgeInsets.all(48),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.broadcast_on_personal,
+                              size: 80,
+                              color: AppColors.primary,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green[300]!),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.wifi,
-                                  size: 20,
-                                  color: Colors.green[700],
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Broadcasting: ${networkService.localIp ?? "N/A"}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green[900],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          Text(
-                            'Connected Slaves',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            constraints: const BoxConstraints(maxHeight: 200),
-                            child:
-                                networkService.connectedSlaves.isEmpty
-                                    ? Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.devices_other,
-                                            size: 48,
-                                            color: Colors.grey[400],
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Text(
-                                            'Waiting for slaves to connect...',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                    : ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount:
-                                          networkService.connectedSlaves.length,
-                                      itemBuilder: (context, index) {
-                                        final slaveIp =
-                                            networkService
-                                                .connectedSlaves[index];
-                                        return ListTile(
-                                          leading: Icon(
-                                            Icons.devices,
-                                            color: Colors.blue[700],
-                                          ),
-                                          title: Text(
-                                            slaveIp,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          trailing: Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green[600],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                          ),
-                          const SizedBox(height: 32),
-
-                          // START BUTTON
-                          ElevatedButton.icon(
-                            onPressed: () => _confirmAndStart(context),
-                            icon: const Icon(Icons.play_arrow),
-                            label: Text(
-                              networkService.connectedSlaves.isEmpty
-                                  ? 'Start Without Slaves'
-                                  : 'Confirm & Start (${networkService.connectedSlaves.length} slaves)',
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 16,
-                              ),
-                              backgroundColor: Colors.green[600],
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // DIVIDER
-                          Divider(color: Colors.grey[300], thickness: 1),
-
-                          const SizedBox(height: 16),
-
-                          // CHANGE MODE BUTTON
-                          OutlinedButton.icon(
-                            onPressed: () => _showChangeModeDialog(context),
-                            icon: Icon(
-                              Icons.swap_horiz,
-                              size: 18,
-                              color: Colors.orange[700],
-                            ),
-                            label: Text(
-                              'Change Mode',
+                            const SizedBox(height: 24),
+                            Text(
+                              'Master Mode Active',
                               style: GoogleFonts.inter(
-                                fontSize: 14,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green[300]!),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.wifi,
+                                    size: 20,
+                                    color: Colors.green[700],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Broadcasting: ${networkService.localIp ?? "N/A"}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green[900],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            Text(
+                              'Connected Slaves',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              constraints: const BoxConstraints(maxHeight: 200),
+                              child:
+                                  networkService.connectedSlaves.isEmpty
+                                      ? Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.devices_other,
+                                              size: 48,
+                                              color: Colors.grey[400],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Waiting for slaves to connect...',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                      : ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount:
+                                            networkService
+                                                .connectedSlaves
+                                                .length,
+                                        itemBuilder: (context, index) {
+                                          final slaveIp =
+                                              networkService
+                                                  .connectedSlaves[index];
+                                          return ListTile(
+                                            leading: Icon(
+                                              Icons.devices,
+                                              color: Colors.blue[700],
+                                            ),
+                                            title: Text(
+                                              slaveIp,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            trailing: Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green[600],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // START BUTTON
+                            ElevatedButton.icon(
+                              onPressed: () => _confirmAndStart(context),
+                              icon: const Icon(Icons.play_arrow),
+                              label: Text(
+                                networkService.connectedSlaves.isEmpty
+                                    ? 'Start Without Slaves'
+                                    : 'Confirm & Start (${networkService.connectedSlaves.length} slaves)',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                                backgroundColor: Colors.green[600],
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // DIVIDER
+                            Divider(color: Colors.grey[300], thickness: 1),
+
+                            const SizedBox(height: 16),
+
+                            // CHANGE MODE BUTTON
+                            OutlinedButton.icon(
+                              onPressed: () => _showChangeModeDialog(context),
+                              icon: Icon(
+                                Icons.swap_horiz,
+                                size: 18,
                                 color: Colors.orange[700],
                               ),
+                              label: Text(
+                                'Change Mode',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.orange[700],
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                side: BorderSide(
+                                  color: Colors.orange[700]!,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                             ),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              side: BorderSide(
-                                color: Colors.orange[700]!,
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -347,7 +370,7 @@ class MasterWaitingScreen extends StatelessWidget {
         listen: false,
       );
 
-      print('🔄 Stopping backend and network services...');
+      print(' Stopping backend and network services...');
 
       // Stop backend and network in parallel
       await Future.wait([
@@ -355,7 +378,7 @@ class MasterWaitingScreen extends StatelessWidget {
         networkService.resetMode(),
       ]);
 
-      print('✅ Services stopped - returning to mode selection');
+      print(' Services stopped - returning to mode selection');
 
       // Close loading dialog
       if (context.mounted) Navigator.pop(context);
@@ -368,7 +391,7 @@ class MasterWaitingScreen extends StatelessWidget {
         );
       }
     } catch (e) {
-      print('❌ Error changing mode: $e');
+      print(' Error changing mode: $e');
 
       // Close loading dialog
       if (context.mounted) Navigator.pop(context);
@@ -405,7 +428,7 @@ class MasterWaitingScreen extends StatelessWidget {
 
     // Master always uses localhost
     DioClient().resetToLocalhost();
-    print('✅ Master using localhost: ${DioClient().getBaseUrl()}');
+    print(' Master using localhost: ${DioClient().getBaseUrl()}');
 
     final isLoggedIn = loginProvider.user != null;
 

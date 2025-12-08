@@ -31,16 +31,16 @@ class StockMovementProvider with ChangeNotifier {
       _productSummary = response.product;
       _movements = response.movements;
 
-      print('✅ StockMovementProvider: Loaded ${_movements.length} movements');
-      print('📊 Product: ${_productSummary?.name}');
-      print('📊 Current Stock: ${_productSummary?.formattedCurrentQuantity}');
+      print(' StockMovementProvider: Loaded ${_movements.length} movements');
+      print(' Product: ${_productSummary?.name}');
+      print(' Current Stock: ${_productSummary?.formattedCurrentQuantity}');
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
-      print('❌ StockMovementProvider Error: $e');
+      print(' StockMovementProvider Error: $e');
       notifyListeners();
     }
   }
@@ -58,7 +58,7 @@ class StockMovementProvider with ChangeNotifier {
         quantity: quantity,
       );
 
-      print('✅ StockMovementProvider: Movement created successfully');
+      print(' StockMovementProvider: Movement created successfully');
 
       // Refresh the movements list
       await fetchMovementsByProduct(productId);
@@ -66,7 +66,7 @@ class StockMovementProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ StockMovementProvider Error: $e');
+      print(' StockMovementProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -87,7 +87,7 @@ class StockMovementProvider with ChangeNotifier {
         quantity: quantity,
       );
 
-      print('✅ StockMovementProvider: Movement $movementId updated');
+      print(' StockMovementProvider: Movement $movementId updated');
 
       // Refresh the movements list
       await fetchMovementsByProduct(productId);
@@ -95,7 +95,7 @@ class StockMovementProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ StockMovementProvider Error: $e');
+      print(' StockMovementProvider Error: $e');
       notifyListeners();
       return false;
     }
@@ -106,7 +106,7 @@ class StockMovementProvider with ChangeNotifier {
     try {
       await _stockMovementService.deleteMovement(movementId);
 
-      print('✅ StockMovementProvider: Movement $movementId deleted');
+      print(' StockMovementProvider: Movement $movementId deleted');
 
       // Refresh the movements list
       await fetchMovementsByProduct(productId);
@@ -114,7 +114,7 @@ class StockMovementProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      print('❌ StockMovementProvider Error: $e');
+      print(' StockMovementProvider Error: $e');
       notifyListeners();
       return false;
     }

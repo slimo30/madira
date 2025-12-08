@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/core/constants/colors.dart';
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-import '../../services/network_service.dart';
-import '../../services/backend_service.dart';
 
 class ScreenWrapper extends StatelessWidget {
   final Widget child;
   final String title;
   final bool showTitle;
   final VoidCallback? onClose;
+  final VoidCallback? onReset;
 
   const ScreenWrapper({
     super.key,
@@ -18,13 +16,19 @@ class ScreenWrapper extends StatelessWidget {
     required this.title,
     this.showTitle = true,
     this.onClose,
+    this.onReset,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomTitleBar(title: title, showTitle: showTitle, onClose: onClose),
+        CustomTitleBar(
+          title: title,
+          showTitle: showTitle,
+          onClose: onClose,
+          onReset: onReset,
+        ),
         Expanded(child: child),
       ],
     );
@@ -35,12 +39,14 @@ class CustomTitleBar extends StatelessWidget {
   final String title;
   final bool showTitle;
   final VoidCallback? onClose;
+  final VoidCallback? onReset;
 
   const CustomTitleBar({
     super.key,
     required this.title,
     this.showTitle = true,
     this.onClose,
+    this.onReset,
   });
 
   @override
@@ -94,6 +100,14 @@ class CustomTitleBar extends StatelessWidget {
             else
               const Spacer(),
 
+            if (onReset != null)
+              _TitleBarButton(
+                icon: Icons.refresh,
+                tooltip: 'Reset Configuration',
+                onPressed: onReset!,
+              ),
+
+            _SmartWindowButton(),
             _TitleBarButton(
               icon: Icons.remove,
               tooltip: 'Minimize',
@@ -106,22 +120,87 @@ class CustomTitleBar extends StatelessWidget {
               onPressed:
                   onClose ??
                   () async {
-                    final networkService = Provider.of<NetworkService>(
-                      context,
-                      listen: false,
-                    );
-                    final backendService = Provider.of<BackendService>(
-                      context,
-                      listen: false,
-                    );
-                    await networkService.stop();
-                    await backendService.stopBackend();
+                    // final networkService = Provider.of<NetworkService>(
+                    //   context,
+                    //   listen: false,
+                    // );
+                    // final backendService = Provider.of<BackendService>(
+                    //   context,
+                    //   listen: false,
+                    // );
+                    // await networkService.stop();
+                    // await backendService.stopBackend();
                     await windowManager.close();
                   },
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SmartWindowButton extends StatefulWidget {
+  const _SmartWindowButton();
+
+  @override
+  State<_SmartWindowButton> createState() => _SmartWindowButtonState();
+}
+
+class _SmartWindowButtonState extends State<_SmartWindowButton>
+    with WindowListener {
+  bool _isMaximized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkWindowState();
+    windowManager.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  Future<void> _checkWindowState() async {
+    final isMax = await windowManager.isMaximized();
+    if (mounted) {
+      setState(() => _isMaximized = isMax);
+    }
+  }
+
+  @override
+  void onWindowEvent(String eventName) {
+    if (eventName == 'maximize' || eventName == 'unmaximize') {
+      _checkWindowState();
+    }
+  }
+
+  @override
+  void onWindowMaximize() {
+    _checkWindowState();
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    _checkWindowState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _TitleBarButton(
+      icon: _isMaximized ? Icons.fullscreen_exit : Icons.fullscreen,
+      tooltip: _isMaximized ? 'Restore' : 'Maximize',
+      onPressed: () async {
+        if (_isMaximized) {
+          await windowManager.unmaximize();
+        } else {
+          await windowManager.maximize();
+        }
+        _checkWindowState();
+      },
     );
   }
 }

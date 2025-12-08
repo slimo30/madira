@@ -26,7 +26,7 @@
 
 //   Future<void> startMasterBroadcast() async {
 //     try {
-//       print('📡 Starting MASTER broadcast mode...');
+//       print(' Starting MASTER broadcast mode...');
 
 //       // Get local IP address
 //       final localIp = await _getLocalIpAddress();
@@ -34,7 +34,7 @@
 //         throw Exception('Could not determine local IP address');
 //       }
 
-//       print('📡 Master IP: $localIp');
+//       print(' Master IP: $localIp');
 //       _currentMasterIp = localIp;
 
 //       // Create UDP socket for broadcasting
@@ -52,9 +52,9 @@
 //       // Send initial broadcast immediately
 //       _sendBroadcast(localIp);
 
-//       print('✅ Master broadcast started on port $BROADCAST_PORT');
+//       print(' Master broadcast started on port $BROADCAST_PORT');
 //     } catch (e) {
-//       print('❌ Failed to start master broadcast: $e');
+//       print(' Failed to start master broadcast: $e');
 //       rethrow;
 //     }
 //   }
@@ -75,9 +75,9 @@
 //         BROADCAST_PORT,
 //       );
 
-//       print('📤 Broadcast sent: $ipAddress');
+//       print(' Broadcast sent: $ipAddress');
 //     } catch (e) {
-//       print('❌ Broadcast send error: $e');
+//       print(' Broadcast send error: $e');
 //     }
 //   }
 
@@ -87,7 +87,7 @@
 
 //   Future<void> startSlaveDiscovery() async {
 //     try {
-//       print('👂 Starting SLAVE discovery mode...');
+//       print(' Starting SLAVE discovery mode...');
 
 //       // Bind to broadcast port to receive messages
 //       _listenSocket = await RawDatagramSocket.bind(
@@ -104,9 +104,9 @@
 //         }
 //       });
 
-//       print('✅ Slave discovery started, listening on port $BROADCAST_PORT');
+//       print(' Slave discovery started, listening on port $BROADCAST_PORT');
 //     } catch (e) {
-//       print('❌ Failed to start slave discovery: $e');
+//       print(' Failed to start slave discovery: $e');
 //       rethrow;
 //     }
 //   }
@@ -124,11 +124,11 @@
 //         if (_currentMasterIp != masterIp) {
 //           _currentMasterIp = masterIp;
 //           _masterIpController.add(masterIp);
-//           print('🎯 Master discovered at: $masterIp:$masterPort');
+//           print(' Master discovered at: $masterIp:$masterPort');
 //         }
 //       }
 //     } catch (e) {
-//       print('❌ Error processing broadcast message: $e');
+//       print(' Error processing broadcast message: $e');
 //     }
 //   }
 
@@ -159,7 +159,7 @@
 
 //       return null;
 //     } catch (e) {
-//       print('❌ Error getting local IP: $e');
+//       print(' Error getting local IP: $e');
 //       return null;
 //     }
 //   }
@@ -176,7 +176,7 @@
 //   // ═══════════════════════════════════════════════════════════════
 
 //   void stop() {
-//     print('🛑 Stopping network discovery...');
+//     print(' Stopping network discovery...');
 //     _broadcastTimer?.cancel();
 //     _broadcastSocket?.close();
 //     _listenSocket?.close();

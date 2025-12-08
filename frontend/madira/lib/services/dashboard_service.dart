@@ -7,23 +7,23 @@ class DashboardService {
   Future<Map<String, dynamic>> getDashboardData({
     String period = 'all_time',
   }) async {
-    print('📊 DashboardService: Fetching dashboard data...');
-    print('📊 Period: $period');
+    print(' DashboardService: Fetching dashboard data...');
+    print(' Period: $period');
 
     try {
-      print('📊 DashboardService: Sending GET request to API...');
+      print(' DashboardService: Sending GET request to API...');
       final response = await _dio.get(
         ApiConstants.dashboardEndpoint,
         queryParameters: {'period': period},
       );
 
-      print('📊 DashboardService: API Response received!');
-      print('📊 Status Code: ${response.statusCode}');
-      print('📊 Response Data: ${response.data}');
+      print(' DashboardService: API Response received!');
+      print(' Status Code: ${response.statusCode}');
+      print(' Response Data: ${response.data}');
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      print('❌ DashboardService: Failed to fetch dashboard data: $e');
+      print(' DashboardService: Failed to fetch dashboard data: $e');
       throw Exception(_getDashboardErrorMessage(e));
     }
   }

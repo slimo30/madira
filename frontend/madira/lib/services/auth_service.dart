@@ -8,39 +8,39 @@ class AuthService {
   final _storage = StorageService();
 
   Future<LoginModel> login(String username, String password) async {
-    print('🌐 AuthService: Starting API login request...');
-    print('🌐 Endpoint: ${ApiConstants.loginEndpoint}');
-    print('🌐 Username: $username');
+    print(' AuthService: Starting API login request...');
+    print(' Endpoint: ${ApiConstants.loginEndpoint}');
+    print(' Username: $username');
 
     try {
-      print('🌐 AuthService: Sending POST request to API...');
+      print(' AuthService: Sending POST request to API...');
       final response = await _dio.post(
         ApiConstants.loginEndpoint,
         data: {'username': username, 'password': password},
       );
 
-      print('🌐 AuthService: API Response received!');
-      print('🌐 Status Code: ${response.statusCode}');
-      print('🌐 Response Data: ${response.data}');
+      print(' AuthService: API Response received!');
+      print(' Status Code: ${response.statusCode}');
+      print(' Response Data: ${response.data}');
 
       final data = response.data;
 
-      print('🌐 AuthService: Saving all user data...');
+      print(' AuthService: Saving all user data...');
       await _storage.saveUserData(
         token: data['access'],
         userId: data['user_id'],
         username: data['username'],
         role: data['role'],
       );
-      print('🌐 AuthService: All user data saved successfully');
+      print(' AuthService: All user data saved successfully');
 
-      print('🌐 AuthService: Creating LoginModel from response...');
+      print(' AuthService: Creating LoginModel from response...');
       final loginModel = LoginModel.fromJson(data);
-      print('🌐 AuthService: LoginModel created: $loginModel');
+      print(' AuthService: LoginModel created: $loginModel');
 
       return loginModel;
     } catch (e) {
-      print('❌ AuthService: Login failed with error: $e');
+      print(' AuthService: Login failed with error: $e');
 
       // Convert technical errors to user-friendly messages
       String userMessage = _getLoginErrorMessage(e);
@@ -49,16 +49,16 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    print('🚪 AuthService: Starting logout...');
+    print(' AuthService: Starting logout...');
     try {
       await _dio.post(ApiConstants.logoutEndpoint);
       await _storage.deleteAllUserData();
-      print('🚪 AuthService: Logout successful - all user data cleared');
+      print(' AuthService: Logout successful - all user data cleared');
     } catch (e) {
-      print('❌ AuthService: Logout error: $e');
+      print(' AuthService: Logout error: $e');
       // Even if logout API fails, we should clear local data
       await _storage.deleteAllUserData();
-      print('🚪 AuthService: Local user data cleared despite API error');
+      print(' AuthService: Local user data cleared despite API error');
 
       // Don't throw error for logout - just clear local data
       // throw Exception("Unable to logout. Please try again.");
