@@ -132,6 +132,10 @@ class OrderService {
     required String description,
     required String deliveryDate,
   }) async {
+    if (deliveryDate.isEmpty) {
+      throw Exception('Delivery date is required');
+    }
+
     try {
       final data = {
         'client': client,
@@ -172,11 +176,29 @@ class OrderService {
       print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
       if (e.response?.statusCode == 400) {
-        final errorDetail =
-            e.response?.data['detail'] ??
-            e.response?.data['error'] ??
-            'Invalid order data';
-        throw Exception(errorDetail);
+        String errorMessage = 'Invalid order data';
+        final data = e.response?.data;
+
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('detail')) {
+            errorMessage = data['detail'].toString();
+          } else {
+            final errors = <String>[];
+            data.forEach((key, value) {
+              if (value is List) {
+                errors.add('$key: ${value.join(", ")}');
+              } else {
+                errors.add('$key: $value');
+              }
+            });
+            if (errors.isNotEmpty) {
+              errorMessage = errors.join('\n');
+            }
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+        throw Exception(errorMessage);
       }
       throw Exception('Error creating order: ${e.message}');
     } catch (e) {
@@ -236,7 +258,35 @@ class OrderService {
       print(' API ERROR: DioException');
       print('️ Message: ${e.message}');
       print(' Status Code: ${e.response?.statusCode}');
+      print(' Response: ${e.response?.data}');
       print('=' * 60 + '\n');
+
+      if (e.response?.statusCode == 400) {
+        String errorMessage = 'Invalid order data';
+        final data = e.response?.data;
+
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('detail')) {
+            errorMessage = data['detail'].toString();
+          } else {
+            final errors = <String>[];
+            data.forEach((key, value) {
+              if (value is List) {
+                errors.add('$key: ${value.join(", ")}');
+              } else {
+                errors.add('$key: $value');
+              }
+            });
+            if (errors.isNotEmpty) {
+              errorMessage = errors.join('\n');
+            }
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+        throw Exception(errorMessage);
+      }
+
       throw Exception('Error updating order: ${e.message}');
     } catch (e) {
       print(' API ERROR: Generic Exception');

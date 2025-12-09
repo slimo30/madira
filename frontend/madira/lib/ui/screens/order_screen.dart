@@ -605,13 +605,29 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     PrimaryButton(
                       text: 'Update',
                       onPressed: () async {
+                        // Allow changing status back to pending/in_progress even if completed
+                        // But prevent setting to completed if not fully paid
+                        if (selectedStatus == 'completed' &&
+                            !order.isFullyPaid) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Cannot set order to completed if not fully paid. Remaining: ${order.remainingAmount} DA',
+                                style: GoogleFonts.inter(fontSize: 13),
+                              ),
+                              backgroundColor: AppColors.warning,
+                            ),
+                          );
+                          return;
+                        }
+
                         try {
                           await orderProvider.updateOrder(
                             order.id,
                             client: order.client,
                             totalAmount: order.totalAmount,
                             description: order.description,
-                            deliveryDate: order.deliveryDate,
+                            // deliveryDate: order.deliveryDate, // Removed to use existing date from provider
                             status: selectedStatus,
                           );
                           if (mounted) {
@@ -849,10 +865,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () async {
+                          DateTime initialDate;
+                          try {
+                            initialDate = DateTime.parse(order.deliveryDate);
+                          } catch (_) {
+                            initialDate = DateTime.now();
+                          }
+
                           final selectedDate = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.parse(order.deliveryDate),
-                            firstDate: DateTime.now(),
+                            initialDate: initialDate,
+                            firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
                           );
                           if (selectedDate != null) {
@@ -869,10 +892,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           required: true,
                           readOnly: true,
                           onTap: () async {
+                            DateTime initialDate;
+                            try {
+                              initialDate = DateTime.parse(order.deliveryDate);
+                            } catch (_) {
+                              initialDate = DateTime.now();
+                            }
+
                             final selectedDate = await showDatePicker(
                               context: context,
-                              initialDate: DateTime.parse(order.deliveryDate),
-                              firstDate: DateTime.now(),
+                              initialDate: initialDate,
+                              firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
                             if (selectedDate != null) {
@@ -896,8 +926,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       onPressed: () async {
                         if (selectedClientId == 'none' ||
                             totalAmountController.text.isEmpty ||
-                            descriptionController.text.isEmpty ||
-                            deliveryDateController.text.isEmpty) {
+                            descriptionController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

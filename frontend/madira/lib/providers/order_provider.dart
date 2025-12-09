@@ -200,17 +200,28 @@ class OrderProvider with ChangeNotifier {
     required int client,
     required String totalAmount,
     required String description,
-    required String deliveryDate,
+    String? deliveryDate,
     required String status,
   }) async {
     try {
+      // Get existing order to fallback for deliveryDate
+      final existingOrder = _orders.firstWhere(
+        (o) => o.id == orderId,
+        orElse: () => throw Exception('Order not found'),
+      );
+
+      final dateToSend =
+          (deliveryDate == null || deliveryDate.isEmpty)
+              ? existingOrder.deliveryDate
+              : deliveryDate;
+
       print(' OrderProvider: Updating order $orderId');
       final updatedOrder = await _orderService.updateOrder(
         orderId,
         client: client,
         totalAmount: totalAmount,
         description: description,
-        deliveryDate: deliveryDate,
+        deliveryDate: dateToSend,
         status: status,
       );
 
