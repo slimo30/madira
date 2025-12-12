@@ -74,7 +74,7 @@ class ClientListCreateView(generics.ListCreateAPIView):
             # Default behavior: show only active clients
             queryset = queryset.filter(is_active=True)
             
-        return queryset.order_by('name')
+        return queryset.order_by('-created_at')
 
 
 # ---------------------------

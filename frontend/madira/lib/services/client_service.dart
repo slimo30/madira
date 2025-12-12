@@ -11,7 +11,7 @@ class ClientService {
     int page = 1,
     int pageSize = 10,
     String search = '',
-    String ordering = 'name',
+    String ordering = '-created_at',
   }) async {
     try {
       print('\n${'=' * 60}');

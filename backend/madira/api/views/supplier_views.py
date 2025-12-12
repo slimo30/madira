@@ -18,7 +18,7 @@ class SupplierPagination(PageNumberPagination):
 # List + Create Suppliers
 # ---------------------------
 class SupplierListCreateView(generics.ListCreateAPIView):
-    queryset = Supplier.objects.filter(is_active=True).order_by('name')
+    queryset = Supplier.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = SupplierPagination

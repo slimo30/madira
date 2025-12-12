@@ -11,7 +11,7 @@ class SupplierService {
     int page = 1,
     int pageSize = 10,
     String search = '',
-    String ordering = 'name',
+    String ordering = '-created_at',
   }) async {
     try {
       print(' API REQUEST: GET /suppliers/');
