@@ -50,7 +50,7 @@ class ClientListCreateView(generics.ListCreateAPIView):
     filterset_class = ClientFilter
     search_fields = ['name', 'phone', 'address', 'client_type', 'notes']
     ordering_fields = ['name', 'created_at', 'credit_balance']
-    ordering = ['name']  # Default ordering
+    ordering = ['-created_at']
 
     def get_queryset(self):
         """

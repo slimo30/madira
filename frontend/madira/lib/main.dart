@@ -96,45 +96,61 @@ class LogManager {
   static LogManager? get instance => _instance;
 
   Future<void> _init() async {
-    String dirPath;
     try {
-      // First try: Use logs subdirectory in installation folder
-      dirPath = '${File(Platform.resolvedExecutable).parent.path}\\logs';
-      Directory logsDir = Directory(dirPath);
-
-      // Create logs directory if it doesn't exist
-      if (!await logsDir.exists()) {
-        await logsDir.create(recursive: true);
-      }
-
-      String path = '$dirPath\\madira_app_log.txt';
-      File file = File(path);
+      String path;
       IOSink? sink;
 
-      try {
-        // Try to write to logs directory
+      if (Platform.isMacOS || Platform.isIOS) {
+        // macOS/iOS: Use Application Support directory to avoid code signing issues
+        final appDir = await getApplicationSupportDirectory();
+        if (!await appDir.exists()) {
+          await appDir.create(recursive: true);
+        }
+        path = '${appDir.path}/madira_app_log.txt';
+        final file = File(path);
         sink = file.openWrite(mode: FileMode.writeOnlyAppend);
-        sink.writeln('[${DateTime.now()}] Log initialized in logs directory');
-      } catch (e) {
-        // Second try: Use root installation directory
-        dirPath = File(Platform.resolvedExecutable).parent.path;
+        sink.writeln(
+          '[${DateTime.now()}] Log initialized in Application Support directory',
+        );
+      } else {
+        // Windows/Linux: Use original logic
+        String dirPath =
+            '${File(Platform.resolvedExecutable).parent.path}\\logs';
+        Directory logsDir = Directory(dirPath);
+
+        // Create logs directory if it doesn't exist
+        if (!await logsDir.exists()) {
+          await logsDir.create(recursive: true);
+        }
+
         path = '$dirPath\\madira_app_log.txt';
-        file = File(path);
+        File file = File(path);
 
         try {
+          // Try to write to logs directory
           sink = file.openWrite(mode: FileMode.writeOnlyAppend);
-          sink.writeln(
-            '[${DateTime.now()}] Log initialized in installation directory',
-          );
-        } catch (e2) {
-          // Third fallback: Documents folder
-          final appDir = await getApplicationDocumentsDirectory();
-          path = '${appDir.path}\\madira_app_log.txt';
+          sink.writeln('[${DateTime.now()}] Log initialized in logs directory');
+        } catch (e) {
+          // Second try: Use root installation directory
+          dirPath = File(Platform.resolvedExecutable).parent.path;
+          path = '$dirPath\\madira_app_log.txt';
           file = File(path);
-          sink = file.openWrite(mode: FileMode.writeOnlyAppend);
-          sink.writeln(
-            '[${DateTime.now()}] Warning: Could not write to installation folder. Logging to Documents instead.',
-          );
+
+          try {
+            sink = file.openWrite(mode: FileMode.writeOnlyAppend);
+            sink.writeln(
+              '[${DateTime.now()}] Log initialized in installation directory',
+            );
+          } catch (e2) {
+            // Third fallback: Documents folder
+            final appDir = await getApplicationDocumentsDirectory();
+            path = '${appDir.path}\\madira_app_log.txt';
+            file = File(path);
+            sink = file.openWrite(mode: FileMode.writeOnlyAppend);
+            sink.writeln(
+              '[${DateTime.now()}] Warning: Could not write to installation folder. Logging to Documents instead.',
+            );
+          }
         }
       }
 
@@ -143,6 +159,7 @@ class LogManager {
       _initialized = true;
     } catch (e) {
       // Complete failure - can't log anywhere
+      debugPrint('Log initialization failed: $e');
       return;
     }
   }

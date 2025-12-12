@@ -605,20 +605,59 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     PrimaryButton(
                       text: 'Update',
                       onPressed: () async {
-                        // Allow changing status back to pending/in_progress even if completed
-                        // But prevent setting to completed if not fully paid
+                        // Check if setting to completed and not fully paid
                         if (selectedStatus == 'completed' &&
                             !order.isFullyPaid) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Cannot set order to completed if not fully paid. Remaining: ${order.remainingAmount} DA',
-                                style: GoogleFonts.inter(fontSize: 13),
-                              ),
-                              backgroundColor: AppColors.warning,
-                            ),
+                          // Show confirmation dialog
+                          final bool? confirm = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (context) => CustomDialogWidget(
+                                  title: 'Confirm Completion',
+                                  size: DialogSize.small,
+                                  isScrollable: false,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        size: 48,
+                                        color: AppColors.warning,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'This order is not fully paid.\nRemaining: ${order.remainingAmount} DA',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Do you really want to mark it as Completed?',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    OutlinedCustomButton(
+                                      text: 'Cancel',
+                                      onPressed:
+                                          () => Navigator.pop(context, false),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    PrimaryButton(
+                                      text: 'Yes, Complete',
+                                      onPressed:
+                                          () => Navigator.pop(context, true),
+                                    ),
+                                  ],
+                                ),
                           );
-                          return;
+
+                          if (confirm != true) return;
                         }
 
                         try {
