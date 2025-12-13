@@ -231,12 +231,12 @@ class ComprehensiveDashboardView(APIView):
         
         # Build Q filter objects for efficient querying
         if start_date:
-            orders_filter = Q(order_date__gte=start_date) & ~Q(status=Order.Status.CANCELLED)
+            orders_filter = Q(order_date__gte=start_date)
             inputs_filter = Q(date__gte=start_date)
             outputs_filter = Q(date__gte=start_date)
             stock_movements_filter = Q(date__gte=start_date)
         else:
-            orders_filter = ~Q(status=Order.Status.CANCELLED)  # Exclude cancelled orders
+            orders_filter = Q()
             inputs_filter = Q()
             outputs_filter = Q()
             stock_movements_filter = Q()
@@ -249,13 +249,13 @@ class ComprehensiveDashboardView(APIView):
         
         orders_aggregate = Order.objects.filter(orders_filter).aggregate(
             # Total revenue = sum of all order amounts (billed, not necessarily collected)
-            total_revenue=Coalesce(Sum('total_amount'), Decimal('0.00')),
+            total_revenue=Coalesce(Sum('total_amount', filter=~Q(status=Order.Status.CANCELLED)), Decimal('0.00')),
             
             # Total number of orders
             total_orders=Count('id'),
             
             # Average order value = total revenue / number of orders
-            avg_order=Coalesce(Avg('total_amount'), Decimal('0.00')),
+            avg_order=Coalesce(Avg('total_amount', filter=~Q(status=Order.Status.CANCELLED)), Decimal('0.00')),
             
             # Order status breakdown - counts per status
             completed=Count('id', filter=Q(status=Order.Status.COMPLETED)),
