@@ -1,51 +1,48 @@
-### SQLite Restore
+# Database Restore Guide
 
-> [!TIP]
-> This method creates a **new database file** instead of overwriting the existing one, keeping your original database intact.
+### SQLite Restore (Using Python Script)
 
-```bash
-# Stop the server first
-# Kill the Django server process or press Ctrl+C
+This method uses a dedicated Python script to safely restore your database from a SQL backup file. It automatically backs up your current database before applying changes.
 
-# Navigate to project directory
-cd /path/to/madira/backend/madira
+**Prerequisites:**
 
-# Step 1: Create a new database from the backup file
-sqlite3 new_madira_db.sqlite3
+- Ensure your backup file (e.g., `madira_backup_20251213_232623.sql`) is located in the `backend/madira/` folder.
+- Stop the running Django server (Ctrl+C).
+
+**Step 1: Navigate to the project directory**
+
+Open your terminal (PowerShell or CMD) and navigate to the backend folder:
+
+```powershell
+cd f:\madira\backend\madira
 ```
 
-Once in the SQLite interactive shell:
+**Step 2: Run the restore script**
 
-```sql
--- Read and execute the backup file
-.read madira_backup_20251125_141034.sql
+Run the `restore_db.py` script followed by your backup filename:
 
--- Verify the restore
-SELECT COUNT(*) FROM django_migrations;
-
--- Exit SQLite
-.quit
+```powershell
+python restore_db.py madira_backup_20251213_232623.sql
 ```
 
-**Step 2: Update Django settings to use the new database**
+_Note: Replace `madira_backup_20251213_232623.sql` with your actual backup filename._
 
-Edit `madira/settings.py`:
+**What the script does:**
 
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'new_madira_db.sqlite3',  # Changed from db.sqlite3
-    }
-}
-```
+1.  Checks if the backup file exists.
+2.  Renames your current `db.sqlite3` to `db.sqlite3.old` (safety backup).
+3.  Creates a fresh `db.sqlite3`.
+4.  Executes the SQL commands from your backup file to restore data.
 
-**Step 3: Verify and restart**
+**Step 3: Restart the Server**
 
-```bash
-# Verify the new database file exists
-ls -lh new_madira_db.sqlite3
+Once the script displays "SUCCESS! Database restored.", you can restart your server:
 
-# Restart server with new database
+```powershell
 python manage.py runserver
 ```
+
+### Troubleshooting
+
+If the restore fails, the script will attempt to restore your original database from `db.sqlite3.old`.
+If you need to manually revert, simply rename `db.sqlite3.old` back to `db.sqlite3`.
