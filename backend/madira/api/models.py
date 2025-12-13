@@ -339,8 +339,8 @@ class Order(models.Model):
         """
         Auto-assign order_number on creation.
         Status logic:
-        - COMPLETED only when fully paid
-        - IN_PROGRESS when not fully paid (even if was COMPLETED before)
+        - COMPLETED automatically when fully paid
+        - Allows manual COMPLETED status even if not fully paid
         - Respects CANCELLED and PENDING status
         """
         if not self.order_number:
@@ -359,13 +359,12 @@ class Order(models.Model):
                         )
 
         # Auto-adjust status based on payment (only if not CANCELLED or PENDING)
-        if self.status not in [self.Status.CANCELLED, self.Status.PENDING]:
+        if self.status not in [self.Status.CANCELLED]:
             if self.is_fully_paid:
                 # Fully paid -> mark as COMPLETED
                 self.status = self.Status.COMPLETED
-            elif self.status == self.Status.COMPLETED:
-                # Was completed but no longer fully paid -> revert to IN_PROGRESS
-                self.status = self.Status.IN_PROGRESS
+            # REMOVED: Logic that reverted COMPLETED to IN_PROGRESS if not fully paid.
+            # This allows orders to be manually marked as COMPLETED even with outstanding balance.
 
         return super().save(*args, **kwargs)
 

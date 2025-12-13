@@ -16,6 +16,7 @@ import '../widgets/custom_input_widget.dart';
 import '../widgets/custom_dropdown_widget.dart';
 import '../widgets/custom_dialog_widget.dart';
 import '../widgets/responsive_table_widget.dart';
+import '../dialogs/output_form_dialog.dart';
 
 class OutputsListScreen extends StatefulWidget {
   const OutputsListScreen({super.key});
@@ -900,6 +901,11 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
 
   // Dialog Methods
   void _showCreateOutputDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (context) => const CreateOutputDialog(),
+    );
+
     // Refresh data after dialog closes (whether created or cancelled)
     if (mounted) {
       final outputProvider = Provider.of<OutputProvider>(
@@ -915,6 +921,11 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
   }
 
   void _showEditOutputDialog(BuildContext context, OutputModel output) async {
+    await showDialog(
+      context: context,
+      builder: (context) => EditOutputDialog(output: output),
+    );
+
     // Refresh data after dialog closes
     if (mounted) {
       final outputProvider = Provider.of<OutputProvider>(
@@ -1074,27 +1085,46 @@ class _OutputDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomDialogWidget(
+      size: DialogSize.big,
       title: 'Output Details',
       isScrollable: true,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildDetailRow('Reference', output.reference),
+          _buildDetailRow('Reference', output.reference, isHighlight: true),
+          const Divider(),
           _buildDetailRow('Type', output.typeDisplay),
-          _buildDetailRow('Amount', '${output.formattedAmount} DA'),
-          if (output.productName != null)
+          const Divider(),
+          _buildDetailRow(
+            'Amount',
+            '${output.formattedAmount} DA',
+            isHighlight: true,
+          ),
+          const Divider(),
+          if (output.productName != null) ...[
             _buildDetailRow('Product', output.productName!),
-          if (output.orderNumber != null)
+            const Divider(),
+          ],
+          if (output.orderNumber != null) ...[
             _buildDetailRow('Order', output.orderNumber!),
-          if (output.supplierName != null)
+            const Divider(),
+          ],
+          if (output.supplierName != null) ...[
             _buildDetailRow('Supplier', output.supplierName!),
-          if (output.sourceInputReference != null)
+            const Divider(),
+          ],
+          if (output.sourceInputReference != null) ...[
             _buildDetailRow('Source Input', output.sourceInputReference!),
+            const Divider(),
+          ],
           _buildDetailRow('Date', output.formattedDate),
+          const Divider(),
           _buildDetailRow('Created At', output.formattedCreatedAt),
-          if (output.description.isNotEmpty)
+          if (output.description.isNotEmpty) ...[
+            const Divider(),
             _buildDetailRow('Description', output.description),
+          ],
         ],
       ),
       actions: [
@@ -1103,18 +1133,22 @@ class _OutputDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(
+    String label,
+    String value, {
+    bool isHighlight = false,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 120,
             child: Text(
-              '$label:',
+              label,
               style: GoogleFonts.inter(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
               ),
@@ -1124,8 +1158,9 @@ class _OutputDetailsDialog extends StatelessWidget {
             child: Text(
               value,
               style: GoogleFonts.inter(
-                fontSize: 12,
-                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
+                color: isHighlight ? AppColors.primary : AppColors.textPrimary,
               ),
             ),
           ),

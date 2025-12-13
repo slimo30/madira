@@ -605,13 +605,68 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     PrimaryButton(
                       text: 'Update',
                       onPressed: () async {
+                        // Check if setting to completed and not fully paid
+                        if (selectedStatus == 'completed' &&
+                            !order.isFullyPaid) {
+                          // Show confirmation dialog
+                          final bool? confirm = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (context) => CustomDialogWidget(
+                                  title: 'Confirm Completion',
+                                  size: DialogSize.small,
+                                  isScrollable: false,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        size: 48,
+                                        color: AppColors.warning,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'This order is not fully paid.\nRemaining: ${order.remainingAmount} DA',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Do you really want to mark it as Completed?',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    OutlinedCustomButton(
+                                      text: 'Cancel',
+                                      onPressed:
+                                          () => Navigator.pop(context, false),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    PrimaryButton(
+                                      text: 'Yes, Complete',
+                                      onPressed:
+                                          () => Navigator.pop(context, true),
+                                    ),
+                                  ],
+                                ),
+                          );
+
+                          if (confirm != true) return;
+                        }
+
                         try {
                           await orderProvider.updateOrder(
                             order.id,
                             client: order.client,
                             totalAmount: order.totalAmount,
                             description: order.description,
-                            deliveryDate: order.deliveryDate,
+                            // deliveryDate: order.deliveryDate, // Removed to use existing date from provider
                             status: selectedStatus,
                           );
                           if (mounted) {
@@ -849,10 +904,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () async {
+                          DateTime initialDate;
+                          try {
+                            initialDate = DateTime.parse(order.deliveryDate);
+                          } catch (_) {
+                            initialDate = DateTime.now();
+                          }
+
                           final selectedDate = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.parse(order.deliveryDate),
-                            firstDate: DateTime.now(),
+                            initialDate: initialDate,
+                            firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
                           );
                           if (selectedDate != null) {
@@ -869,10 +931,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           required: true,
                           readOnly: true,
                           onTap: () async {
+                            DateTime initialDate;
+                            try {
+                              initialDate = DateTime.parse(order.deliveryDate);
+                            } catch (_) {
+                              initialDate = DateTime.now();
+                            }
+
                             final selectedDate = await showDatePicker(
                               context: context,
-                              initialDate: DateTime.parse(order.deliveryDate),
-                              firstDate: DateTime.now(),
+                              initialDate: initialDate,
+                              firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
                             if (selectedDate != null) {
@@ -896,8 +965,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       onPressed: () async {
                         if (selectedClientId == 'none' ||
                             totalAmountController.text.isEmpty ||
-                            descriptionController.text.isEmpty ||
-                            deliveryDateController.text.isEmpty) {
+                            descriptionController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

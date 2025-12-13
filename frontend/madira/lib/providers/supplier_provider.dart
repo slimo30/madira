@@ -19,7 +19,7 @@ class SupplierProvider with ChangeNotifier {
 
   // Search and ordering
   String _searchQuery = '';
-  String _ordering = 'name';
+  String _ordering = '-created_at';
 
   // Getters
   List<SupplierModel> get suppliers => _suppliers;
@@ -142,6 +142,8 @@ class SupplierProvider with ChangeNotifier {
 
       // Refresh suppliers list
       print(' SupplierProvider: Refreshing suppliers list');
+      _currentPage = 1; // Reset to first page
+      _ordering = '-created_at'; // Force sort by newest
       await fetchSuppliers();
       print(' SupplierProvider: Supplier created and list refreshed');
     } catch (e) {
@@ -216,7 +218,7 @@ class SupplierProvider with ChangeNotifier {
   void resetPagination() {
     _currentPage = 1;
     _searchQuery = '';
-    _ordering = 'name';
+    _ordering = '-created_at';
     notifyListeners();
   }
 }
