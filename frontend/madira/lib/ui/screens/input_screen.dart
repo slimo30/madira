@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:madira/models/input_model.dart';
 import 'package:madira/providers/input_provider.dart';
+import 'package:madira/providers/login_provider.dart';
 import 'package:madira/ui/screens/input_outputs_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -153,17 +154,25 @@ class _InputsScreenState extends State<InputsScreen> {
                       ),
                     ],
                   ),
-                  PrimaryButton(
-                    size: ButtonSize.medium,
-                    text: 'New Shop Deposit',
-                    onPressed: () {
-                      _showCreateInputDialog(context);
+                  Consumer<LoginProvider>(
+                    builder: (context, loginProvider, _) {
+                      final userRole = loginProvider.user?.role;
+                      if (userRole == 'admin' || userRole == 'responsible') {
+                        return PrimaryButton(
+                          size: ButtonSize.medium,
+                          text: 'New Shop Deposit',
+                          onPressed: () {
+                            _showCreateInputDialog(context);
+                          },
+                          icon: const Icon(
+                            Icons.add_card,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
-                    icon: const Icon(
-                      Icons.add_card,
-                      size: 16,
-                      color: Colors.white,
-                    ),
                   ),
                 ],
               ),
@@ -487,6 +496,10 @@ class _InputsScreenState extends State<InputsScreen> {
     InputModel input,
     InputProvider inputProvider,
   ) {
+    final userRole =
+        Provider.of<LoginProvider>(context, listen: false).user?.role;
+    final canEditOrDelete = userRole == 'admin' || userRole == 'responsible';
+
     return [
       Text(
         input.reference,
@@ -572,7 +585,7 @@ class _InputsScreenState extends State<InputsScreen> {
                   _showInputDetailDialog(context, input);
                 },
               ),
-              if (input.type == 'shop_deposit') ...[
+              if (input.type == 'shop_deposit' && canEditOrDelete) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 16),
                   color: AppColors.info,

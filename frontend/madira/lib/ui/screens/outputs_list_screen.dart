@@ -476,17 +476,13 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
                           'Reference',
                           'Type',
                           'Amount',
-                          'Product',
-                          'Order',
-                          'Client',
-                          'Source Client',
-                          'Source Amount',
-                          'Supplier',
+                          'Details',
+                          'Source',
                           'Created By',
                           'Date',
                           'Actions',
                         ],
-                        minColumnWidth: 120,
+                        minColumnWidth: 160,
                         rows:
                             filteredOutputs
                                 .map(
@@ -722,8 +718,8 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
     OutputProvider provider,
   ) {
     // Get input details from InputProvider if source input exists
-    String sourceClientDeposit = 'N/A';
-    String sourceAmount = 'N/A';
+    String sourceInfo = 'N/A';
+    String sourceAmount = '';
 
     if (output.sourceInput != null) {
       try {
@@ -734,10 +730,10 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
 
         // Determine if it's shop deposit or client name
         if (sourceInput.type == 'shop_deposit') {
-          sourceClientDeposit = 'Shop Deposit';
+          sourceInfo = 'Shop Deposit';
         } else if (sourceInput.clientName != null &&
             sourceInput.clientName!.isNotEmpty) {
-          sourceClientDeposit = sourceInput.clientName!;
+          sourceInfo = sourceInput.clientName!;
         }
 
         sourceAmount = '${sourceInput.formattedAmount} DA';
@@ -745,6 +741,103 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
         // Input not found, keep N/A
       }
     }
+
+    // Build Details Column Content
+    List<Widget> detailWidgets = [];
+
+    // Helper to add detail row
+    void addDetailRow(IconData icon, String text, {bool isSecondary = false}) {
+      detailWidgets.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 1),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 12,
+                color:
+                    isSecondary
+                        ? AppColors.textSecondary
+                        : AppColors.textPrimary,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  text,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: isSecondary ? FontWeight.w400 : FontWeight.w500,
+                    color:
+                        isSecondary
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (output.isSupplierPayment) {
+      if (output.supplierName != null) {
+        addDetailRow(Icons.store, output.supplierName!);
+      }
+      if (output.orderNumber != null) {
+        addDetailRow(Icons.receipt_long, 'Order: ${output.orderNumber}');
+      }
+      if (output.clientName != null) {
+        addDetailRow(Icons.person, output.clientName!);
+      }
+    } else if (output.isGlobalStockPurchase) {
+      if (output.productName != null) {
+        addDetailRow(Icons.inventory_2, output.productName!);
+      }
+      if (output.quantity != null) {
+        addDetailRow(Icons.numbers, 'Qty: ${output.quantity}');
+      }
+    } else if (output.isClientStockUsage) {
+      if (output.productName != null) {
+        addDetailRow(Icons.inventory_2, output.productName!);
+      }
+      if (output.clientName != null) {
+        addDetailRow(Icons.person, output.clientName!);
+      }
+      if (output.orderNumber != null) {
+        addDetailRow(Icons.receipt_long, output.orderNumber!);
+      }
+      if (output.quantity != null) {
+        addDetailRow(Icons.numbers, 'Qty: ${output.quantity}');
+      }
+    } else if (output.type == 'other_expense') {
+      if (output.orderNumber != null) {
+        addDetailRow(Icons.receipt_long, 'Order: ${output.orderNumber}');
+      }
+      if (output.clientName != null) {
+        addDetailRow(Icons.person, output.clientName!);
+      }
+      if (output.description.isNotEmpty) {
+        addDetailRow(Icons.description, output.description);
+      }
+    } else {
+      // Withdrawal, Consumable
+      if (output.description.isNotEmpty) {
+        addDetailRow(Icons.description, output.description);
+      } else {
+        addDetailRow(Icons.info_outline, '-', isSecondary: true);
+      }
+    }
+
+    Widget detailsContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: detailWidgets,
+    );
 
     return [
       // Reference
@@ -767,86 +860,30 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
           color: AppColors.warning,
         ),
       ),
-      // Product
-      Text(
-        output.productName ?? 'N/A',
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              output.productName != null
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // Order
-      Text(
-        output.orderNumber ?? 'N/A',
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              output.orderNumber != null
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // Client
-      Text(
-        output.clientName ?? 'N/A',
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              output.clientName != null
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // Source Client/Deposit
-      Text(
-        sourceClientDeposit,
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              sourceClientDeposit != 'N/A'
-                  ? AppColors.info
-                  : AppColors.textSecondary,
-          fontWeight:
-              sourceClientDeposit != 'N/A' ? FontWeight.w600 : FontWeight.w400,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // Source Amount
-      Text(
-        sourceAmount,
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              sourceAmount != 'N/A'
-                  ? AppColors.success
-                  : AppColors.textSecondary,
-          fontWeight: FontWeight.w600,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // Supplier
-      Text(
-        output.supplierName ?? 'N/A',
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color:
-              output.supplierName != null
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      // Details (Smart Column)
+      detailsContent,
+      // Source (Combined)
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            sourceInfo,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          if (sourceAmount.isNotEmpty)
+            Text(
+              sourceAmount,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                color: AppColors.success,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
       ),
       // Created By
       Text(

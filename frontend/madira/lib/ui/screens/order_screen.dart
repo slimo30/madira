@@ -10,6 +10,7 @@ import '../../models/order_model.dart';
 import '../../models/client_model.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/client_provider.dart';
+import '../../providers/login_provider.dart';
 import '../widgets/custom_button_widget.dart';
 import '../widgets/custom_input_widget.dart';
 import '../widgets/custom_dropdown_widget.dart';
@@ -2331,6 +2332,10 @@ class _OrderDetailsDialogState extends State<OrderDetailsDialog>
   }
 
   Widget _buildPaymentRowTable(InputModel payment) {
+    final userRole =
+        Provider.of<LoginProvider>(context, listen: false).user?.role;
+    final canEditOrDelete = userRole == 'admin' || userRole == 'responsible';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
@@ -2389,37 +2394,48 @@ class _OrderDetailsDialogState extends State<OrderDetailsDialog>
           ),
           Expanded(
             flex: 1,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit, size: 16, color: AppColors.info),
-                  tooltip: 'Edit',
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(
-                    minWidth: 28,
-                    minHeight: 28,
-                  ),
-                  onPressed: () {
-                    widget.onEditPaymentPressed(payment);
-                  },
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                  tooltip: 'Delete',
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(
-                    minWidth: 28,
-                    minHeight: 28,
-                  ),
-                  onPressed: () {
-                    widget.onDeletePaymentPressed(payment);
-                  },
-                ),
-              ],
-            ),
+            child:
+                canEditOrDelete
+                    ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.edit,
+                            size: 16,
+                            color: AppColors.info,
+                          ),
+                          tooltip: 'Edit',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 28,
+                            minHeight: 28,
+                          ),
+                          onPressed: () {
+                            widget.onEditPaymentPressed(payment);
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            size: 16,
+                            color: Colors.red,
+                          ),
+                          tooltip: 'Delete',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 28,
+                            minHeight: 28,
+                          ),
+                          onPressed: () {
+                            widget.onDeletePaymentPressed(payment);
+                          },
+                        ),
+                      ],
+                    )
+                    : const SizedBox(),
           ),
         ],
       ),

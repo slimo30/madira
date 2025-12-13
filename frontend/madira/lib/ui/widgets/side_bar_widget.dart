@@ -474,7 +474,7 @@ class _SideBarWidgetState extends State<SideBarWidget> {
             // Settings Section
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical:6),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: AppColors.surfaceVariant, width: 1),
@@ -587,88 +587,91 @@ class _SideBarWidgetState extends State<SideBarWidget> {
   }) {
     final isActive = widget.selectedIndex == index;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: Tooltip(
-        message: isExpanded ? '' : title,
-        waitDuration: const Duration(milliseconds: 500),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            onTap: () => widget.onItemSelected(index),
-            child: Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                color:
-                    isActive
-                        ? AppColors.primary.withOpacity(0.1)
-                        : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                border:
-                    isActive
-                        ? Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
-                          width: 1,
-                        )
-                        : null,
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final showText = constraints.maxWidth > 50;
-                  return Row(
-                    mainAxisAlignment:
-                        showText
-                            ? MainAxisAlignment.start
-                            : MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isActive ? activeIcon : icon,
-                        color:
-                            isActive
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                        size: 20,
-                      ),
-                      if (showText) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight:
-                                  isActive ? FontWeight.w600 : FontWeight.w500,
-                              color:
-                                  isActive
-                                      ? AppColors.primary
-                                      : AppColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.clip,
-                            maxLines: 1,
-                          ),
+    Widget itemContent = Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () => widget.onItemSelected(index),
+        child: Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color:
+                isActive
+                    ? AppColors.primary.withOpacity(0.1)
+                    : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border:
+                isActive
+                    ? Border.all(
+                      color: AppColors.primary.withOpacity(0.3),
+                      width: 1,
+                    )
+                    : null,
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final showText = constraints.maxWidth > 50;
+              return Row(
+                mainAxisAlignment:
+                    showText
+                        ? MainAxisAlignment.start
+                        : MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isActive ? activeIcon : icon,
+                    color:
+                        isActive ? AppColors.primary : AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  if (showText) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight:
+                              isActive ? FontWeight.w600 : FontWeight.w500,
+                          color:
+                              isActive
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
                         ),
-                        if (isActive)
-                          Container(
-                            width: 3,
-                            height: 14,
-                            margin: const EdgeInsets.only(left: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                      ],
-                    ],
-                  );
-                },
-              ),
-            ),
+                        overflow: TextOverflow.clip,
+                        maxLines: 1,
+                      ),
+                    ),
+                    if (isActive)
+                      Container(
+                        width: 3,
+                        height: 14,
+                        margin: const EdgeInsets.only(left: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child:
+          isExpanded
+              ? itemContent
+              : Tooltip(
+                message: title,
+                waitDuration: const Duration(milliseconds: 500),
+                child: itemContent,
+              ),
     );
   }
 }
