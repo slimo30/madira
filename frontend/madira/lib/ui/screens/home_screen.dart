@@ -89,10 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 final padding = ResponsiveHelper.getResponsivePadding(context);
                 return Container(
                   color: AppColors.background,
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(padding),
-                    child: screens[selectedIndex],
-                  ),
+                  padding: EdgeInsets.all(padding),
+                  child: screens[selectedIndex],
                 );
               },
             ),
