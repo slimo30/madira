@@ -31,9 +31,14 @@ class _InputsScreenState extends State<InputsScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
+    _typeFilter = 'all';
+    _orderFilter = 'all';
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final inputProvider = Provider.of<InputProvider>(context, listen: false);
-      inputProvider.fetchInputs();
+      // Fetch with explicit nulls to reset any persisted filters
+      inputProvider.fetchInputs(search: null, type: null, orderId: null);
 
       // Fetch orders for the filter dropdown
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);

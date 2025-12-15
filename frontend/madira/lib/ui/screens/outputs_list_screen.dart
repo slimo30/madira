@@ -35,6 +35,11 @@ class _OutputsListScreenState extends State<OutputsListScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
+    _typeFilter = 'all';
+    _orderFilter = 'all';
+    _inputFilter = 'all';
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final outputProvider = Provider.of<OutputProvider>(
         context,
