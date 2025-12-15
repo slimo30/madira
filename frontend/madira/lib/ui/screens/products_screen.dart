@@ -27,12 +27,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
+    _unitFilter = 'all';
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final productProvider = Provider.of<ProductProvider>(
         context,
         listen: false,
       );
-      productProvider.fetchProducts();
+      // Ensure we fetch all products without search filter
+      productProvider.fetchProducts(search: '', unit: null);
     });
   }
 

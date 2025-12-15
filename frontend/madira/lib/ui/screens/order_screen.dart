@@ -34,9 +34,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
+    _statusFilter = 'all';
+    _paymentFilter = 'all';
+    _clientFilter = 'all';
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-      orderProvider.fetchOrders();
+      // Fetch with explicit nulls to reset
+      orderProvider.fetchOrders(
+        search: '',
+        status: null,
+        paymentStatus: null,
+        clientId: null,
+      );
     });
   }
 

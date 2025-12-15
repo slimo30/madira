@@ -22,11 +22,14 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final supplierProvider = Provider.of<SupplierProvider>(
         context,
         listen: false,
       );
+      // Reset search in provider
+      supplierProvider.searchSuppliers('');
       supplierProvider.fetchSuppliers();
     });
   }

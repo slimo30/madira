@@ -26,9 +26,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
 
-  // List of screens for navigation
-  late final List<Widget> screens;
-
   // List of screen titles
   final List<String> screenTitles = [
     'Dashboard',
@@ -46,22 +43,33 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeScreens();
   }
 
-  void _initializeScreens() {
-    screens = [
-      const DashboardScreen(),
-      const OrdersScreen(),
-      const ClientsScreen(),
-      const InputsScreen(),
-      const OutputsListScreen(),
-      const WorkshopsScreen(),
-      const ProductsScreen(),
-      const ReportsScreen(),
-      const users_management.UsersScreen(),
-      const BackupSettingsScreen(),
-    ];
+  Widget _getScreen(int index) {
+    switch (index) {
+      case 0:
+        return const DashboardScreen();
+      case 1:
+        return const OrdersScreen();
+      case 2:
+        return const ClientsScreen();
+      case 3:
+        return const InputsScreen();
+      case 4:
+        return const OutputsListScreen();
+      case 5:
+        return const WorkshopsScreen();
+      case 6:
+        return const ProductsScreen();
+      case 7:
+        return const ReportsScreen();
+      case 8:
+        return const users_management.UsersScreen();
+      case 9:
+        return const BackupSettingsScreen();
+      default:
+        return const DashboardScreen();
+    }
   }
 
   void onItemSelected(int index) {
@@ -90,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Container(
                   color: AppColors.background,
                   padding: EdgeInsets.all(padding),
-                  child: screens[selectedIndex],
+                  child: _getScreen(selectedIndex),
                 );
               },
             ),

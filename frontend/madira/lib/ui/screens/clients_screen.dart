@@ -23,11 +23,14 @@ class _ClientsScreenState extends State<ClientsScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final clientProvider = Provider.of<ClientProvider>(
         context,
         listen: false,
       );
+      // Reset search query in provider to ensure full list is fetched
+      clientProvider.searchClients('');
       clientProvider.fetchClients();
     });
   }
