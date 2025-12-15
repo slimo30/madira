@@ -78,8 +78,6 @@ Source: "{#SourceFrontend}\*"; DestDir: "{app}"; Flags: ignoreversion recursesub
 Source: "{#SourceBackend}\*"; DestDir: "{app}\backend"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "db.sqlite3,*.db,*.sqlite,*.sqlite3-journal,.gitignore,master.dart,slave.dart,__pycache__,*.pyc,*.pyo,venv,env,.venv"; Components: backend
 ; Explicitly copy manage.py to ensure it's included
 Source: "{#SourceBackend}\manage.py"; DestDir: "{app}\backend"; Flags: ignoreversion; Components: backend
-; Database file (OPTIONAL) - Only copied if it exists in source, NEVER uninstalled
-Source: "{#SourceBackend}\db.sqlite3"; DestDir: "{app}\backend"; Flags: ignoreversion uninsneveruninstall onlyifdoesntexist skipifsourcedoesntexist; Components: backend
 ; note: Database will be created by migrations if it doesn't exist. Once created, it's protected from uninstall and manual deletion
 ; Note: All Django components are included - manage.py, static/, media/, templates/, apps/, migrations/, settings.py, urls.py, wsgi.py, CSS, JavaScript, images
 ; Files are VISIBLE (not hidden) for easier troubleshooting and maintenance
@@ -117,20 +115,20 @@ Filename: "cmd.exe"; Parameters: "/c ""python manage.py collectstatic --noinput 
 Filename: "cmd.exe"; Parameters: "/c ""if exist static\admin\css\base.css (exit 0) else (exit 1)"""; WorkingDir: "{app}\backend"; Flags: runhidden; Components: backend
 
 ; 3d. Set proper permissions on static folder
-Filename: "icacls.exe"; Parameters: """{app}\backend\static"" /grant Users:(OI)(CI)F /T 2>nul"; Flags: runhidden; Components: backend
+Filename: "icacls.exe"; Parameters: """{app}\backend\static"" /grant *S-1-5-32-545:(OI)(CI)F /T 2>nul"; Flags: runhidden; Components: backend
 
-; 4. Create Django superuser 'xtradev' with password '123'
-Filename: "cmd.exe"; Parameters: "/c ""echo Creating admin user... && python -c ""import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings'); import django; django.setup(); from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='xtradev').exists() or User.objects.create_superuser('xtradev', 'admin@madira.local', '123')"""""; WorkingDir: "{app}\backend"; Flags: waituntilterminated runhidden; Components: backend
+; 4. Create Django superuser 'madira' with password 'MaD!r@A#' (Uses dedicated script)
+Filename: "cmd.exe"; Parameters: "/c ""python create_superuser.py"""; WorkingDir: "{app}\backend"; Flags: waituntilterminated runhidden; Components: backend; Description: "Configuring admin user..."
 
 ; 5. Ensure database is writable - remove any read-only attributes
 Filename: "cmd.exe"; Parameters: "/c ""if exist ""{app}\backend\db.sqlite3"" attrib -R -S -H ""{app}\backend\db.sqlite3"" 2>nul"""; Flags: runhidden; Components: backend
 
 ; 6. Grant full write permissions to backend folder and static files
-Filename: "icacls.exe"; Parameters: """{app}\backend"" /grant Users:(OI)(CI)F /T"; Flags: runhidden; Components: backend; Description: "Setting folder permissions..."
-Filename: "cmd.exe"; Parameters: "/c ""if exist ""{app}\backend\static"" icacls ""{app}\backend\static"" /grant Users:(OI)(CI)F /T 2>nul"""; Flags: runhidden; Components: backend
+Filename: "icacls.exe"; Parameters: """{app}\backend"" /grant *S-1-5-32-545:(OI)(CI)F /T"; Flags: runhidden; Components: backend; Description: "Setting folder permissions..."
+Filename: "cmd.exe"; Parameters: "/c ""if exist ""{app}\backend\static"" icacls ""{app}\backend\static"" /grant *S-1-5-32-545:(OI)(CI)F /T 2>nul"""; Flags: runhidden; Components: backend
 
 ; 6a. Deny delete permission on backend folder to prevent manual deletion
-Filename: "icacls.exe"; Parameters: """{app}\backend"" /deny Users:(DE)"; Flags: runhidden; Components: backend; Description: "Protecting backend folder..."
+Filename: "icacls.exe"; Parameters: """{app}\backend"" /deny *S-1-5-32-545:(DE)"; Flags: runhidden; Components: backend; Description: "Protecting backend folder..."
 
 ; 7. Create backup of database
 Filename: "cmd.exe"; Parameters: "/c ""if exist ""{app}\backend\db.sqlite3"" copy /Y ""{app}\backend\db.sqlite3"" ""{app}\backend\db_backup.sqlite3"" 2>nul"""; Flags: runhidden; Components: backend
@@ -145,20 +143,20 @@ Filename: "cmd.exe"; Parameters: "/c ""echo {app}\backend > ""{app}\backend_path
 Filename: "cmd.exe"; Parameters: "/c ""setx MADIRA_BACKEND_PATH ""{app}\backend"" /M"""; Flags: runhidden; Components: backend
 
 ; 11. Grant write permissions to app root folder for log files
-Filename: "icacls.exe"; Parameters: """{app}"" /grant Users:(OI)(CI)M"; Flags: runhidden; Description: "Setting log permissions..."
+Filename: "icacls.exe"; Parameters: """{app}"" /grant *S-1-5-32-545:(OI)(CI)M"; Flags: runhidden; Description: "Setting log permissions..."
 
 ; 12. Grant write permissions specifically to logs folder
-Filename: "icacls.exe"; Parameters: """{app}\logs"" /grant Users:(OI)(CI)F /T"; Flags: runhidden
+Filename: "icacls.exe"; Parameters: """{app}\logs"" /grant *S-1-5-32-545:(OI)(CI)F /T"; Flags: runhidden
 
 ; 13. Create empty log file with proper permissions
-Filename: "cmd.exe"; Parameters: "/c ""type nul > ""{app}\madira_app_log.txt"" && icacls ""{app}\madira_app_log.txt"" /grant Users:F"""; Flags: runhidden
+Filename: "cmd.exe"; Parameters: "/c ""type nul > ""{app}\madira_app_log.txt"" && icacls ""{app}\madira_app_log.txt"" /grant *S-1-5-32-545:F"""; Flags: runhidden
 
 ; 14. Launch App
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Remove delete protection from backend folder during uninstall
-Filename: "icacls.exe"; Parameters: """{app}\backend"" /remove:d Users"; Flags: runhidden
+Filename: "icacls.exe"; Parameters: """{app}\backend"" /remove:d *S-1-5-32-545"; Flags: runhidden
 
 [Code]
 var

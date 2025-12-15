@@ -26,7 +26,6 @@ import 'ui/screens/backend_setup_screen.dart';
 import 'services/backup_service.dart';
 import 'services/backup_preferences.dart';
 import 'widgets/backup_dialog.dart';
-import 'widgets/performance_overlay.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
