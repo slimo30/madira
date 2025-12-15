@@ -23,13 +23,13 @@ from .views.client_views import (
     ClientRetrieveUpdateDeleteView,
 )
 from .views.client_summary_views import (
-  
     ClientCompleteDetailsView,
 )
 from .views.supplier_views import (
     SupplierListCreateView,
     SupplierRetrieveUpdateDeleteView,
 )
+from .views.supplier_summary_views import SupplierSummaryView
 from .views.order_views import (
     OrderListCreateView,
     OrderRetrieveUpdateDeleteView,
@@ -94,6 +94,7 @@ urlpatterns = [
     # Suppliers CRUD
     path('suppliers/', SupplierListCreateView.as_view(), name='supplier-list-create'),
     path('suppliers/<int:pk>/', SupplierRetrieveUpdateDeleteView.as_view(), name='supplier-detail'),
+    path('suppliers/<int:supplier_id>/summary/', SupplierSummaryView.as_view(), name='supplier-summary'),
 
     # Orders CRUD
     path('orders/', OrderListCreateView.as_view(), name='order-list-create'),

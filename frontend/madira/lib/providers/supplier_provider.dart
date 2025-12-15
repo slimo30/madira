@@ -208,6 +208,19 @@ class SupplierProvider with ChangeNotifier {
     }
   }
 
+  // Get supplier summary
+  Future<Map<String, dynamic>> getSupplierSummary(int supplierId) async {
+    try {
+      print(' SupplierProvider: Fetching summary for supplier $supplierId');
+      final summary = await _supplierService.getSupplierSummary(supplierId);
+      print(' SupplierProvider: Summary fetched successfully');
+      return summary;
+    } catch (e) {
+      print(' SupplierProvider: Error fetching supplier summary: $e');
+      rethrow;
+    }
+  }
+
   // Clear error
   void clearError() {
     _error = null;

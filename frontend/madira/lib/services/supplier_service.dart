@@ -276,4 +276,39 @@ class SupplierService {
       throw Exception('Error deleting supplier: $e');
     }
   }
+
+  // Get supplier summary
+  Future<Map<String, dynamic>> getSupplierSummary(int supplierId) async {
+    try {
+      final endpoint = '/suppliers/$supplierId/summary/';
+
+      print(' API REQUEST: GET $endpoint');
+      print(' Full URL: ${ApiConstants.baseUrl}$endpoint');
+      print('=' * 60);
+
+      final response = await _dio.get(endpoint);
+
+      print(' API RESPONSE: SUCCESS');
+      print(' Status Code: ${response.statusCode}');
+      print('=' * 60 + '\n');
+
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw Exception(
+        'Failed to fetch supplier summary - Status: ${response.statusCode}',
+      );
+    } on DioException catch (e) {
+      print(' API ERROR: DioException');
+      print('️ Message: ${e.message}');
+      print(' Status Code: ${e.response?.statusCode}');
+      print('=' * 60 + '\n');
+      throw Exception('Error fetching supplier summary: ${e.message}');
+    } catch (e) {
+      print(' API ERROR: Generic Exception');
+      print('️ Error: $e');
+      print('=' * 60 + '\n');
+      throw Exception('Error fetching supplier summary: $e');
+    }
+  }
 }
