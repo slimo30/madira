@@ -46,3 +46,17 @@ coverage.xml
 # Environment variables / secrets
 *.env
 .env.*
+
+# Custom files to ignore
+Installer_Output/BACKEND_PATH_FIX.md
+Installer_Output/DJANGO_STATIC_FILES_FIX.md
+Installer_Output/DJANGO_STATIC_FILES_SETUP.md
+Installer_Output/INSTALLATION_GUIDE.md
+PERFORMANCE_OPTIMIZATION.md
+PERFORMANCE_QUICK_START.md
+PERFORMANCE_SUMMARY.md
+client.py
+madira/add.py
+
+*.xlsx
+*.sql
